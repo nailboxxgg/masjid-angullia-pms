@@ -12,7 +12,8 @@ import {
     DollarSign,
     Settings,
     LogOut,
-    ShieldCheck
+    ShieldCheck,
+    MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/firebase";
@@ -20,6 +21,7 @@ import { motion } from "framer-motion";
 
 const adminRoutes = [
     { name: "Overview", href: "/admin", icon: LayoutDashboard },
+    { name: "Inbox", href: "/admin/feedback", icon: MessageSquare },
     { name: "Requests", href: "/admin/requests", icon: FileText },
     { name: "Events", href: "/admin/events", icon: Calendar },
     { name: "Families", href: "/admin/families", icon: Users },

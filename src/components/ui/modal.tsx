@@ -38,24 +38,24 @@ export default function Modal({ isOpen, onClose, title, children, className }: M
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity animate-fade-in"
+                className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity animate-fade-in"
                 onClick={onClose}
             />
 
             {/* Modal Content */}
             <div
                 className={cn(
-                    "relative w-full max-w-lg transform rounded-xl bg-white p-6 shadow-2xl transition-all animate-slide-up border border-secondary-100 dark:bg-secondary-900 dark:border-secondary-800",
+                    "relative w-full max-w-lg transform rounded-xl bg-white p-6 shadow-2xl transition-all animate-slide-up border border-secondary-100/50 dark:bg-secondary-900 dark:border-secondary-800 ring-1 ring-black/5",
                     className
                 )}
             >
-                <div className="flex items-center justify-between mb-4 border-b border-secondary-100 pb-4 dark:border-secondary-800">
-                    {title && <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100">{title}</h3>}
+                <div className="flex items-center justify-between mb-5 pb-0">
+                    {title && <h3 className="text-lg font-heading font-semibold text-secondary-900 dark:text-secondary-100">{title}</h3>}
                     <button
                         onClick={onClose}
-                        className="rounded-full p-1 text-secondary-400 hover:bg-secondary-100 hover:text-secondary-500 transition-colors dark:hover:bg-secondary-800"
+                        className="rounded-full p-1.5 bg-secondary-50 text-secondary-400 hover:bg-secondary-100 hover:text-secondary-600 transition-colors dark:hover:bg-secondary-800"
                     >
-                        <X className="h-5 w-5" />
+                        <X className="h-4 w-4" />
                         <span className="sr-only">Close</span>
                     </button>
                 </div>

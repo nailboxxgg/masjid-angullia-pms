@@ -41,10 +41,10 @@ export default function FinancesPage() {
     }, []);
 
     const formatDate = (timestamp: number) => {
-        return new Date(timestamp).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
+        return new Date(timestamp).toLocaleDateString('en-PH', {
             day: 'numeric',
+            month: 'short',
+            year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
         });

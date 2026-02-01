@@ -1,21 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Search, Filter } from "lucide-react";
-import Modal from "@/components/ui/modal";
-import RequestForm from "@/components/modules/requests/RequestForm";
+import { useState, useEffect } from "react";
+import { Search, Filter, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { getFeedbacksByType, FeedbackData } from "@/lib/feedback";
 
 export default function AdminRequestsPage() {
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [requests, setRequests] = useState<FeedbackData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
 
-    // Placeholder data
-    const requests = [
-        { id: 1, type: "Marriage Certificate", requestor: "Abdul Rahman", date: "Oct 24, 2025", status: "Pending", priority: "High" },
-        { id: 2, type: "Financial Aid", requestor: "Siti Nurhaliza", date: "Oct 22, 2025", status: "In Progress", priority: "Medium" },
-        { id: 3, type: "Venue Booking", requestor: "Youth Group", date: "Oct 20, 2025", status: "Approved", priority: "Low" },
-    ];
+    useEffect(() => {
+        const loadData = async () => {
+            setIsLoading(true);
+            const data = await getFeedbacksByType('Request');
+            setRequests(data);
+            setIsLoading(false);
+        };
+        loadData();
+    }, []);
+
+    const filteredRequests = requests.filter(req =>
+        req.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        req.message.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -24,12 +32,6 @@ export default function AdminRequestsPage() {
                     <h1 className="text-2xl font-bold tracking-tight text-secondary-900 font-heading">Service Requests</h1>
                     <p className="text-sm text-secondary-500">Manage community requests and applications.</p>
                 </div>
-                <button
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-white border border-secondary-200 text-secondary-700 hover:bg-secondary-50 h-10 px-4 shadow-sm transition-colors"
-                >
-                    <Plus className="mr-2 h-4 w-4" /> New Request
-                </button>
             </div>
 
             <Card className="shadow-sm">
@@ -55,56 +57,55 @@ export default function AdminRequestsPage() {
                         <table className="w-full text-sm text-left">
                             <thead className="bg-secondary-50 text-secondary-600 font-medium border-b border-secondary-200">
                                 <tr>
-                                    <th className="px-6 py-3">Request Type</th>
+                                    <th className="px-6 py-3">Details</th>
                                     <th className="px-6 py-3">Requestor</th>
                                     <th className="px-6 py-3">Date Submitted</th>
-                                    <th className="px-6 py-3">Priority</th>
                                     <th className="px-6 py-3">Status</th>
                                     <th className="px-6 py-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-secondary-100">
-                                {requests.map((req) => (
-                                    <tr key={req.id} className="hover:bg-secondary-50/50 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-secondary-900">{req.type}</td>
-                                        <td className="px-6 py-4 text-secondary-600">{req.requestor}</td>
-                                        <td className="px-6 py-4 text-secondary-500 text-xs">{req.date}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded ${req.priority === 'High' ? 'bg-red-50 text-red-600' :
-                                                req.priority === 'Medium' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'
-                                                }`}>
-                                                {req.priority}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${req.status === 'Pending' ? 'bg-yellow-50 text-yellow-700' :
-                                                req.status === 'Approved' ? 'bg-green-50 text-green-700' : 'bg-secondary-100 text-secondary-600'
-                                                }`}>
-                                                {req.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <button className="font-medium text-primary-600 hover:text-primary-800 hover:underline">Review</button>
-                                        </td>
+                                {isLoading ? (
+                                    <tr>
+                                        <td colSpan={5} className="px-6 py-8 text-center text-secondary-500">Loading requests...</td>
                                     </tr>
-                                ))}
+                                ) : filteredRequests.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="px-6 py-8 text-center text-secondary-500">No requests found.</td>
+                                    </tr>
+                                ) : (
+                                    filteredRequests.map((req) => (
+                                        <tr key={req.id} className="hover:bg-secondary-50/50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="text-secondary-900 font-medium line-clamp-2 max-w-sm">{req.message}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-secondary-900">{req.name}</div>
+                                                <div className="text-xs text-secondary-500">{req.email}</div>
+                                                {req.contactNumber && <div className="text-xs text-secondary-500">{req.contactNumber}</div>}
+                                            </td>
+                                            <td className="px-6 py-4 text-secondary-500 text-xs text-nowrap">
+                                                {req.createdAt?.toDate ? new Date(req.createdAt.toDate()).toLocaleDateString('en-PH', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Just now'}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${req.status === 'New' ? 'bg-blue-50 text-blue-700' :
+                                                    req.status === 'Resolved' ? 'bg-green-50 text-green-700' :
+                                                        'bg-secondary-100 text-secondary-600'
+                                                    }`}>
+                                                    {req.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <button className="font-medium text-primary-600 hover:text-primary-800 hover:underline">Review</button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
                 </CardContent>
             </Card>
-
-            <Modal
-                isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                title="New Request"
-                className="max-w-xl"
-            >
-                <RequestForm
-                    onSuccess={() => setIsAddModalOpen(false)}
-                    onCancel={() => setIsAddModalOpen(false)}
-                />
-            </Modal>
         </div>
     );
 }

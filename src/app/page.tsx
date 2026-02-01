@@ -14,7 +14,8 @@ import { auth } from "@/lib/firebase";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
 import { getEvents } from "@/lib/events";
-import { Event } from "@/lib/types";
+import { Event, Donation } from "@/lib/types";
+import { getDonations } from "@/lib/donations";
 import EventRegistrationModal from "@/components/events/EventRegistrationModal";
 
 const Modal = dynamic(() => import("@/components/ui/modal"), { ssr: false });
@@ -30,17 +31,33 @@ export default function Home() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
+  const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
+
   useEffect(() => {
     const fetchUpdates = async () => {
-      const [announcementData, eventData] = await Promise.all([
+      const [announcementData, eventData, donationData] = await Promise.all([
         getAnnouncements(3),
-        getEvents(3)
+        getEvents(3),
+        getDonations(5)
       ]);
       setAnnouncements(announcementData);
       setEvents(eventData);
+      setRecentDonations(donationData);
     };
     fetchUpdates();
   }, []);
+
+  const formatTimeAgo = (timestamp: number) => {
+    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (seconds < 60) return 'Just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return new Date(timestamp).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+  };
 
   const featuredPost = announcements.find(a => a.type === 'Urgent') || announcements[0];
   const otherPosts = announcements.filter(a => a.id !== featuredPost?.id).slice(0, 2);
@@ -114,9 +131,9 @@ export default function Home() {
               <h2 className="text-3xl font-bold text-secondary-900 font-heading">Community Hub</h2>
               <p className="text-secondary-600 mt-1">Updates, events, and contributions from our jama&apos;ah.</p>
             </div>
-            <button className="text-primary-600 font-medium hover:text-primary-700 flex items-center gap-1 transition-colors">
+            <Link href="/updates" className="text-primary-600 font-medium hover:text-primary-700 flex items-center gap-1 transition-colors">
               View All Updates <ArrowRight className="w-4 h-4" />
-            </button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -188,29 +205,31 @@ export default function Home() {
                   </h3>
 
                   <div className="space-y-4 mb-8">
-                    {[
-                      { name: "Brother Abdullah", amount: "₱5,000", time: "2h ago", type: "Zakat" },
-                      { name: "Sister Fatima", amount: "₱2,500", time: "5h ago", type: "Sadaqah" },
-                      { name: "Anonymous", amount: "₱1,000", time: "Yesterday", type: "General" },
-                      { name: "Kareem Family", amount: "₱10,000", time: "2 days ago", type: "Construction" },
-                      { name: "Anonymous", amount: "₱500", time: "2 days ago", type: "Sadaqah" },
-                    ].map((donation, idx) => (
-                      <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 flex items-center justify-between border border-white/5 hover:bg-white/20 transition-colors group">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-300 font-bold text-xs">
-                            {donation.name[0]}
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm text-secondary-100 line-clamp-1">{donation.name}</p>
-                            <p className="text-[10px] text-secondary-400">{donation.type}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <span className="block font-bold text-secondary-400 text-sm">{donation.amount}</span>
-                          <span className="text-xs text-secondary-500 group-hover:text-secondary-300 transition-colors">{donation.time}</span>
-                        </div>
+                    {recentDonations.length === 0 ? (
+                      <div className="text-center py-8 text-secondary-300 italic text-sm">
+                        Be the first to donate today!
                       </div>
-                    ))}
+                    ) : (
+                      recentDonations.map((donation, idx) => (
+                        <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 flex items-center justify-between border border-white/5 hover:bg-white/20 transition-colors group">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-300 font-bold text-xs uppercase">
+                              {(donation.isAnonymous ? "A" : donation.donorName[0])}
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm text-secondary-100 line-clamp-1">
+                                {donation.isAnonymous ? "Anonymous" : donation.donorName}
+                              </p>
+                              <p className="text-[10px] text-secondary-400">{donation.type}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="block font-bold text-secondary-400 text-sm">₱{donation.amount.toLocaleString()}</span>
+                            <span className="text-xs text-secondary-500 group-hover:text-secondary-300 transition-colors">{formatTimeAgo(donation.date)}</span>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
 
                   <div className="bg-white/5 rounded-2xl p-4 border border-white/10 text-center">

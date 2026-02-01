@@ -27,7 +27,7 @@ export default function Footer({ onAdminClick }: FooterProps) {
                         <div className="flex flex-col gap-2">
                             <Link href="/donations" className="hover:text-primary-400 transition-colors">Donate</Link>
                             <Link href="#" className="hover:text-primary-400 transition-colors">Events</Link>
-                            <Link href="#" className="hover:text-primary-400 transition-colors">Contact Us</Link>
+                            <Link href="/feedback" className="hover:text-primary-400 transition-colors">Concerns, Feedbacks, and Request</Link>
                         </div>
                     </div>
                     <div className="flex flex-col items-center md:items-start">
