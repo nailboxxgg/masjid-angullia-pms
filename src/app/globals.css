@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@theme {
+  /* User Specified Palette: Teal Theme */
+  /* Primary: #005f5b (Deep Teal) */
+  --color-primary-50: #f0fafa;
+  --color-primary-100: #ccdfde;
+  --color-primary-200: #99bfbd;
+  --color-primary-300: #669f9d;
+  --color-primary-400: #337f7c;
+  --color-primary-500: #005f5b;
+  /* Base */
+  --color-primary-600: #004d4a;
+  --color-primary-700: #003b39;
+  --color-primary-800: #002928;
+  --color-primary-900: #001717;
+  --color-primary-950: #000c0c;
+
+  /* Secondary: Slate (Cool Grey) to complement Teal */
+  --color-secondary-50: #f8fafc;
+  --color-secondary-100: #f1f5f9;
+  --color-secondary-200: #e2e8f0;
+  --color-secondary-300: #cbd5e1;
+  --color-secondary-400: #94a3b8;
+  --color-secondary-500: #64748b;
+  /* Base */
+  --color-secondary-600: #475569;
+  --color-secondary-700: #334155;
+  --color-secondary-800: #1e293b;
+  --color-secondary-900: #0f172a;
+
+  /* Accent: #CC946C (Terracotta) */
+  --color-accent-500: #cc946c;
+  /* Base */
+  --color-accent-600: #b37e58;
+
+  /* Fonts */
+  --font-heading: var(--font-outfit), sans-serif;
+  --font-body: var(--font-inter), sans-serif;
+  --font-arabic: var(--font-scheherazade), serif;
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.5s ease-in-out;
+  --animate-slide-up: slide-up 0.5s ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+:root {
+  /* Background: Slate-50 */
+  --background: var(--color-secondary-50);
+  /* Foreground: Teal-950 */
+  --background-alt: var(--color-primary-50);
+  --foreground: var(--color-primary-950);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #111827;
+    /* Dark mode fallback */
+    --foreground: #f0fdf9;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+
+.font-arabic {
+  font-family: var(--font-arabic);
+}
