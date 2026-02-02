@@ -9,7 +9,9 @@ import {
     limit,
     where,
     Timestamp,
-    DocumentData
+    DocumentData,
+    deleteDoc,
+    doc
 } from "firebase/firestore";
 import { Donation } from "./types";
 
@@ -55,6 +57,16 @@ export const addDonation = async (donation: Omit<Donation, "id">) => {
     } catch (error) {
         console.error("Error adding donation:", error);
         return null;
+    }
+};
+
+export const deleteDonation = async (id: string) => {
+    try {
+        await deleteDoc(doc(db, COLLECTION_NAME, id));
+        return true;
+    } catch (error) {
+        console.error("Error deleting donation:", error);
+        return false;
     }
 };
 

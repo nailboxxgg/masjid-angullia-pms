@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,7 +8,7 @@ import Modal from "@/components/ui/modal";
 import { Calendar, MapPin, Clock, Users, Plus, Edit2, Trash2, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function EventsPage() {
+export default function EventsManager() {
     const [events, setEvents] = useState<Event[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -95,11 +94,7 @@ export default function EventsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-secondary-900 font-heading">Event Management</h1>
-                    <p className="text-sm text-secondary-500">Plan and manage community activities.</p>
-                </div>
+            <div className="flex justify-end items-center">
                 <button
                     onClick={() => { resetForm(); setIsFormOpen(true); }}
                     className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 transition-colors shadow-sm"

@@ -1,25 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import FamilyForm from "@/components/modules/families/FamilyForm";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { getFamilies } from "@/lib/families";
+import { Family } from "@/lib/types";
 
 export default function AdminFamiliesPage() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [families, setFamilies] = useState<Family[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Placeholder data
-    const families = [
-        { id: 1, name: "Ali Family", head: "Mohammad Ali", members: 4, phone: "0917-123-4567", address: "Alaminos City" },
-        { id: 2, name: "Rahman Family", head: "Abdul Rahman", members: 6, phone: "0918-987-6543", address: "Bani, Pangasinan" },
-        { id: 3, name: "Hassan Family", head: "Yusuf Hassan", members: 3, phone: "0920-555-0123", address: "Sual, Pangasinan" },
-    ];
+    const loadFamilies = async () => {
+        setIsLoading(true);
+        const data = await getFamilies();
+        setFamilies(data);
+        setIsLoading(false);
+    };
+
+    useEffect(() => {
+        loadFamilies();
+    }, []);
 
     const filteredFamilies = families.filter(family =>
-        family.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        family.head.toLowerCase().includes(searchTerm.toLowerCase())
+        (family.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (family.head || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -44,7 +52,7 @@ export default function AdminFamiliesPage() {
                         <input
                             type="text"
                             placeholder="Search families..."
-                            className="w-full sm:w-80 pl-9 pr-4 py-2 rounded-md border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="w-full sm:w-80 pl-9 pr-4 py-2 rounded-md border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-800"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -63,32 +71,37 @@ export default function AdminFamiliesPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {filteredFamilies.map((family) => (
-                                    <tr key={family.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-slate-900">{family.name}</td>
-                                        <td className="px-6 py-4 text-slate-600">{family.head}</td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                                                {family.members} Members
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-600">
-                                            <div className="flex flex-col text-xs">
-                                                <span>{family.phone}</span>
-                                                <span className="text-slate-400">{family.address}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <button className="font-medium text-primary-600 hover:text-primary-800 hover:underline">Edit</button>
-                                        </td>
+                                {isLoading ? (
+                                    <tr>
+                                        <td colSpan={5} className="px-6 py-8 text-center text-slate-500">Loading families...</td>
                                     </tr>
-                                ))}
-                                {filteredFamilies.length === 0 && (
+                                ) : filteredFamilies.length === 0 ? (
                                     <tr>
                                         <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
                                             No families found matching specific search query.
                                         </td>
                                     </tr>
+                                ) : (
+                                    filteredFamilies.map((family) => (
+                                        <tr key={family.id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-6 py-4 font-medium text-slate-900">{family.name}</td>
+                                            <td className="px-6 py-4 text-slate-600">{family.head}</td>
+                                            <td className="px-6 py-4">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                                    {family.members} Members
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-600">
+                                                <div className="flex flex-col text-xs">
+                                                    <span>{family.phone}</span>
+                                                    <span className="text-slate-400">{family.address}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <button className="font-medium text-primary-600 hover:text-primary-800 hover:underline">Edit</button>
+                                            </td>
+                                        </tr>
+                                    ))
                                 )}
                             </tbody>
                         </table>
@@ -105,7 +118,7 @@ export default function AdminFamiliesPage() {
                 <FamilyForm
                     onSuccess={() => {
                         setIsAddModalOpen(false);
-                        // In real app, trigger refresh
+                        loadFamilies();
                     }}
                     onCancel={() => setIsAddModalOpen(false)}
                 />

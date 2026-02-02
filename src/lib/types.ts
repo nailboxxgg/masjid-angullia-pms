@@ -36,3 +36,14 @@ export interface Event {
     imageUrl?: string;
     capacity?: number;
 }
+
+export interface Family {
+    id: string;
+    name: string;
+    head: string;
+    members: number;
+    phone: string;
+    email?: string;
+    address: string;
+    createdAt?: number;
+}

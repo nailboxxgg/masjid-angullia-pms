@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { addFamily } from "@/lib/families";
+import { Family } from "@/lib/types";
 
 interface FamilyFormProps {
     onSuccess?: () => void;
@@ -10,7 +12,13 @@ interface FamilyFormProps {
 
 export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
     const [loading, setLoading] = useState(false);
-    // Placeholder state - normally connected to React Hook Form + Zod
+    const [name, setName] = useState("");
+    const [head, setHead] = useState("");
+    const [phone, setPhone] = useState("");
+    const [email, setEmail] = useState("");
+    const [address, setAddress] = useState("");
+
+    // Placeholder state for members - expanded logic would save these to a subcollection
     const [members, setMembers] = useState([{ id: 1, name: "", relation: "Head" }]);
 
     const addMember = () => {
@@ -24,17 +32,29 @@ export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        const newFamily: Omit<Family, "id"> = {
+            name,
+            head,
+            phone,
+            email,
+            address,
+            members: members.length
+        };
+
+        const result = await addFamily(newFamily);
+
         setLoading(false);
-        if (onSuccess) onSuccess();
+        if (result && onSuccess) {
+            onSuccess();
+        }
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-5">
                 <div className="bg-secondary-50/50 p-4 rounded-lg border border-secondary-100">
-                    <h4 className="text-xl font-semibold text-secondary-800 uppercase tracking-wider mb-">Family Information</h4>
+                    <h4 className="text-xl font-semibold text-secondary-800 uppercase tracking-wider mb-4">Family Information</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <label className="text-xs font-medium text-secondary-800">Family Name</label>
@@ -42,10 +62,8 @@ export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
                                 required
                                 type="text"
                                 placeholder="Enter Family Name"
-                                onInput={(e) => {
-                                    const target = e.target as HTMLInputElement;
-                                    target.value = target.value.replace(/[^a-zA-Z\s\-\.\']/g, '');
-                                }}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 className="flex h-10 w-full rounded-md border border-secondary-200 bg-white px-3 py-2 text-sm placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800"
                             />
                         </div>
@@ -55,10 +73,8 @@ export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
                                 required
                                 type="text"
                                 placeholder="Full Name"
-                                onInput={(e) => {
-                                    const target = e.target as HTMLInputElement;
-                                    target.value = target.value.replace(/[^a-zA-Z\s\-\.\']/g, '');
-                                }}
+                                value={head}
+                                onChange={(e) => setHead(e.target.value)}
                                 className="flex h-10 w-full rounded-md border border-secondary-200 bg-white px-3 py-2 text-sm placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800"
                             />
                         </div>
@@ -67,10 +83,8 @@ export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
                             <input
                                 type="tel"
                                 placeholder="Enter Phone Number"
-                                onInput={(e) => {
-                                    const target = e.target as HTMLInputElement;
-                                    target.value = target.value.replace(/[^0-9]/g, '');
-                                }}
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
                                 className="flex h-10 w-full rounded-md border border-secondary-200 bg-white px-3 py-2 text-sm placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800"
                             />
                         </div>
@@ -79,6 +93,8 @@ export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
                             <input
                                 type="email"
                                 placeholder="email@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="flex h-10 w-full rounded-md border border-secondary-200 bg-white px-3 py-2 text-sm placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800"
                             />
                         </div>
@@ -86,6 +102,8 @@ export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
                             <label className="text-xs font-medium text-secondary-600">Address</label>
                             <textarea
                                 placeholder="Complete Address"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
                                 className="flex min-h-[80px] w-full rounded-md border border-secondary-200 bg-white px-3 py-2 text-sm placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all resize-none text-secondary-800"
                             />
                         </div>
@@ -114,6 +132,7 @@ export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
                                     type="text"
                                     className="flex h-9 w-full rounded-md border border-secondary-200 bg-white px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800"
                                     placeholder="Family Member Name"
+                                    defaultValue={member.name}
                                 />
                             </div>
                             <div className="w-1/3 space-y-1.5">
@@ -155,7 +174,7 @@ export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
                     disabled={loading}
                     className="px-6 py-2 bg-primary-600 rounded-lg text-white hover:bg-primary-700 text-sm font-medium flex items-center shadow-sm shadow-primary-500/20 transition-all"
                 >
-                    {loading ? "Saving..." : "Save Family"}
+                    {loading ? "Saving..." : "Save Family Information"}
                 </button>
             </div>
         </form>

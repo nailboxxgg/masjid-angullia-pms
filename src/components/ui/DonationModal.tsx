@@ -122,7 +122,7 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                                                     min="1"
                                                     value={amount}
                                                     onChange={(e) => setAmount(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg font-semibold"
+                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg font-semibold text-secondary-800"
                                                     placeholder="0.00"
                                                 />
                                             </div>
@@ -132,7 +132,7 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                                                     type="text"
                                                     value={donorName}
                                                     onChange={(e) => setDonorName(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-secondary-800"
                                                     placeholder="Anonymous"
                                                 />
                                             </div>

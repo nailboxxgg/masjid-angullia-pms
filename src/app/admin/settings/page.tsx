@@ -33,7 +33,7 @@ export default function AdminSettingsPage() {
                                 <User className="w-5 h-5" />
                             </div>
                             <div>
-                                <CardTitle className="text-lg">Profile Information</CardTitle>
+                                <CardTitle className="text-lg text-secondary-800">Profile Information</CardTitle>
                                 <CardDescription>Update your personal details.</CardDescription>
                             </div>
                         </div>
@@ -66,7 +66,7 @@ export default function AdminSettingsPage() {
                                 <Lock className="w-5 h-5" />
                             </div>
                             <div>
-                                <CardTitle className="text-lg">Security</CardTitle>
+                                <CardTitle className="text-lg text-secondary-800">Security</CardTitle>
                                 <CardDescription>Manage your password and access.</CardDescription>
                             </div>
                         </div>
@@ -97,7 +97,7 @@ export default function AdminSettingsPage() {
                                 <User className="w-5 h-5" />
                             </div>
                             <div>
-                                <CardTitle className="text-lg">Admin Management</CardTitle>
+                                <CardTitle className="text-lg text-secondary-800">Admin Management</CardTitle>
                                 <CardDescription>Authorize new administrators for the portal.</CardDescription>
                             </div>
                         </div>
@@ -112,7 +112,7 @@ export default function AdminSettingsPage() {
                                 <input
                                     type="email"
                                     placeholder="new.admin@masjid.com"
-                                    className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-800"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -120,7 +120,7 @@ export default function AdminSettingsPage() {
                                 <input
                                     type="text"
                                     placeholder="Generates logic here..."
-                                    className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-800"
                                 />
                             </div>
                         </div>
@@ -147,7 +147,7 @@ export default function AdminSettingsPage() {
                                 <Bell className="w-5 h-5" />
                             </div>
                             <div>
-                                <CardTitle className="text-lg">Notifications</CardTitle>
+                                <CardTitle className="text-lg text-secondary-800">Notifications</CardTitle>
                                 <CardDescription>Choose what updates you want to receive.</CardDescription>
                             </div>
                         </div>

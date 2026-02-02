@@ -1,4 +1,5 @@
 
++
 "use client";
 
 import { useEffect, useState } from "react";
@@ -32,6 +33,19 @@ export default function PrayerTimesWidget() {
         { name: "Isha", time: timings.Isha },
     ];
 
+    const formatTo12Hour = (time24: string) => {
+        const [time, modifier] = time24.split(' ');
+        if (modifier && (modifier === 'AM' || modifier === 'PM')) return time24; // Already 12hr
+
+        const [hours, minutes] = time.split(':');
+        let h = parseInt(hours, 10);
+        const m = minutes;
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        h = h ? h : 12; // the hour '0' should be '12'
+        return `${h}:${m} ${ampm}`;
+    };
+
     return (
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-white overflow-hidden relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-primary-900/40 to-secondary-900/40 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -57,8 +71,7 @@ export default function PrayerTimesWidget() {
                         <div key={prayer.name} className="flex flex-col items-center p-2 rounded-lg hover:bg-white/10 transition-colors">
                             <span className="text-xs text-secondary-300 font-medium uppercase mb-1">{prayer.name}</span>
                             <span className="text-base font-bold whitespace-nowrap">{
-                                // Simple text cleaning, APIs sometimes return "05:30 (PST)"
-                                prayer.time.split(' ')[0]
+                                formatTo12Hour(prayer.time)
                             }</span>
                         </div>
                     ))}

@@ -1,6 +1,6 @@
 
 import { db } from "./firebase";
-import { collection, addDoc, serverTimestamp, getDocs, query, orderBy, where } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, getDocs, query, orderBy, where, doc, updateDoc, deleteDoc } from "firebase/firestore";
 
 export type FeedbackType = 'Concern' | 'Feedback' | 'Request';
 
@@ -63,5 +63,26 @@ export const getFeedbacksByType = async (type: FeedbackType): Promise<FeedbackDa
     } catch (error) {
         console.error(`Error fetching ${type}:`, error);
         return [];
+    }
+};
+
+export const updateFeedbackStatus = async (id: string, status: 'Read' | 'Resolved' | 'New') => {
+    try {
+        const docRef = doc(db, COLLECTION_NAME, id);
+        await updateDoc(docRef, { status });
+        return true;
+    } catch (error) {
+        console.error("Error updating feedback status:", error);
+        return false;
+    }
+};
+
+export const deleteFeedback = async (id: string) => {
+    try {
+        await deleteDoc(doc(db, COLLECTION_NAME, id));
+        return true;
+    } catch (error) {
+        console.error("Error deleting feedback:", error);
+        return false;
     }
 };

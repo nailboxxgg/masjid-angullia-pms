@@ -1,8 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Masjid Angullia Portal
 
-## Getting Started
+A comprehensive digital management system designed for Masjid Angullia to streamline community engagement, donations, event management, and administrative operations.
 
-First, run the development server:
+## 🚀 Features
+
+- **Community Portal**: Central hub for updates, prayer times, and mosque info.
+- **Admin Dashboard**: secure administrative interface for managing mosque operations.
+- **Donation Management**: Streamlined process for handling and tracking donations.
+- **Events System**: Tools for organizing and promoting community events.
+- **Family Management**: Database for managing community family records.
+- **Feedback System**: Channel for community members to provide feedback.
+- **Responsive Design**: precise visual experience across mobile, tablet, and desktop.
+- **Dark Mode Support**: Built-in dark theme for comfortable viewing in low light.
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Database / Backend**: [Firebase](https://firebase.google.com/)
+- **Fonts**: 
+  - English: [Inter](https://fonts.google.com/specimen/Inter) & [Outfit](https://fonts.google.com/specimen/Outfit)
+  - Arabic: [Scheherazade New](https://fonts.google.com/specimen/Scheherazade+New)
+
+## 🏁 Getting Started
+
+### Prerequisites
+
+Ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (Latest LTS version recommended)
+- npm, yarn, pnpm, or bun
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd masjid-angullia-pms
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   # or
+   bun install
+   ```
+
+3. **Environment Setup**
+   Create a `.env.local` file in the root directory and add your Firebase configuration and other environment variables:
+   ```env
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+   ```
+
+### Running Locally
+
+Start the development server:
 
 ```bash
 npm run dev
@@ -16,21 +78,31 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📂 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/                  # App Router pages and layouts
+│   ├── (auth)/          # Authentication routes
+│   ├── admin/           # Admin dashboard routes
+│   ├── donations/       # Public donation routes
+│   ├── feedback/        # Feedback routes
+│   └── updates/         # Updates/News routes
+├── components/           # Reusable UI components
+│   ├── layout/          # Layout components (Navbar, Footer, etc.)
+│   └── modules/         # Feature-specific components (families, etc.)
+└── ...
+```
 
-## Learn More
+## 🤝 Contributing
 
-To learn more about Next.js, take a look at the following resources:
+Contributions are welcome! Please follow these steps:
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/your-feature`).
+3. Commit your changes (`git commit -m 'Add some feature'`).
+4. Push to the branch (`git push origin feature/your-feature`).
+5. Open a Pull Request.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📄 License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[MIT License](LICENSE)
