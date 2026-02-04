@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { addFamily } from "@/lib/families";
-import { Family } from "@/lib/types";
+import { addFamily, updateFamily } from "@/lib/families";
+import { Family, FamilyMember } from "@/lib/types";
 
 interface FamilyFormProps {
+    initialData?: Family | null;
     onSuccess?: () => void;
     onCancel?: () => void;
 }
 
-export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
+export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyFormProps) {
     const [loading, setLoading] = useState(false);
     const [name, setName] = useState("");
     const [head, setHead] = useState("");
@@ -18,31 +19,78 @@ export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
     const [email, setEmail] = useState("");
     const [address, setAddress] = useState("");
 
-    // Placeholder state for members - expanded logic would save these to a subcollection
-    const [members, setMembers] = useState([{ id: 1, name: "", relation: "Head" }]);
+    const [members, setMembers] = useState<FamilyMember[]>([
+        { id: "1", name: "", relation: "Head", isDeceased: false }
+    ]);
+
+    useEffect(() => {
+        if (initialData) {
+            setName(initialData.name || "");
+            setHead(initialData.head || "");
+            setPhone(initialData.phone || "");
+            setEmail(initialData.email || "");
+            setAddress(initialData.address || "");
+
+            // Handle legacy data where members might be a number
+            if (Array.isArray(initialData.members)) {
+                setMembers(initialData.members);
+            } else {
+                // Legacy: initialData.members is a number (count)
+                const count = typeof initialData.members === 'number' ? initialData.members : 0;
+                const newMembers: FamilyMember[] = [];
+                for (let i = 0; i < count; i++) {
+                    newMembers.push({
+                        id: Date.now().toString() + i, // simple mock id
+                        name: "",
+                        relation: "Member",
+                        isDeceased: false
+                    });
+                }
+                if (newMembers.length === 0) {
+                    // Ensure at least one member exists if count was 0
+                    newMembers.push({ id: Date.now().toString(), name: "", relation: "Head", isDeceased: false });
+                }
+                setMembers(newMembers);
+            }
+        }
+    }, [initialData]);
 
     const addMember = () => {
-        setMembers([...members, { id: Date.now(), name: "", relation: "Member" }]);
+        setMembers([...members, {
+            id: Date.now().toString(),
+            name: "",
+            relation: "Member",
+            isDeceased: false
+        }]);
     };
 
-    const removeMember = (id: number) => {
+    const removeMember = (id: string) => {
         setMembers(members.filter((m) => m.id !== id));
+    };
+
+    const updateMember = (id: string, field: keyof FamilyMember, value: any) => {
+        setMembers(members.map(m => m.id === id ? { ...m, [field]: value } : m));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
-        const newFamily: Omit<Family, "id"> = {
+        const familyData: Omit<Family, "id"> = {
             name,
             head,
             phone,
             email,
             address,
-            members: members.length
+            members: members // Save full array
         };
 
-        const result = await addFamily(newFamily);
+        let result;
+        if (initialData) {
+            result = await updateFamily(initialData.id, familyData);
+        } else {
+            result = await addFamily(familyData);
+        }
 
         setLoading(false);
         if (result && onSuccess) {
@@ -132,18 +180,36 @@ export default function FamilyForm({ onSuccess, onCancel }: FamilyFormProps) {
                                     type="text"
                                     className="flex h-9 w-full rounded-md border border-secondary-200 bg-white px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800"
                                     placeholder="Family Member Name"
-                                    defaultValue={member.name}
+                                    value={member.name}
+                                    onChange={(e) => updateMember(member.id, 'name', e.target.value)}
                                 />
                             </div>
                             <div className="w-1/3 space-y-1.5">
                                 <label className="text-[10px] font-medium text-secondary-500 uppercase">Relationship</label>
-                                <select className="flex h-9 w-full rounded-md border border-secondary-200 bg-white px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800">
-                                    <option>Spouse</option>
-                                    <option>Child</option>
-                                    <option>Parent</option>
-                                    <option>Sibling</option>
-                                    <option>Other</option>
-                                </select>
+                                <div className="flex flex-col gap-2">
+                                    <select
+                                        value={member.relation}
+                                        onChange={(e) => updateMember(member.id, 'relation', e.target.value)}
+                                        className="flex h-9 w-full rounded-md border border-secondary-200 bg-white px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800"
+                                    >
+                                        <option>Head</option>
+                                        <option>Spouse</option>
+                                        <option>Child</option>
+                                        <option>Parent</option>
+                                        <option>Sibling</option>
+                                        <option>Other</option>
+                                    </select>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id={`deceased-${member.id}`}
+                                            checked={member.isDeceased || false}
+                                            onChange={(e) => updateMember(member.id, 'isDeceased', e.target.checked)}
+                                            className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                        />
+                                        <label htmlFor={`deceased-${member.id}`} className="text-xs text-secondary-600">Deceased</label>
+                                    </div>
+                                </div>
                             </div>
                             <div className="pt-6">
                                 <button

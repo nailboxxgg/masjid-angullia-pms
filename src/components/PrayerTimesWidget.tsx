@@ -1,6 +1,6 @@
 
 +
-"use client";
+    "use client";
 
 import { useEffect, useState } from "react";
 import { getPrayerTimes, PrayerData } from "@/lib/prayer-times";
@@ -66,9 +66,9 @@ export default function PrayerTimesWidget() {
                 <div className="hidden md:block w-px h-16 bg-white/20" />
 
                 {/* Timings Grid */}
-                <div className="grid grid-cols-5 gap-2 w-full max-w-lg">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-2 w-full max-w-lg">
                     {prayers.map((prayer) => (
-                        <div key={prayer.name} className="flex flex-col items-center p-2 rounded-lg hover:bg-white/10 transition-colors">
+                        <div key={prayer.name} className="flex flex-col items-center p-3 md:p-2 rounded-lg bg-white/5 md:bg-transparent hover:bg-white/10 transition-colors border border-white/10 md:border-transparent">
                             <span className="text-xs text-secondary-300 font-medium uppercase mb-1">{prayer.name}</span>
                             <span className="text-base font-bold whitespace-nowrap">{
                                 formatTo12Hour(prayer.time)

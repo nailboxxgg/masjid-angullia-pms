@@ -180,14 +180,14 @@ export default function FinancesPage() {
                                         <select
                                             value={typeFilter}
                                             onChange={(e) => setTypeFilter(e.target.value)}
-                                            className="w-full text-sm border-secondary-200 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                                            className="w-full text-sm border-secondary-200 rounded-md focus:ring-primary-500 focus:border-primary-500 text-secondary-800"
                                         >
-                                            <option value="All">All Types</option>
-                                            <option value="General">General</option>
-                                            <option value="Zakat">Zakat</option>
-                                            <option value="Sadaqah">Sadaqah</option>
-                                            <option value="Projects">Projects</option>
-                                            <option value="Other">Other</option>
+                                            <option value="All" className="text-secondary-800">All Types</option>
+                                            <option value="General" className="text-secondary-800">General</option>
+                                            <option value="Zakat" className="text-secondary-800">Zakat</option>
+                                            <option value="Sadaqah" className="text-secondary-800">Sadaqah</option>
+                                            <option value="Projects" className="text-secondary-800">Projects</option>
+                                            <option value="Other" className="text-secondary-800">Other</option>
                                         </select>
                                     </div>
                                     {typeFilter !== 'All' && (

@@ -108,18 +108,21 @@ export default function FeedbackPage() {
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-secondary-700">Contact Number</label>
                                             <input
+                                                required
                                                 value={contact}
-                                                onChange={(e) => setContact(e.target.value)}
+                                                onChange={(e) => setContact(e.target.value.replace(/\D/g, '').slice(0, 11))}
                                                 className="w-full px-4 py-2 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-900 placeholder:text-secondary-300"
-                                                placeholder="Optional"
+                                                placeholder="09123456789"
+                                                inputMode="numeric"
+                                                pattern="[0-9]*"
+                                                maxLength={11}
                                             />
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-secondary-700">Email Address</label>
+                                        <label className="text-sm font-medium text-secondary-700">Email Address (Optional)</label>
                                         <input
-                                            required
                                             type="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}

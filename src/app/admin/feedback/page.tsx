@@ -3,16 +3,19 @@
 import { useState, useEffect } from "react";
 import { getFeedbacks, FeedbackData, updateFeedbackStatus, deleteFeedback } from "@/lib/feedback";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Modal from "@/components/ui/modal";
 import { MessageSquare, Mail, Phone, Clock, Search, Filter, Trash2, Check, BookOpen } from "lucide-react";
 
 export default function AdminFeedbackPage() {
     const [feedbacks, setFeedbacks] = useState<FeedbackData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedFeedback, setSelectedFeedback] = useState<FeedbackData | null>(null);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
     const [statusFilter, setStatusFilter] = useState('All');
     const [typeFilter, setTypeFilter] = useState('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState(""); // Re-adding searchTerm state if needed or reuse existing input
+    const [searchTerm, setSearchTerm] = useState("");
 
     const loadData = async () => {
         setIsLoading(true);
@@ -29,6 +32,19 @@ export default function AdminFeedbackPage() {
         const success = await updateFeedbackStatus(id, status);
         if (success) {
             loadData();
+            // Also update local state to reflect change immediately if needed, mainly for the modal view if open
+            if (selectedFeedback && selectedFeedback.id === id) {
+                setSelectedFeedback({ ...selectedFeedback, status });
+            }
+        }
+    };
+
+    const handleView = async (feedback: FeedbackData) => {
+        setSelectedFeedback(feedback);
+        setIsViewModalOpen(true);
+
+        if (feedback.status === 'New' && feedback.id) {
+            await handleUpdateStatus(feedback.id, 'Read');
         }
     };
 
@@ -101,12 +117,12 @@ export default function AdminFeedbackPage() {
                                         <select
                                             value={statusFilter}
                                             onChange={(e) => setStatusFilter(e.target.value)}
-                                            className="w-full text-sm border-secondary-200 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                                            className="w-full text-sm border-secondary-200 rounded-md focus:ring-primary-500 focus:border-primary-500 text-secondary-800"
                                         >
-                                            <option value="All">All Statuses</option>
-                                            <option value="New">New</option>
-                                            <option value="Read">Read</option>
-                                            <option value="Resolved">Resolved</option>
+                                            <option value="All" className="text-secondary-800">All Statuses</option>
+                                            <option value="New" className="text-secondary-800">New</option>
+                                            <option value="Read" className="text-secondary-800">Read</option>
+                                            <option value="Resolved" className="text-secondary-800">Resolved</option>
                                         </select>
                                     </div>
                                     <div className="space-y-2">
@@ -114,12 +130,12 @@ export default function AdminFeedbackPage() {
                                         <select
                                             value={typeFilter}
                                             onChange={(e) => setTypeFilter(e.target.value)}
-                                            className="w-full text-sm border-secondary-200 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                                            className="w-full text-sm border-secondary-200 rounded-md focus:ring-primary-500 focus:border-primary-500 text-secondary-800"
                                         >
-                                            <option value="All">All Types</option>
-                                            <option value="Message">Message</option>
-                                            <option value="Concern">Concern</option>
-                                            <option value="Request">Request</option>
+                                            <option value="All" className="text-secondary-800">All Types</option>
+                                            <option value="Message" className="text-secondary-800">Message</option>
+                                            <option value="Concern" className="text-secondary-800">Concern</option>
+                                            <option value="Request" className="text-secondary-800">Request</option>
                                         </select>
                                     </div>
                                     {(statusFilter !== 'All' || typeFilter !== 'All') && (
@@ -145,7 +161,11 @@ export default function AdminFeedbackPage() {
                             </div>
                         ) : (
                             filteredFeedbacks.map((item) => (
-                                <div key={item.id} className="p-4 rounded-xl border border-secondary-200 hover:border-primary-300 hover:shadow-sm transition-all bg-white group">
+                                <div
+                                    key={item.id}
+                                    onClick={() => handleView(item)}
+                                    className="p-4 rounded-xl border border-secondary-200 hover:border-primary-300 hover:shadow-sm transition-all bg-white group cursor-pointer"
+                                >
                                     <div className="flex flex-col md:flex-row gap-4 items-start justify-between mb-3">
                                         <div className="flex items-start gap-3">
                                             <div className="w-10 h-10 rounded-full bg-secondary-100 flex items-center justify-center shrink-0 text-secondary-600 font-bold">
@@ -154,9 +174,11 @@ export default function AdminFeedbackPage() {
                                             <div>
                                                 <h4 className="font-semibold text-secondary-900">{item.name}</h4>
                                                 <div className="flex items-center gap-3 text-xs text-secondary-500 mt-1">
-                                                    <span className="flex items-center gap-1">
-                                                        <Mail className="w-3 h-3" /> {item.email}
-                                                    </span>
+                                                    {item.email && (
+                                                        <span className="flex items-center gap-1">
+                                                            <Mail className="w-3 h-3" /> {item.email}
+                                                        </span>
+                                                    )}
                                                     {item.contactNumber && (
                                                         <span className="flex items-center gap-1">
                                                             <Phone className="w-3 h-3" /> {item.contactNumber}
@@ -182,23 +204,17 @@ export default function AdminFeedbackPage() {
                                         </div>
                                     </div>
                                     <div className="pl-13 md:pl-13 ml-0 md:ml-13">
-                                        <p className="text-sm text-secondary-700 bg-secondary-50 p-3 rounded-lg mb-3">
+                                        <p className="text-sm text-secondary-700 bg-secondary-50 p-3 rounded-lg mb-3 line-clamp-2">
                                             {item.message}
                                         </p>
 
                                         <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {item.status === 'New' && (
-                                                <button
-                                                    onClick={() => handleUpdateStatus(item.id!, 'Read')}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-secondary-600 hover:bg-secondary-100 rounded-md transition-colors"
-                                                    title="Mark as Read"
-                                                >
-                                                    <BookOpen className="w-3.5 h-3.5" /> Read
-                                                </button>
-                                            )}
                                             {item.status !== 'Resolved' && (
                                                 <button
-                                                    onClick={() => handleUpdateStatus(item.id!, 'Resolved')}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleUpdateStatus(item.id!, 'Resolved');
+                                                    }}
                                                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-50 rounded-md transition-colors"
                                                     title="Resolve"
                                                 >
@@ -206,7 +222,10 @@ export default function AdminFeedbackPage() {
                                                 </button>
                                             )}
                                             <button
-                                                onClick={() => handleDelete(item.id!)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(item.id!);
+                                                }}
                                                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors"
                                                 title="Delete"
                                             >
@@ -220,6 +239,76 @@ export default function AdminFeedbackPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            <Modal
+                isOpen={isViewModalOpen}
+                onClose={() => setIsViewModalOpen(false)}
+                title={selectedFeedback ? `${selectedFeedback.type} Details` : "Feedback Details"}
+                className="max-w-xl"
+            >
+                {selectedFeedback && (
+                    <div className="space-y-6">
+                        <div className="flex items-start justify-between border-b border-secondary-100 pb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full bg-secondary-100 flex items-center justify-center shrink-0 text-secondary-600 font-bold text-lg">
+                                    {selectedFeedback.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-secondary-900 text-lg">{selectedFeedback.name}</h4>
+                                    <div className="flex flex-col text-sm text-secondary-500">
+                                        {selectedFeedback.email && (
+                                            <span className="flex items-center gap-1.5">
+                                                <Mail className="w-3.5 h-3.5" /> {selectedFeedback.email}
+                                            </span>
+                                        )}
+                                        {selectedFeedback.contactNumber && (
+                                            <span className="flex items-center gap-1.5">
+                                                <Phone className="w-3.5 h-3.5" /> {selectedFeedback.contactNumber}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${getTypeColor(selectedFeedback.type)}`}>
+                                    {selectedFeedback.type}
+                                </span>
+                                <span className="flex items-center gap-1 text-xs text-secondary-400">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    {selectedFeedback.createdAt?.toDate ? new Date(selectedFeedback.createdAt.toDate()).toLocaleString() : "Unknown Date"}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="bg-secondary-50 p-4 rounded-xl border border-secondary-100">
+                            <h5 className="text-xs font-semibold text-secondary-400 uppercase mb-2">Message</h5>
+                            <p className="text-secondary-800 whitespace-pre-wrap leading-relaxed">
+                                {selectedFeedback.message}
+                            </p>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button
+                                onClick={() => setIsViewModalOpen(false)}
+                                className="px-4 py-2 border border-secondary-200 rounded-lg text-secondary-600 hover:bg-secondary-50 text-sm font-medium transition-colors"
+                            >
+                                Close
+                            </button>
+                            {selectedFeedback.status !== 'Resolved' && (
+                                <button
+                                    onClick={() => {
+                                        handleUpdateStatus(selectedFeedback.id!, 'Resolved');
+                                        setIsViewModalOpen(false);
+                                    }}
+                                    className="px-4 py-2 bg-green-600 rounded-lg text-white hover:bg-green-700 text-sm font-medium shadow-sm transition-colors flex items-center gap-2"
+                                >
+                                    <Check className="w-4 h-4" /> Mark as Resolved
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 }

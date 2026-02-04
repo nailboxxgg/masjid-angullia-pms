@@ -5,11 +5,15 @@ import { Plus, Search } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import FamilyForm from "@/components/modules/families/FamilyForm";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { getFamilies } from "@/lib/families";
+import { getFamilies, deleteFamily } from "@/lib/families";
 import { Family } from "@/lib/types";
 
 export default function AdminFamiliesPage() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
+    const [familyToDelete, setFamilyToDelete] = useState<{ id: string, name: string } | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [families, setFamilies] = useState<Family[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -24,6 +28,25 @@ export default function AdminFamiliesPage() {
     useEffect(() => {
         loadFamilies();
     }, []);
+
+    const handleDeleteClick = (family: Family) => {
+        setFamilyToDelete({ id: family.id, name: family.name });
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (familyToDelete) {
+            await deleteFamily(familyToDelete.id);
+            setIsDeleteModalOpen(false);
+            setFamilyToDelete(null);
+            loadFamilies();
+        }
+    };
+
+    const handleEdit = (family: Family) => {
+        setSelectedFamily(family);
+        setIsEditModalOpen(true);
+    };
 
     const filteredFamilies = families.filter(family =>
         (family.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -88,7 +111,7 @@ export default function AdminFamiliesPage() {
                                             <td className="px-6 py-4 text-slate-600">{family.head}</td>
                                             <td className="px-6 py-4">
                                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                                                    {family.members} Members
+                                                    {Array.isArray(family.members) ? family.members.length : family.members} Members
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-slate-600">
@@ -98,7 +121,20 @@ export default function AdminFamiliesPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <button className="font-medium text-primary-600 hover:text-primary-800 hover:underline">Edit</button>
+                                                <div className="flex items-center gap-3">
+                                                    <button
+                                                        onClick={() => handleEdit(family)}
+                                                        className="font-medium text-primary-600 hover:text-primary-800 hover:underline"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(family)}
+                                                        className="font-medium text-red-600 hover:text-red-800 hover:underline"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -122,6 +158,50 @@ export default function AdminFamiliesPage() {
                     }}
                     onCancel={() => setIsAddModalOpen(false)}
                 />
+            </Modal>
+
+            <Modal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                title="Edit Family Information"
+                className="max-w-2xl"
+            >
+                <FamilyForm
+                    initialData={selectedFamily}
+                    onSuccess={() => {
+                        setIsEditModalOpen(false);
+                        loadFamilies();
+                    }}
+                    onCancel={() => setIsEditModalOpen(false)}
+                />
+            </Modal>
+
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                title="Confirm Deletion"
+                className="max-w-md"
+            >
+                <div className="space-y-4">
+                    <p className="text-secondary-600">
+                        Are you sure you want to delete the family <span className="font-semibold text-secondary-900">"{familyToDelete?.name}"</span>?
+                        This action cannot be undone and will remove all family member records.
+                    </p>
+                    <div className="flex justify-end gap-3 pt-2">
+                        <button
+                            onClick={() => setIsDeleteModalOpen(false)}
+                            className="px-4 py-2 border border-secondary-200 rounded-lg text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900 text-sm font-medium transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={confirmDelete}
+                            className="px-4 py-2 bg-red-600 rounded-lg text-white hover:bg-red-700 text-sm font-medium shadow-sm transition-colors"
+                        >
+                            Delete Family
+                        </button>
+                    </div>
+                </div>
             </Modal>
         </div>
     );

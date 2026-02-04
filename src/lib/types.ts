@@ -37,11 +37,18 @@ export interface Event {
     capacity?: number;
 }
 
+export interface FamilyMember {
+    id: string;
+    name: string;
+    relation: string;
+    isDeceased?: boolean;
+}
+
 export interface Family {
     id: string;
     name: string;
     head: string;
-    members: number;
+    members: FamilyMember[] | number; // allow number for backward compatibility
     phone: string;
     email?: string;
     address: string;

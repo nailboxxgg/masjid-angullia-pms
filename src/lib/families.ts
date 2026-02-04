@@ -7,7 +7,10 @@ import {
     orderBy,
     limit,
     Timestamp,
-    where
+    where,
+    doc,
+    deleteDoc,
+    updateDoc
 } from "firebase/firestore";
 import { Family } from "./types";
 
@@ -57,4 +60,28 @@ export const countFamilies = async (): Promise<number> => {
     // Prototype: count client side. In prod use aggregation query
     const families = await getFamilies(1000);
     return families.length;
+};
+
+export const updateFamily = async (id: string, data: Partial<Family>) => {
+    try {
+        const docRef = doc(db, COLLECTION_NAME, id);
+        await updateDoc(docRef, {
+            ...data,
+            // updatedAt: Timestamp.now()
+        });
+        return true;
+    } catch (error) {
+        console.error("Error updating family:", error);
+        return false;
+    }
+};
+
+export const deleteFamily = async (id: string) => {
+    try {
+        await deleteDoc(doc(db, COLLECTION_NAME, id));
+        return true;
+    } catch (error) {
+        console.error("Error deleting family:", error);
+        return false;
+    }
 };
