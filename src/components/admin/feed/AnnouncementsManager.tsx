@@ -4,20 +4,30 @@ import { useState, useEffect } from "react";
 import { Announcement } from "@/lib/types";
 import { getAnnouncements, createAnnouncement, deleteAnnouncement } from "@/lib/announcements";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Megaphone, Plus, Trash2 } from "lucide-react";
+import { Megaphone, Plus, Trash2, CheckCircle, AlertCircle } from "lucide-react";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import { cn } from "@/lib/utils";
+import Modal from "@/components/ui/modal"; // Re-using existing Modal component
 
 export default function AnnouncementsManager() {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
 
+    // Success Modal State
+    const [showStatusModal, setShowStatusModal] = useState(false);
+    const [statusData, setStatusData] = useState<{ success: boolean; title: string; message: string }>({
+        success: true,
+        title: "",
+        message: ""
+    });
+
     // Form State
     const [newTitle, setNewTitle] = useState("");
     const [newContent, setNewContent] = useState("");
     const [newType, setNewType] = useState<Announcement['type']>("General");
     const [newPriority, setNewPriority] = useState<Announcement['priority']>("normal");
+    const [sendSMS, setSendSMS] = useState(false);
 
     useEffect(() => {
         loadAnnouncements();
@@ -34,25 +44,78 @@ export default function AnnouncementsManager() {
         e.preventDefault();
         setIsCreating(true);
 
+        // 1. Create Announcement in Firestore
         const success = await createAnnouncement({
             title: newTitle,
             content: newContent,
             type: newType,
             priority: newPriority,
-            date: new Date().toISOString() // Or use date picker
+            date: new Date().toISOString()
         });
 
         if (success) {
+            // 2. Broadcast SMS if enabled
+            if (sendSMS) {
+                try {
+                    // Shorten message for SMS to save cost/segments if needed
+                    const smsMessage = `[Masjid Update] ${newTitle}: ${newContent.substring(0, 100)}${newContent.length > 100 ? '...' : ''}`;
+
+                    const res = await fetch('/api/sms/broadcast', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: smsMessage })
+                    });
+
+                    const data = await res.json();
+                    if (data.success) {
+                        setStatusData({
+                            success: true,
+                            title: "Announcement Posted & Broadcasted!",
+                            message: `Successfully sent SMS to ${data.sent} subscribers.`
+                        });
+                    } else {
+                        setStatusData({
+                            success: true, // Announcement still successful, just SMS failed
+                            title: "Posted with SMS Error",
+                            message: `Announcement created, but SMS failed: ${data.message || 'Unknown error'}`
+                        });
+                    }
+                } catch (err) {
+                    console.error("SMS Broadcast Error:", err);
+                    setStatusData({
+                        success: true,
+                        title: "Posted with SMS Error",
+                        message: "Announcement created, but SMS broadcast failed to send."
+                    });
+                }
+            } else {
+                // Success without SMS
+                setStatusData({
+                    success: true,
+                    title: "Announcement Posted",
+                    message: "Your announcement has been successfully published."
+                });
+            }
+
+            setShowStatusModal(true);
+
+            // Reload list
+            await loadAnnouncements();
+
             // Reset form
             setNewTitle("");
             setNewContent("");
             setNewType("General");
             setNewPriority("normal");
+            setSendSMS(false);
 
-            // Reload list
-            await loadAnnouncements();
         } else {
-            alert("Failed to create announcement.");
+            setStatusData({
+                success: false,
+                title: "Creation Failed",
+                message: "Failed to create announcement. Please try again."
+            });
+            setShowStatusModal(true);
         }
         setIsCreating(false);
     };
@@ -135,12 +198,26 @@ export default function AnnouncementsManager() {
                                         placeholder="Write your announcement details here..."
                                     />
                                 </div>
+                                <div className="flex items-center gap-2 p-3 bg-secondary-50 rounded-lg border border-secondary-200">
+                                    <input
+                                        type="checkbox"
+                                        id="sms-broadcast"
+                                        className="w-4 h-4 text-primary-600 rounded border-secondary-300 focus:ring-primary-500"
+                                        checked={sendSMS}
+                                        onChange={(e) => setSendSMS(e.target.checked)}
+                                    />
+                                    <label htmlFor="sms-broadcast" className="text-sm font-medium text-secondary-700 select-none cursor-pointer flex items-center gap-2">
+                                        <Megaphone className="w-4 h-4 text-secondary-500" />
+                                        Broadcast via SMS
+                                    </label>
+                                </div>
+
                                 <button
                                     disabled={isCreating}
                                     type="submit"
                                     className="w-full flex justify-center items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white py-2 rounded-md font-medium transition-colors disabled:opacity-70"
                                 >
-                                    {isCreating ? 'Posting...' : <><Plus className="w-4 h-4" /> Post Announcement</>}
+                                    {isCreating ? 'Posting...' : <><Plus className="w-4 h-4" /> Post {sendSMS ? '& Broadcast' : 'Announcement'}</>}
                                 </button>
                             </form>
                         </CardContent>
@@ -192,6 +269,34 @@ export default function AnnouncementsManager() {
                     )}
                 </div>
             </div>
+            {/* Status Modal */}
+            <Modal
+                isOpen={showStatusModal}
+                onClose={() => setShowStatusModal(false)}
+                title={statusData.title}
+            >
+                <div className="flex flex-col items-center justify-center text-center py-4">
+                    {statusData.success ? (
+                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
+                            <CheckCircle className="w-8 h-8" />
+                        </div>
+                    ) : (
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                            <AlertCircle className="w-8 h-8" />
+                        </div>
+                    )}
+
+                    <h3 className="text-xl font-bold text-secondary-900 mb-2">{statusData.title}</h3>
+                    <p className="text-secondary-600 mb-6">{statusData.message}</p>
+
+                    <button
+                        onClick={() => setShowStatusModal(false)}
+                        className="bg-primary-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors w-full"
+                    >
+                        Okay, Got it
+                    </button>
+                </div>
+            </Modal>
         </div>
     );
 }

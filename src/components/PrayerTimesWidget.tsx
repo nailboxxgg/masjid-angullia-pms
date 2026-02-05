@@ -3,7 +3,8 @@
     "use client";
 
 import { useEffect, useState } from "react";
-import { getPrayerTimes, PrayerData } from "@/lib/prayer-times";
+import { PrayerData } from "@/lib/prayer-times";
+import { fetchPrayerTimes } from "@/app/actions/prayer-times";
 import { Loader2, Moon, Sun } from "lucide-react";
 
 export default function PrayerTimesWidget() {
@@ -12,7 +13,7 @@ export default function PrayerTimesWidget() {
 
     useEffect(() => {
         async function fetchTimes() {
-            const times = await getPrayerTimes();
+            const times = await fetchPrayerTimes();
             setData(times);
             setLoading(false);
         }

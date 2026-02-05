@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Copy, AlertCircle, Smartphone } from "lucide-react";
-import { generateQRPh, checkPaymentStatus, QRPhTransaction } from "@/lib/instapay";
+import { QRPhTransaction } from "@/lib/instapay";
+import { generatePaymentQR, verifyPaymentStatus } from "@/app/actions/donations";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { addDonation } from "@/lib/donations";
@@ -29,7 +30,7 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
 
         setStep("loading");
         try {
-            const result = await generateQRPh(Number(amount), `Donation to ${fundName}`);
+            const result = await generatePaymentQR(Number(amount), `Donation to ${fundName}`);
             setTransaction(result);
             setStep("qr");
         } catch (error) {
@@ -46,7 +47,7 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         try {
-            const status = await checkPaymentStatus(transaction.referenceNumber);
+            const status = await verifyPaymentStatus(transaction.referenceNumber);
 
             if (status === "completed") {
                 // Map fund name to Donation Type

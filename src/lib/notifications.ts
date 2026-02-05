@@ -9,14 +9,25 @@ export interface Subscriber {
 }
 
 export const subscribeToNotifications = async (phoneNumber: string): Promise<{ success: boolean; message: string }> => {
-    // Basic validation
-    if (!phoneNumber.startsWith("09") || phoneNumber.length !== 11) {
-        return { success: false, message: "Please enter a valid PH mobile number (09xxxxxxxxx)" };
+    // Validation: Support +639xxxxxxxxx (13 chars) or 09xxxxxxxxx (11 chars)
+    const phRegex = /^(09|\+639)\d{9}$/;
+
+    if (!phRegex.test(phoneNumber)) {
+        return { success: false, message: "Please enter a valid PH mobile number (e.g., 09xx... or +639xx...)" };
     }
 
     try {
-        // Check for duplicates
-        const q = query(collection(db, "subscribers"), where("phoneNumber", "==", phoneNumber));
+        // Check for duplicates (Check both 09... and +63... formats)
+        // Normalize: If we have +639123456789, we should also check if 09123456789 exists
+        let checkFormats = [phoneNumber];
+
+        if (phoneNumber.startsWith("+63")) {
+            checkFormats.push("0" + phoneNumber.substring(3));
+        } else if (phoneNumber.startsWith("0")) {
+            checkFormats.push("+63" + phoneNumber.substring(1));
+        }
+
+        const q = query(collection(db, "subscribers"), where("phoneNumber", "in", checkFormats));
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {

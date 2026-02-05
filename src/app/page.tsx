@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { ArrowRight, MapPin, ShieldCheck, Heart, Calendar, Clock, BookOpen, Lock } from "lucide-react";
+import { ArrowRight, MapPin, ShieldCheck, Heart, Calendar, Clock, BookOpen, Lock, Bell, Smartphone } from "lucide-react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { getAnnouncements } from "@/lib/announcements";
 import { Announcement } from "@/lib/types";
@@ -17,6 +17,7 @@ import { getEvents } from "@/lib/events";
 import { Event, Donation } from "@/lib/types";
 import { getDonations } from "@/lib/donations";
 import EventRegistrationModal from "@/components/events/EventRegistrationModal";
+import SubscriptionModal from "@/components/ui/SubscriptionModal";
 
 const Modal = dynamic(() => import("@/components/ui/modal"), { ssr: false });
 
@@ -30,6 +31,7 @@ export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+  const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
 
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
 
@@ -91,7 +93,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col animate-fade-in">
       {/* ... Hero Section remains ... */}
-      <section className="relative w-full h-[500px] flex items-center justify-center text-center text-white">
+      <section className="relative w-full h-[800px] flex items-center justify-center text-center text-white">
         <div className="absolute inset-0 bg-black/50 z-10" />
         <div className="absolute inset-0">
           <Image
@@ -106,7 +108,7 @@ export default function Home() {
 
         <div className="relative z-20 max-w-4xl px-4 flex flex-col items-center gap-6">
           <AnimationWrapper animation="reveal" duration={1} withScroll={false}>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight font-heading drop-shadow-lg">
+            <h1 className="text-4xl md:text-7xl font-bold tracking-tight font-heading drop-shadow-lg">
               Masjid Angullia
             </h1>
           </AnimationWrapper>
@@ -124,16 +126,24 @@ export default function Home() {
       </section>
 
       {/* Community Hub & Donations Section */}
-      <section className="py-16 bg-secondary-50 relative overflow-hidden">
+      <section className="py-10 md:py-16 bg-secondary-50 relative overflow-hidden">
         <AnimationWrapper withScroll animation="reveal" duration={0.8} className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="mb-10 flex items-center justify-between">
+          <div className="mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
             <div>
               <h2 className="text-3xl font-bold text-secondary-900 font-heading">Community Hub</h2>
               <p className="text-secondary-600 mt-1">Updates, events, and contributions from our jama&apos;ah.</p>
             </div>
-            <Link href="/updates" className="text-primary-600 font-medium hover:text-primary-700 flex items-center gap-1 transition-colors">
-              View All Updates <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsSubscriptionOpen(true)}
+                className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-secondary-200 text-secondary-700 font-medium rounded-lg hover:bg-secondary-50 transition-colors"
+              >
+                <Bell className="w-4 h-4" /> Get SMS Alerts
+              </button>
+              <Link href="/updates" className="text-primary-600 font-medium hover:text-primary-700 flex items-center gap-1 transition-colors px-4 py-2">
+                View All Updates <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -144,7 +154,7 @@ export default function Home() {
                 <>
                   {/* Featured / Hero Card */}
                   {featuredPost && (
-                    <div className="relative overflow-hidden rounded-3xl bg-white shadow-sm border border-secondary-100 group hover:shadow-md transition-all h-[400px]">
+                    <div className="relative overflow-hidden rounded-3xl bg-white shadow-sm border border-secondary-100 group hover:shadow-md transition-all h-auto min-h-[350px] md:h-[400px]">
                       <Image
                         src={featuredPost.imageUrl || "/images/mosque2.png"}
                         alt="Featured"
@@ -278,10 +288,30 @@ export default function Home() {
         </AnimationWrapper>
       </section>
 
+      {/* SMS Subscription Section */}
+      <section className="py-12 bg-primary-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-10 mix-blend-overlay"></div>
+        <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="text-center md:text-left max-w-2xl">
+            <h2 className="text-3xl font-bold font-heading mb-3">Stay Connected with Masjid Update</h2>
+            <p className="text-primary-100 text-lg">
+              Get instant SMS alerts for prayer times, urgent announcements, and community events directly to your phone.
+            </p>
+          </div>
+          <button
+            onClick={() => setIsSubscriptionOpen(true)}
+            className="bg-white text-primary-900 px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-primary-50 hover:scale-105 transition-all flex items-center gap-2"
+          >
+            <Smartphone className="w-6 h-6" />
+            Subscribe for Free
+          </button>
+        </div>
+      </section>
+
 
 
       {/* About Section */}
-      <section className="py-20 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center border-t border-secondary-200">
+      <section className="py-12 md:py-20 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center border-t border-secondary-200">
         <AnimationWrapper withScroll animation="reveal" delay={0.2} duration={0.9}>
           <div className="space-y-6">
             <h2 className="text-4xl font-bold font-heading">About Our Mosque</h2>
@@ -323,6 +353,11 @@ export default function Home() {
         isOpen={isRegistrationOpen}
         onClose={() => setIsRegistrationOpen(false)}
         event={selectedEvent}
+      />
+
+      <SubscriptionModal
+        isOpen={isSubscriptionOpen}
+        onClose={() => setIsSubscriptionOpen(false)}
       />
 
       <Modal

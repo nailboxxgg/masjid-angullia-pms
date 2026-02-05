@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { getDonationStats, DonationStats } from "@/lib/donations";
 import { getFeedbacksByType, FeedbackData } from "@/lib/feedback";
 import { getEvents } from "@/lib/events";
+import { countFamilies } from "@/lib/families";
 import { Event } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, FileText, Calendar, DollarSign, TrendingUp, AlertCircle } from "lucide-react";
@@ -19,19 +20,22 @@ export default function AdminDashboard() {
     const [pendingRequests, setPendingRequests] = useState<FeedbackData[]>([]);
     const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
     const [recentRequests, setRecentRequests] = useState<FeedbackData[]>([]);
+    const [totalFamilies, setTotalFamilies] = useState(0);
 
     useEffect(() => {
         const loadDashboardData = async () => {
-            const [donationStats, requests, events] = await Promise.all([
+            const [donationStats, requests, events, familyCount] = await Promise.all([
                 getDonationStats(),
                 getFeedbacksByType('Request'),
-                getEvents(5)
+                getEvents(5),
+                countFamilies()
             ]);
 
             setStats(donationStats);
-            setPendingRequests(requests.filter(r => r.status === 'New'));
+            setPendingRequests(requests.filter((r: FeedbackData) => r.status === 'New'));
             setRecentRequests(requests.slice(0, 3));
             setUpcomingEvents(events);
+            setTotalFamilies(familyCount);
         };
 
         loadDashboardData();
@@ -62,8 +66,10 @@ export default function AdminDashboard() {
                         <Users className="h-4 w-4 text-primary-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-secondary-900">0</div>
-                        <p className="text-xs text-secondary-500">Backend not connected</p>
+                        <div className="text-2xl font-bold text-secondary-900">{totalFamilies}</div>
+                        <p className="text-xs text-green-600 flex items-center">
+                            <TrendingUp className="w-3 h-3 mr-1" /> Registered in system
+                        </p>
                     </CardContent>
                 </Card>
 

@@ -14,7 +14,7 @@ export default function Footer({ onAdminClick }: FooterProps) {
 
     return (
         <>
-            <footer className="py-12 bg-secondary-900 text-secondary-400 text-sm border-t border-secondary-800">
+            <footer className="py-8 md:py-12 bg-secondary-900 text-secondary-400 text-sm border-t border-secondary-800">
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-center md:text-left">
                     <div>
                         <h4 className="text-white font-bold mb-4">Masjid Angullia</h4>
