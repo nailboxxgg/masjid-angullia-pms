@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Filter, Clock, Check, X, Trash2, RotateCcw } from "lucide-react";
+import { Search, Filter, Clock, Check, X, Trash2, RotateCcw, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getFeedbacksByType, FeedbackData, updateFeedbackStatus, deleteFeedback } from "@/lib/feedback";
 import Modal from "@/components/ui/modal";
@@ -16,6 +16,9 @@ export default function AdminRequestsPage() {
 
     const [statusFilter, setStatusFilter] = useState('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
 
     const loadData = async () => {
         setIsLoading(true);
@@ -38,13 +41,20 @@ export default function AdminRequestsPage() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Are you sure you want to delete this request?")) {
-            const success = await deleteFeedback(id);
-            if (success) {
-                loadData();
-                setIsModalOpen(false);
-            }
+    const handleDelete = (id: string) => {
+        setRequestToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!requestToDelete) return;
+
+        const success = await deleteFeedback(requestToDelete);
+        if (success) {
+            loadData();
+            setIsModalOpen(false);
+            setIsDeleteModalOpen(false);
+            setRequestToDelete(null);
         }
     };
 
@@ -238,6 +248,40 @@ export default function AdminRequestsPage() {
                         </div>
                     </div>
                 )}
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                title="Delete Request"
+                className="max-w-sm"
+            >
+                <div className="flex flex-col items-center justify-center text-center py-4">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                        <AlertCircle className="w-8 h-8" />
+                    </div>
+
+                    <h3 className="text-xl font-bold text-secondary-900 mb-2">Are you sure?</h3>
+                    <p className="text-secondary-600 mb-6">
+                        This action cannot be undone. This request will be permanently removed from the system.
+                    </p>
+
+                    <div className="flex gap-3 w-full">
+                        <button
+                            onClick={() => setIsDeleteModalOpen(false)}
+                            className="flex-1 px-4 py-2 border border-secondary-200 text-secondary-700 font-medium rounded-lg hover:bg-secondary-50 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={confirmDelete}
+                            className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
             </Modal>
         </div>
     );

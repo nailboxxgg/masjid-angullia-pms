@@ -107,6 +107,64 @@ export class InfobipProvider implements SMSProvider {
     }
 }
 
+export class TwilioProvider implements SMSProvider {
+    name = "Twilio";
+    private accountSid: string;
+    private authToken: string;
+    private messagingServiceSid?: string;
+    private fromNumber?: string;
+
+    constructor(accountSid: string, authToken: string, options: { messagingServiceSid?: string, fromNumber?: string }) {
+        this.accountSid = accountSid;
+        this.authToken = authToken;
+        this.messagingServiceSid = options.messagingServiceSid;
+        this.fromNumber = options.fromNumber;
+    }
+
+    async send(to: string, message: string): Promise<boolean> {
+        try {
+            const auth = Buffer.from(`${this.accountSid}:${this.authToken}`).toString('base64');
+            const url = `https://api.twilio.com/2010-04-01/Accounts/${this.accountSid}/Messages.json`;
+
+            const body: Record<string, string> = {
+                To: to,
+                Body: message,
+            };
+
+            if (this.messagingServiceSid) {
+                body.MessagingServiceSid = this.messagingServiceSid;
+            } else if (this.fromNumber) {
+                body.From = this.fromNumber;
+            } else {
+                console.error("Twilio Error: Neither MessagingServiceSid nor From number provided");
+                return false;
+            }
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Basic ${auth}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams(body),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(`Twilio API Error (${response.status}):`, data);
+                return false;
+            }
+
+            console.log("Twilio Response:", data.sid);
+            return true;
+        } catch (error) {
+            console.error("Twilio Send Error:", error);
+            return false;
+        }
+    }
+}
+
 export class MockProvider implements SMSProvider {
     name = "Mock";
 
@@ -141,6 +199,20 @@ export const getSMSProvider = (): SMSProvider => {
 
         const senderName = process.env.INFOBIP_SENDER_NAME || "InfoSMS";
         return new InfobipProvider(apiKey, baseUrl, senderName);
+    }
+
+    if (providerName.toLowerCase() === "twilio") {
+        const accountSid = process.env.TWILIO_ACCOUNT_SID;
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
+        const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+
+        if (!accountSid || !authToken || (!messagingServiceSid && !fromNumber)) {
+            console.warn("TWILIO credentials missing (Account SID, Auth Token, or Messaging Service SID/Phone Number), falling back to Mock");
+            return new MockProvider();
+        }
+
+        return new TwilioProvider(accountSid, authToken, { messagingServiceSid, fromNumber });
     }
 
     return new MockProvider();

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { getFeedbacks, FeedbackData, updateFeedbackStatus, deleteFeedback } from "@/lib/feedback";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Modal from "@/components/ui/modal";
-import { MessageSquare, Mail, Phone, Clock, Search, Filter, Trash2, Check, BookOpen } from "lucide-react";
+import { MessageSquare, Mail, Phone, Clock, Search, Filter, Trash2, Check, BookOpen, AlertCircle } from "lucide-react";
 
 export default function AdminFeedbackPage() {
     const [feedbacks, setFeedbacks] = useState<FeedbackData[]>([]);
@@ -16,6 +16,8 @@ export default function AdminFeedbackPage() {
     const [typeFilter, setTypeFilter] = useState('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [feedbackToDelete, setFeedbackToDelete] = useState<string | null>(null);
 
     const loadData = async () => {
         setIsLoading(true);
@@ -48,12 +50,19 @@ export default function AdminFeedbackPage() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Are you sure you want to delete this feedback?")) {
-            const success = await deleteFeedback(id);
-            if (success) {
-                loadData();
-            }
+    const handleDelete = (id: string) => {
+        setFeedbackToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!feedbackToDelete) return;
+
+        const success = await deleteFeedback(feedbackToDelete);
+        if (success) {
+            loadData();
+            setIsDeleteModalOpen(false);
+            setFeedbackToDelete(null);
         }
     };
 
@@ -308,6 +317,40 @@ export default function AdminFeedbackPage() {
                         </div>
                     </div>
                 )}
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                title="Delete Feedback"
+                className="max-w-sm"
+            >
+                <div className="flex flex-col items-center justify-center text-center py-4">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                        <AlertCircle className="w-8 h-8" />
+                    </div>
+
+                    <h3 className="text-xl font-bold text-secondary-900 mb-2">Are you sure?</h3>
+                    <p className="text-secondary-600 mb-6">
+                        This action cannot be undone. This feedback entry will be permanently removed from the system.
+                    </p>
+
+                    <div className="flex gap-3 w-full">
+                        <button
+                            onClick={() => setIsDeleteModalOpen(false)}
+                            className="flex-1 px-4 py-2 border border-secondary-200 text-secondary-700 font-medium rounded-lg hover:bg-secondary-50 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={confirmDelete}
+                            className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
             </Modal>
         </div>
     );

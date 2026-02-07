@@ -1,6 +1,4 @@
-
-+
-    "use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { PrayerData } from "@/lib/prayer-times";
@@ -35,16 +33,25 @@ export default function PrayerTimesWidget() {
     ];
 
     const formatTo12Hour = (time24: string) => {
-        const [time, modifier] = time24.split(' ');
-        if (modifier && (modifier === 'AM' || modifier === 'PM')) return time24; // Already 12hr
+        if (!time24) return "--:--";
 
-        const [hours, minutes] = time.split(':');
-        let h = parseInt(hours, 10);
-        const m = minutes;
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        h = h % 12;
-        h = h ? h : 12; // the hour '0' should be '12'
-        return `${h}:${m} ${ampm}`;
+        try {
+            const [time, modifier] = time24.split(' ');
+            if (modifier && (modifier === 'AM' || modifier === 'PM')) return time24;
+
+            const [hours, minutes] = time.split(':');
+            if (!hours || !minutes) return time24;
+
+            let h = parseInt(hours, 10);
+            const m = minutes;
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            h = h ? h : 12;
+            return `${h}:${m} ${ampm}`;
+        } catch (e) {
+            console.error("Error formatting time:", time24, e);
+            return time24;
+        }
     };
 
     return (
