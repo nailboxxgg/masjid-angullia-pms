@@ -14,7 +14,18 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase (singleton pattern)
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+let app;
+if (typeof window !== "undefined" || firebaseConfig.apiKey) {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+} else {
+    // During build or if missing keys, provide a dummy/null app or handle gracefully
+    console.warn("Firebase API Key is missing. Skipping initialization (likely during build).");
+    app = {
+        options: {},
+        name: "[DEFAULT]",
+        automaticDataCollectionEnabled: false
+    } as any;
+}
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);
