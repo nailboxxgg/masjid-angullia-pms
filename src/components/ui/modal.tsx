@@ -45,11 +45,11 @@ export default function Modal({ isOpen, onClose, title, children, className }: M
             {/* Modal Content */}
             <div
                 className={cn(
-                    "relative w-full max-w-lg transform rounded-xl bg-white p-6 shadow-2xl transition-all animate-slide-up border border-secondary-100/50 dark:bg-secondary-900 dark:border-secondary-800 ring-1 ring-black/5",
+                    "relative w-full max-w-lg transform rounded-xl bg-white p-4 sm:p-6 shadow-2xl transition-all animate-slide-up border border-secondary-100/50 dark:bg-secondary-900 dark:border-secondary-800 ring-1 ring-black/5",
                     className
                 )}
             >
-                <div className="flex items-center justify-between mb-5 pb-0">
+                <div className="flex items-center justify-between mb-3 sm:mb-5 pb-0">
                     {title && <h3 className="text-lg font-heading font-semibold text-secondary-900 dark:text-secondary-100">{title}</h3>}
                     <button
                         onClick={onClose}

@@ -56,10 +56,10 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
             className="max-w-sm"
         >
             <div className="text-center">
-                <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4 text-primary-600">
-                    <Smartphone className="w-6 h-6" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 text-primary-600">
+                    <Smartphone className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <p className="text-secondary-600 mb-6 pb-1 text-sm leading-relaxed">
+                <p className="text-secondary-600 mb-4 sm:mb-6 text-sm leading-relaxed max-w-[280px] mx-auto">
                     Receive urgent announcements, prayer time changes, and event reminders directly to your mobile phone.
                 </p>
 
@@ -96,8 +96,8 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
                     </form>
                 )}
 
-                <p className="text-xs text-secondary-400 mt-6 leading-relaxed">
-                    We simulate SMS for prototype verification.<br />No real charges apply.
+                <p className="text-xs text-secondary-400 mt-4 sm:mt-6 leading-relaxed">
+                    We simulate SMS for prototype verification.<br className="hidden sm:block" /> No real charges apply.
                 </p>
             </div>
         </Modal>
