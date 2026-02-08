@@ -57,25 +57,25 @@ export default function AdminFamiliesPage() {
         <div className="space-y-6 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 font-heading">Family Registry</h1>
-                    <p className="text-sm text-slate-500">Manage registered families and their members.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-secondary-900 dark:text-secondary-100 font-heading">Family Registry</h1>
+                    <p className="text-sm text-secondary-500 dark:text-secondary-400">Manage registered families and their members.</p>
                 </div>
                 <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 h-10 px-4 shadow-sm transition-colors"
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary-600 dark:bg-primary-700 text-white hover:bg-primary-700 dark:hover:bg-primary-800 h-10 px-4 shadow-sm transition-colors"
                 >
                     <Plus className="mr-2 h-4 w-4" /> Register Family
                 </button>
             </div>
 
-            <Card className="shadow-sm">
-                <CardHeader className="pb-3 border-b border-slate-100">
+            <Card className="shadow-sm dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
+                <CardHeader className="pb-3 border-b border-secondary-100 dark:border-secondary-800">
                     <div className="relative">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-secondary-400 dark:text-secondary-500" />
                         <input
                             type="text"
                             placeholder="Search families..."
-                            className="w-full sm:w-80 pl-9 pr-4 py-2 rounded-md border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-800"
+                            className="w-full sm:w-80 pl-9 pr-4 py-2 rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-800 dark:text-secondary-100 transition-colors"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -84,16 +84,16 @@ export default function AdminFamiliesPage() {
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-slate-50 text-slate-600 font-medium border-b border-slate-200">
+                            <thead className="bg-secondary-50 dark:bg-secondary-800/50 text-secondary-600 dark:text-secondary-400 font-medium border-b border-secondary-200 dark:border-secondary-800 transition-colors">
                                 <tr>
-                                    <th className="px-6 py-3">Family Name</th>
-                                    <th className="px-6 py-3">Head of Family</th>
-                                    <th className="px-6 py-3">Members</th>
-                                    <th className="px-6 py-3">Contact</th>
-                                    <th className="px-6 py-3">Actions</th>
+                                    <th className="px-6 py-3 text-secondary-900 dark:text-secondary-100">Family Name</th>
+                                    <th className="px-6 py-3 text-secondary-900 dark:text-secondary-100">Head of Family</th>
+                                    <th className="px-6 py-3 text-secondary-900 dark:text-secondary-100">Members</th>
+                                    <th className="px-6 py-3 text-secondary-900 dark:text-secondary-100">Contact</th>
+                                    <th className="px-6 py-3 text-secondary-900 dark:text-secondary-100">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-secondary-100 dark:divide-secondary-800 transition-colors">
                                 {isLoading ? (
                                     <tr>
                                         <td colSpan={5} className="px-6 py-8 text-center text-slate-500">Loading families...</td>
@@ -106,31 +106,31 @@ export default function AdminFamiliesPage() {
                                     </tr>
                                 ) : (
                                     filteredFamilies.map((family) => (
-                                        <tr key={family.id} className="hover:bg-slate-50/50 transition-colors">
-                                            <td className="px-6 py-4 font-medium text-slate-900">{family.name}</td>
-                                            <td className="px-6 py-4 text-slate-600">{family.head}</td>
+                                        <tr key={family.id} className="hover:bg-secondary-50/50 dark:hover:bg-secondary-800/30 transition-colors">
+                                            <td className="px-6 py-4 font-medium text-secondary-900 dark:text-secondary-100">{family.name}</td>
+                                            <td className="px-6 py-4 text-secondary-600 dark:text-secondary-400">{family.head}</td>
                                             <td className="px-6 py-4">
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800 transition-colors">
                                                     {Array.isArray(family.members) ? family.members.length : family.members} Members
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-600">
+                                            <td className="px-6 py-4 text-secondary-600 dark:text-secondary-400 transition-colors">
                                                 <div className="flex flex-col text-xs">
-                                                    <span>{family.phone}</span>
-                                                    <span className="text-slate-400">{family.address}</span>
+                                                    <span className="text-secondary-800 dark:text-secondary-200">{family.phone}</span>
+                                                    <span className="text-secondary-400 dark:text-secondary-500">{family.address}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <button
                                                         onClick={() => handleEdit(family)}
-                                                        className="font-medium text-primary-600 hover:text-primary-800 hover:underline"
+                                                        className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 hover:underline transition-colors"
                                                     >
                                                         Edit
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteClick(family)}
-                                                        className="font-medium text-red-600 hover:text-red-800 hover:underline"
+                                                        className="font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:underline transition-colors"
                                                     >
                                                         Delete
                                                     </button>
@@ -182,21 +182,21 @@ export default function AdminFamiliesPage() {
                 title="Confirm Deletion"
                 className="max-w-md"
             >
-                <div className="space-y-4">
-                    <p className="text-secondary-600">
-                        Are you sure you want to delete the family <span className="font-semibold text-secondary-900">"{familyToDelete?.name}"</span>?
+                <div className="space-y-4 py-2 bg-white dark:bg-secondary-900 transition-colors">
+                    <p className="text-secondary-600 dark:text-secondary-400">
+                        Are you sure you want to delete the family <span className="font-semibold text-secondary-900 dark:text-secondary-100">"{familyToDelete?.name}"</span>?
                         This action cannot be undone and will remove all family member records.
                     </p>
                     <div className="flex justify-end gap-3 pt-2">
                         <button
                             onClick={() => setIsDeleteModalOpen(false)}
-                            className="px-4 py-2 border border-secondary-200 rounded-lg text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900 text-sm font-medium transition-colors"
+                            className="px-4 py-2 border border-secondary-200 dark:border-secondary-700 rounded-lg text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800 hover:text-secondary-900 dark:hover:text-secondary-100 text-sm font-medium transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={confirmDelete}
-                            className="px-4 py-2 bg-red-600 rounded-lg text-white hover:bg-red-700 text-sm font-medium shadow-sm transition-colors"
+                            className="px-4 py-2 bg-red-600 dark:bg-red-700 rounded-lg text-white hover:bg-red-700 dark:hover:bg-red-800 text-sm font-medium shadow-sm transition-colors"
                         >
                             Delete Family
                         </button>

@@ -31,14 +31,12 @@ export default function Footer({ onAdminClick }: FooterProps) {
                         </div>
                     </div>
                     <div className="flex flex-col items-center md:items-start">
-                        <h4 className="text-white font-bold mb-4">Stay Connected</h4>
-                        <button
-                            onClick={() => setIsSubModalOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-all shadow-lg hover:shadow-primary-600/20"
-                        >
-                            <Bell className="w-4 h-4" />
-                            <span>Get SMS Updates</span>
-                        </button>
+                        <h4 className="text-white font-bold mb-4">Contact Info</h4>
+                        <div className="flex flex-col gap-3 text-secondary-500 text-xs">
+                            <p>Brgy. Pogo, Alaminos City, Pangasinan</p>
+                            <p>masjid_angullia@email.com</p>
+                            <p>+63 123 456 7890</p>
+                        </div>
                     </div>
                 </div>
 

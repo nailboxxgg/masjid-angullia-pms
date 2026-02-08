@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { ArrowRight, MapPin, ShieldCheck, Heart, Calendar, Clock, BookOpen, Lock, Bell, Smartphone } from "lucide-react";
+import { ArrowRight, MapPin, ShieldCheck, Heart, Calendar, Clock, BookOpen, Lock, Bell, Smartphone, Eye, EyeOff, ThumbsUp, MessageCircle, Share2, MoreHorizontal, ZoomIn } from "lucide-react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { getAnnouncements } from "@/lib/announcements";
 import { Announcement } from "@/lib/types";
@@ -18,12 +18,17 @@ import { Event, Donation } from "@/lib/types";
 import { getDonations } from "@/lib/donations";
 import EventRegistrationModal from "@/components/events/EventRegistrationModal";
 import SubscriptionModal from "@/components/ui/SubscriptionModal";
+import { cn, formatTimeAgo } from "@/lib/utils";
+import { motion } from "framer-motion";
+import SocialPost from "@/components/feed/SocialPost";
+import ImageModal from "@/components/ui/ImageModal";
 
 const Modal = dynamic(() => import("@/components/ui/modal"), { ssr: false });
 
 export default function Home() {
   const router = useRouter();
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
 
@@ -34,6 +39,7 @@ export default function Home() {
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
 
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
+  const [selectedFullImage, setSelectedFullImage] = useState<{ src: string, alt: string } | null>(null);
 
   useEffect(() => {
     const fetchUpdates = async () => {
@@ -49,20 +55,13 @@ export default function Home() {
     fetchUpdates();
   }, []);
 
-  const formatTimeAgo = (timestamp: number) => {
-    const seconds = Math.floor((Date.now() - timestamp) / 1000);
-    if (seconds < 60) return 'Just now';
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `${days}d ago`;
-    return new Date(timestamp).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
-  };
 
-  const featuredPost = announcements.find(a => a.type === 'Urgent') || announcements[0];
-  const otherPosts = announcements.filter(a => a.id !== featuredPost?.id).slice(0, 2);
+  // Filter out placeholder/test content
+  const filteredAnnouncements = announcements.filter(a =>
+    !a.title.toLowerCase().includes('test') &&
+    !a.content.toLowerCase().includes('test')
+  );
+
 
   const handleRegister = (event: Event) => {
     setSelectedEvent(event);
@@ -100,7 +99,7 @@ export default function Home() {
             src="/images/mosque.png"
             alt="Masjid Angullia"
             fill
-            sizes="100vw"
+            sizes="125vw"
             className="object-cover"
             priority
           />
@@ -126,21 +125,21 @@ export default function Home() {
       </section>
 
       {/* Community Hub & Donations Section */}
-      <section className="py-10 md:py-16 bg-secondary-50 relative overflow-hidden">
+      <section className="py-10 md:py-16 bg-secondary-50 dark:bg-secondary-950 relative overflow-hidden transition-colors duration-300">
         <AnimationWrapper withScroll animation="reveal" duration={0.8} className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
             <div>
-              <h2 className="text-3xl font-bold text-secondary-900 font-heading">Community Hub</h2>
-              <p className="text-secondary-600 mt-1">Updates, events, and contributions from our jama&apos;ah.</p>
+              <h2 className="text-3xl font-bold text-secondary-900 dark:text-secondary-50 font-heading">Community Hub</h2>
+              <p className="text-secondary-600 dark:text-secondary-400 mt-1">Updates, events, and contributions from our jama&apos;ah.</p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setIsSubscriptionOpen(true)}
-                className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-secondary-200 text-secondary-700 font-medium rounded-lg hover:bg-secondary-50 transition-colors"
+                className="hidden md:flex items-center gap-2 px-4 py-2 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 font-medium rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-colors"
               >
                 <Bell className="w-4 h-4" /> Get SMS Alerts
               </button>
-              <Link href="/updates" className="text-primary-600 font-medium hover:text-primary-700 flex items-center gap-1 transition-colors px-4 py-2">
+              <Link href="/updates" className="text-primary-600 dark:text-primary-400 font-medium hover:text-primary-700 dark:hover:text-primary-300 flex items-center gap-1 transition-colors px-4 py-2">
                 View All Updates <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -150,52 +149,12 @@ export default function Home() {
             {/* Left Column: Announcements & Events (Span 2) */}
             <div className="lg:col-span-2 space-y-8">
 
-              {announcements.length > 0 ? (
-                <>
-                  {/* Featured / Hero Card */}
-                  {featuredPost && (
-                    <div className="relative overflow-hidden rounded-3xl bg-white shadow-sm border border-secondary-100 group hover:shadow-md transition-all h-auto min-h-[350px] md:h-[400px]">
-                      <Image
-                        src={featuredPost.imageUrl || "/images/mosque2.png"}
-                        alt="Featured"
-                        fill
-                        sizes="(max-width: 1024px) 100vw, 66vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 text-white">
-                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 w-fit ${featuredPost.type === 'Urgent' ? 'bg-red-600' : 'bg-primary-600'
-                          }`}>
-                          {featuredPost.type === 'Event' ? 'Upcoming Event' : featuredPost.type}
-                        </span>
-                        <h3 className="text-3xl font-bold font-heading mb-2">{featuredPost.title}</h3>
-                        <p className="text-secondary-200 line-clamp-2 mb-4">
-                          {featuredPost.content}
-                        </p>
-                        <div className="flex items-center gap-4 text-sm text-secondary-300">
-                          <div className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {new Date(featuredPost.date).toLocaleDateString()}</div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Sub-grid for smaller updates */}
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {otherPosts.map((post) => (
-                      <div key={post.id} className="bg-white p-6 rounded-3xl shadow-sm border border-secondary-100 hover:shadow-md transition-all h-full">
-                        <div className="flex items-center justify-between mb-4">
-                          <span className={`w-10 h-10 rounded-full flex items-center justify-center ${post.type === 'Urgent' ? 'bg-red-50 text-red-600' : 'bg-secondary-50 text-secondary-600'
-                            }`}>
-                            <ShieldCheck className="w-5 h-5" />
-                          </span>
-                          <span className="text-xs text-secondary-400">{new Date(post.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <h4 className="text-xl font-bold text-secondary-900 mb-2 line-clamp-1">{post.title}</h4>
-                        <p className="text-secondary-600 text-sm mb-4 line-clamp-2">{post.content}</p>
-                        {/* <Link href="#" className="text-primary-600 text-sm font-semibold hover:underline">Read More</Link> */}
-                      </div>
-                    ))}
-                  </div>
-                </>
+              {filteredAnnouncements.length > 0 ? (
+                <div className="space-y-6">
+                  {filteredAnnouncements.map((post) => (
+                    <SocialPost key={post.id} post={post} />
+                  ))}
+                </div>
               ) : (
                 <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-secondary-200">
                   <p className="text-secondary-500">No updates at the moment.</p>
@@ -206,7 +165,10 @@ export default function Home() {
             {/* Right Column: Recent Donations & Quick Stats (Span 1) */}
             <div className="space-y-8">
               {/* Donations Card */}
-              <div className="bg-gradient-to-br from-primary-900 to-secondary-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden h-full min-h-[500px]">
+              <div className={cn(
+                "bg-gradient-to-br from-primary-900 to-secondary-900 dark:from-primary-950 dark:to-secondary-950 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden transition-all duration-500",
+                recentDonations.length === 0 ? "min-h-[400px]" : "min-h-[240px]"
+              )}>
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
                 <div className="relative z-10">
                   <h3 className="text-2xl font-bold font-heading mb-6 flex items-center gap-2">
@@ -214,40 +176,51 @@ export default function Home() {
                     Recent Giving
                   </h3>
 
-                  <div className="space-y-4 mb-8">
+                  <div className="relative">
                     {recentDonations.length === 0 ? (
                       <div className="text-center py-8 text-secondary-300 italic text-sm">
-                        Be the first to donate today!
+                        Join our community of donors to support Masjid Angullia.
                       </div>
                     ) : (
-                      recentDonations.map((donation, idx) => (
-                        <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 flex items-center justify-between border border-white/5 hover:bg-white/20 transition-colors group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-300 font-bold text-xs uppercase">
-                              {(donation.isAnonymous ? "A" : donation.donorName[0])}
+                      <motion.div
+                        className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x touch-pan-x cursor-grab active:cursor-grabbing"
+                        drag="x"
+                        dragConstraints={{ right: 0, left: -((recentDonations.length - 1) * 200) }} // Rough estimate for constraints
+                      >
+                        {recentDonations.map((donation, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-white/10 backdrop-blur-sm rounded-xl p-3 flex flex-col gap-2 border border-white/5 hover:bg-white/20 transition-colors group min-w-[180px] snap-center shrink-0"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-300 font-bold text-xs uppercase shrink-0">
+                                {(donation.isAnonymous ? "A" : donation.donorName[0])}
+                              </div>
+                              <div className="overflow-hidden">
+                                <p className="font-medium text-sm text-secondary-100 truncate">
+                                  {donation.isAnonymous ? "Anonymous" : donation.donorName}
+                                </p>
+                                <p className="text-[10px] text-secondary-400 truncate">{donation.type}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-medium text-sm text-secondary-100 line-clamp-1">
-                                {donation.isAnonymous ? "Anonymous" : donation.donorName}
-                              </p>
-                              <p className="text-[10px] text-secondary-400">{donation.type}</p>
+                            <div className="flex justify-between items-end mt-1">
+                              <span className="font-bold text-secondary-100 text-sm">₱{donation.amount.toLocaleString()}</span>
+                              <span className="text-[10px] text-secondary-400 group-hover:text-secondary-300 transition-colors">{formatTimeAgo(donation.date)}</span>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <span className="block font-bold text-secondary-400 text-sm">₱{donation.amount.toLocaleString()}</span>
-                            <span className="text-xs text-secondary-500 group-hover:text-secondary-300 transition-colors">{formatTimeAgo(donation.date)}</span>
-                          </div>
-                        </div>
-                      ))
+                        ))}
+                      </motion.div>
                     )}
                   </div>
 
-                  <div className="bg-white/5 rounded-2xl p-4 border border-white/10 text-center">
-                    <p className="text-secondary-300 text-sm mb-3">Support our masjid & community</p>
-                    <Link href="/donations" className="block w-full py-3 bg-white text-primary-900 font-bold rounded-xl hover:bg-secondary-100 transition-colors shadow-lg">
-                      Donate Now
-                    </Link>
-                  </div>
+                  {recentDonations.length === 0 && (
+                    <div className="bg-white/5 rounded-2xl p-4 border border-white/10 text-center animate-fade-in">
+                      <p className="text-secondary-300 text-sm mb-3">Support our masjid & community</p>
+                      <Link href="/donations" className="block w-full py-3 bg-white text-primary-900 font-bold rounded-xl hover:bg-secondary-100 transition-colors shadow-lg">
+                        Donate Now
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -326,28 +299,61 @@ export default function Home() {
           </div>
         </AnimationWrapper>
         <div className="grid grid-cols-2 gap-4">
-          <AnimationWrapper withScroll animation="reveal" delay={0.3} className="relative h-64 rounded-2xl overflow-hidden shadow-lg transform translate-y-8">
-            <Image
-              src="/images/mosque2.png"
-              alt="Prayer Hall"
-              fill
-              sizes="(max-width: 768px) 50vw, 25vw"
-              className="object-cover hover:scale-110 transition-transform duration-700"
-            />
-          </AnimationWrapper>
-          <AnimationWrapper withScroll animation="reveal" delay={0.5} className="relative h-64 rounded-2xl overflow-hidden shadow-lg">
-            <Image
-              src="/images/prayer.png"
-              alt="Community Event"
-              fill
-              sizes="(max-width: 768px) 50vw, 25vw"
-              className="object-cover hover:scale-110 transition-transform duration-700"
-            />
-          </AnimationWrapper>
+          <div
+            className="cursor-pointer group/img"
+            onClick={() => setSelectedFullImage({ src: "/images/mosque2.png", alt: "Prayer Hall" })}
+          >
+            <AnimationWrapper
+              withScroll
+              animation="reveal"
+              delay={0.3}
+              className="relative h-64 rounded-2xl overflow-hidden shadow-lg transform translate-y-8"
+            >
+              <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/20 z-10 transition-colors flex items-center justify-center">
+                <ZoomIn className="text-white opacity-0 group-hover/img:opacity-100 transition-opacity w-8 h-8" />
+              </div>
+              <Image
+                src="/images/mosque2.png"
+                alt="Prayer Hall"
+                fill
+                sizes="(max-width: 768px) 50vw, 25vw"
+                className="object-cover transition-transform duration-700 group-hover/img:scale-110"
+              />
+            </AnimationWrapper>
+          </div>
+          <div
+            className="cursor-pointer group/img"
+            onClick={() => setSelectedFullImage({ src: "/images/prayer.png", alt: "Community Event" })}
+          >
+            <AnimationWrapper
+              withScroll
+              animation="reveal"
+              delay={0.5}
+              className="relative h-64 rounded-2xl overflow-hidden shadow-lg"
+            >
+              <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/20 z-10 transition-colors flex items-center justify-center">
+                <ZoomIn className="text-white opacity-0 group-hover/img:opacity-100 transition-opacity w-8 h-8" />
+              </div>
+              <Image
+                src="/images/prayer.png"
+                alt="Community Event"
+                fill
+                sizes="(max-width: 768px) 50vw, 25vw"
+                className="object-cover transition-transform duration-700 group-hover/img:scale-110"
+              />
+            </AnimationWrapper>
+          </div>
         </div>
       </section>
 
       <Footer onAdminClick={() => setIsAdminLoginOpen(true)} />
+
+      <ImageModal
+        isOpen={!!selectedFullImage}
+        onClose={() => setSelectedFullImage(null)}
+        src={selectedFullImage?.src || ""}
+        alt={selectedFullImage?.alt || ""}
+      />
 
       <EventRegistrationModal
         isOpen={isRegistrationOpen}
@@ -393,17 +399,28 @@ export default function Home() {
                 placeholder="Admin Email"
               />
             </div>
-            <div>
+            <div className="relative">
               <label htmlFor="password" className="sr-only">Password</label>
               <input
                 id="password"
                 name="password"
-                type="password"
+                type={showAdminPassword ? "text" : "password"}
                 autoComplete="current-password"
                 required
-                className="relative block w-full rounded-md border-0 py-3 px-3 text-white bg-secondary-800 ring-1 ring-inset ring-secondary-700 placeholder:text-secondary-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-500 sm:text-sm sm:leading-6"
+                className="relative block w-full rounded-md border-0 py-3 pl-3 pr-10 text-white bg-secondary-800 ring-1 ring-inset ring-secondary-700 placeholder:text-secondary-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-500 sm:text-sm sm:leading-6"
                 placeholder="Password"
               />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-secondary-400 hover:text-white transition-colors"
+                onClick={() => setShowAdminPassword(!showAdminPassword)}
+              >
+                {showAdminPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
             </div>
           </div>
 

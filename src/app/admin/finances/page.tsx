@@ -86,17 +86,17 @@ export default function FinancesPage() {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-secondary-900 font-heading">Financial Overview</h1>
-                    <p className="text-sm text-secondary-500">Track incoming donations and funds.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-secondary-900 dark:text-secondary-100 font-heading">Financial Overview</h1>
+                    <p className="text-sm text-secondary-500 dark:text-secondary-400">Track incoming donations and funds.</p>
                 </div>
                 <div className="flex gap-2">
                     <button
                         onClick={() => setIsImportOpen(true)}
-                        className="flex items-center gap-2 px-3 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 transition-colors shadow-sm"
+                        className="flex items-center gap-2 px-3 py-2 bg-primary-600 dark:bg-primary-700 text-white rounded-md text-sm font-medium hover:bg-primary-700 dark:hover:bg-primary-800 transition-colors shadow-sm"
                     >
                         <Upload className="w-4 h-4" /> Import Excel
                     </button>
-                    <button className="flex items-center gap-2 px-3 py-2 bg-white border border-secondary-300 rounded-md text-sm font-medium text-secondary-700 hover:bg-secondary-50 transition-colors">
+                    <button className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-secondary-800 border border-secondary-300 dark:border-secondary-700 rounded-md text-sm font-medium text-secondary-700 dark:text-secondary-300 hover:bg-secondary-50 dark:hover:bg-secondary-700 transition-colors">
                         <Download className="w-4 h-4" /> Export CSV
                     </button>
                 </div>
@@ -104,90 +104,90 @@ export default function FinancesPage() {
 
             {/* Stats Overview */}
             <div className="grid md:grid-cols-3 gap-6">
-                <Card>
+                <Card className="dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-secondary-500">Total Collections</CardTitle>
-                        <DollarSign className="w-4 h-4 text-primary-500" />
+                        <CardTitle className="text-sm font-medium text-secondary-500 dark:text-secondary-400">Total Collections</CardTitle>
+                        <DollarSign className="w-4 h-4 text-primary-500 dark:text-primary-400" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold font-heading text-secondary-800">₱{stats.totalCollected.toLocaleString()}</div>
-                        <p className="text-xs text-secondary-400 mt-1">Lifetime contributions</p>
+                        <div className="text-2xl font-bold font-heading text-secondary-800 dark:text-secondary-100">₱{stats.totalCollected.toLocaleString()}</div>
+                        <p className="text-xs text-secondary-400 dark:text-secondary-500 mt-1">Lifetime contributions</p>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 ">
-                        <CardTitle className="text-sm font-medium text-secondary-500">This Month</CardTitle>
-                        <TrendingUp className="w-4 h-4 text-green-500" />
+                        <CardTitle className="text-sm font-medium text-secondary-500 dark:text-secondary-400">This Month</CardTitle>
+                        <TrendingUp className="w-4 h-4 text-green-500 dark:text-green-400" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold font-heading text-secondary-800">₱{stats.monthlyCollected.toLocaleString()}</div>
-                        <p className="text-xs text-secondary-400 mt-1">
+                        <div className="text-2xl font-bold font-heading text-secondary-800 dark:text-secondary-100">₱{stats.monthlyCollected.toLocaleString()}</div>
+                        <p className="text-xs text-secondary-400 dark:text-secondary-500 mt-1">
                             {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
                         </p>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-secondary-500">Top Category</CardTitle>
-                        <PieChart className="w-4 h-4 text-secondary-400" />
+                        <CardTitle className="text-sm font-medium text-secondary-500 dark:text-secondary-400">Top Category</CardTitle>
+                        <PieChart className="w-4 h-4 text-secondary-400 dark:text-secondary-500" />
                     </CardHeader>
                     <CardContent>
                         {/* Simple logic to find max category */}
-                        <div className="text-lg font-bold font-heading truncate text-secondary-800">
+                        <div className="text-lg font-bold font-heading truncate text-secondary-800 dark:text-secondary-100">
                             {Object.entries(stats.breakdown).sort((a, b) => b[1] - a[1])[0]?.[0] || "None"}
                         </div>
-                        <p className="text-xs text-secondary-400 mt-1">Most supported fund</p>
+                        <p className="text-xs text-secondary-400 dark:text-secondary-500 mt-1">Most supported fund</p>
                     </CardContent>
                 </Card>
             </div>
 
             {/* Recent Transactions Table */}
-            <Card>
+            <Card className="dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
                 <CardHeader>
-                    <CardTitle className="text-lg text-secondary-800">Recent Donations</CardTitle>
-                    <CardDescription className="text-secondary-500">Latest contributions from the community.</CardDescription>
+                    <CardTitle className="text-lg text-secondary-800 dark:text-secondary-200">Recent Donations</CardTitle>
+                    <CardDescription className="text-secondary-500 dark:text-secondary-400">Latest contributions from the community.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {/* Filters */}
                     <div className="flex gap-2 mb-4 relative z-20">
                         <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-secondary-400" />
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-secondary-400 dark:text-secondary-500" />
                             <input
                                 type="search"
                                 placeholder="Search donor..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-9 h-9 rounded-md border border-secondary-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                className="w-full pl-9 h-9 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                             />
                         </div>
                         <div className="relative">
                             <button
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                                 className={`flex items-center gap-2 px-3 h-9 border rounded-md text-sm transition-colors ${typeFilter !== 'All'
-                                    ? 'bg-primary-50 border-primary-200 text-primary-700'
-                                    : 'border-secondary-300 text-secondary-600 hover:bg-secondary-50'
+                                    ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400'
+                                    : 'border-secondary-300 dark:border-secondary-700 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800'
                                     }`}
                             >
                                 <Filter className="w-3 h-3" /> Filter
                             </button>
 
                             {isFilterOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-secondary-200 p-4 space-y-4 z-50">
+                                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-secondary-900 rounded-lg shadow-lg border border-secondary-200 dark:border-secondary-800 p-4 space-y-4 z-50 transition-colors">
                                     <div className="space-y-2">
-                                        <label className="text-xs font-semibold text-secondary-500 uppercase">Donation Type</label>
+                                        <label className="text-xs font-semibold text-secondary-500 dark:text-secondary-400 uppercase">Donation Type</label>
                                         <select
                                             value={typeFilter}
                                             onChange={(e) => setTypeFilter(e.target.value)}
-                                            className="w-full text-sm border-secondary-200 rounded-md focus:ring-primary-500 focus:border-primary-500 text-secondary-800"
+                                            className="w-full text-sm border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 rounded-md focus:ring-primary-500 focus:border-primary-500 text-secondary-800 dark:text-secondary-100 transition-colors"
                                         >
-                                            <option value="All" className="text-secondary-800">All Types</option>
-                                            <option value="General" className="text-secondary-800">General</option>
-                                            <option value="Zakat" className="text-secondary-800">Zakat</option>
-                                            <option value="Sadaqah" className="text-secondary-800">Sadaqah</option>
-                                            <option value="Projects" className="text-secondary-800">Projects</option>
-                                            <option value="Other" className="text-secondary-800">Other</option>
+                                            <option value="All">All Types</option>
+                                            <option value="General">General</option>
+                                            <option value="Zakat">Zakat</option>
+                                            <option value="Sadaqah">Sadaqah</option>
+                                            <option value="Projects">Projects</option>
+                                            <option value="Other">Other</option>
                                         </select>
                                     </div>
                                     {typeFilter !== 'All' && (
@@ -205,17 +205,17 @@ export default function FinancesPage() {
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-secondary-50 text-secondary-500 font-medium">
-                                <tr className="border-b border-secondary-200">
-                                    <th className="px-4 py-3">Donor</th>
-                                    <th className="px-4 py-3">Type/Fund</th>
-                                    <th className="px-4 py-3">Date</th>
-                                    <th className="px-4 py-3">Amount</th>
-                                    <th className="px-4 py-3">Status</th>
-                                    <th className="px-4 py-3">Actions</th>
+                            <thead className="bg-secondary-50 dark:bg-secondary-800/50 text-secondary-500 dark:text-secondary-400 font-medium border-b border-secondary-200 dark:border-secondary-800 transition-colors">
+                                <tr>
+                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Donor</th>
+                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Type/Fund</th>
+                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Date</th>
+                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Amount</th>
+                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Status</th>
+                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-secondary-100">
+                            <tbody className="divide-y divide-secondary-100 dark:divide-secondary-800 transition-colors">
                                 {isLoading ? (
                                     <tr>
                                         <td colSpan={5} className="px-4 py-8 text-center text-secondary-500">Loading transactions...</td>
@@ -226,41 +226,41 @@ export default function FinancesPage() {
                                     </tr>
                                 ) : (
                                     filteredDonations.map((donation) => (
-                                        <tr key={donation.id} className="hover:bg-secondary-50/50 transition-colors">
+                                        <tr key={donation.id} className="hover:bg-secondary-50/50 dark:hover:bg-secondary-800/30 transition-colors">
                                             <td className="px-4 py-3">
-                                                <div className="font-medium text-secondary-900">
+                                                <div className="font-medium text-secondary-900 dark:text-secondary-100">
                                                     {donation.isAnonymous ? "Anonymous" : donation.donorName}
                                                 </div>
-                                                <div className="text-xs text-secondary-400">
+                                                <div className="text-xs text-secondary-400 dark:text-secondary-500">
                                                     {donation.email || (donation.isAnonymous ? "Hidden" : "No email")}
                                                 </div>
                                                 {donation.message && (
-                                                    <div className="text-[10px] text-primary-600 mt-1 italic line-clamp-1">
+                                                    <div className="text-[10px] text-primary-600 dark:text-primary-400 mt-1 italic line-clamp-1">
                                                         "{donation.message}"
                                                     </div>
                                                 )}
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800 transition-colors">
                                                     {donation.type}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 text-secondary-500 whitespace-nowrap">
+                                            <td className="px-4 py-3 text-secondary-500 dark:text-secondary-400 whitespace-nowrap">
                                                 {formatDate(donation.date)}
                                             </td>
-                                            <td className="px-4 py-3 font-medium text-secondary-900">
+                                            <td className="px-4 py-3 font-medium text-secondary-900 dark:text-secondary-100">
                                                 ₱{donation.amount.toLocaleString()}
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-800 transition-colors">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400"></div>
                                                     Verified
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <button
                                                     onClick={() => handleDelete(donation.id)}
-                                                    className="font-medium text-red-600 hover:text-red-800 hover:bg-red-50 p-1.5 rounded-md transition-colors"
+                                                    className="font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded-md transition-colors"
                                                     title="Delete"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -286,20 +286,20 @@ export default function FinancesPage() {
                 onClose={() => setIsDeleteModalOpen(false)}
                 title="Confirm Deletion"
             >
-                <div className="space-y-4">
-                    <p className="text-sm text-secondary-600">
+                <div className="space-y-4 py-2 bg-white dark:bg-secondary-900 transition-colors">
+                    <p className="text-sm text-secondary-600 dark:text-secondary-400">
                         Are you sure you want to delete this donation? This action cannot be undone.
                     </p>
-                    <div className="flex justify-end gap-3">
+                    <div className="flex justify-end gap-3 transition-colors">
                         <button
                             onClick={() => setIsDeleteModalOpen(false)}
-                            className="px-4 py-2 text-sm font-medium text-secondary-600 hover:bg-secondary-50 rounded-md transition-colors"
+                            className="px-4 py-2 text-sm font-medium text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800 rounded-md transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={confirmDelete}
-                            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+                            className="px-4 py-2 text-sm font-medium text-white bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-800 rounded-md transition-colors shadow-sm"
                         >
                             Delete
                         </button>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Bell } from "lucide-react";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -19,9 +19,9 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="bg-white border-b border-primary-100 sticky top-0 z-50 shadow-sm">
+        <nav className="bg-white/80 dark:bg-secondary-900/80 backdrop-blur-md border-b border-primary-100 dark:border-secondary-800 sticky top-0 z-50 shadow-sm transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-16">
+                <div className="flex justify-between h-16 items-center">
                     {/* Logo & Brand */}
                     <Link
                         href="/"
@@ -31,22 +31,18 @@ export default function Navbar() {
                         <div className="relative w-8 h-7 group-hover:scale-100 transition-transform">
                             <Image
                                 src="/logo.png"
-                                alt="Masjid Angullia Logo"
+                                alt="Masid Angullia Logo"
                                 fill
-                                className="object-contain"
+                                className="object-contain dark:brightness-110"
                             />
                         </div>
-                        <span className="font-heading font-bold text-xl text-primary-900 tracking-tight">
+                        <span className="font-heading font-bold text-xl text-primary-900 dark:text-primary-50 tracking-tight">
                             Masjid Angullia
                         </span>
                     </Link>
 
-                    {/* Notification Bell */}
-                    <div className="flex items-center">
-                        <button className="relative p-2 rounded-full text-secondary-500 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            <Bell className="w-6 h-6" />
-                            <span className="absolute top-1.5 right-1.5 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
-                        </button>
+                    <div className="flex items-center gap-4">
+                        <ThemeToggle />
                     </div>
                 </div>
             </div>

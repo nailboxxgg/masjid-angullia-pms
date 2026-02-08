@@ -14,7 +14,8 @@ import {
     LogOut,
     ShieldCheck,
     MessageSquare,
-    Megaphone
+    Megaphone,
+    X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/firebase";
@@ -30,7 +31,12 @@ const adminRoutes = [
     { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
-export default function AdminSidebar() {
+interface AdminSidebarProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     const pathname = usePathname();
     const router = useRouter(); // Import useRouter from next/navigation
     const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
@@ -71,28 +77,44 @@ export default function AdminSidebar() {
     return (
         <>
             <motion.div
-                initial={{ x: -250, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="flex flex-col h-screen w-64 bg-secondary-900 text-white border-r border-secondary-800"
+                initial={false}
+                animate={{
+                    x: isOpen ? 0 : (typeof window !== 'undefined' && window.innerWidth < 768 ? -256 : 0),
+                    opacity: 1
+                }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className={cn(
+                    "fixed md:relative flex flex-col h-screen w-64 bg-secondary-900 text-white border-r border-secondary-800 z-50 transition-all duration-300",
+                    !isOpen && "-translate-x-full md:translate-x-0"
+                )}
             >
-                <div className="p-6 flex items-center gap-3 border-b border-secondary-800">
-                    <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                        className="bg-primary-500/20 p-2 rounded-lg"
+                <div className="p-6 flex items-center justify-between border-b border-secondary-800">
+                    <div className="flex items-center gap-3">
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                            className="bg-primary-500/20 p-2 rounded-lg"
+                        >
+                            <ShieldCheck className="w-6 h-6 text-primary-500" />
+                        </motion.div>
+                        <motion.div
+                            initial={{ opacity: 0, x: 10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                        >
+                            <h1 className="font-heading font-bold text-lg tracking-tight">Admin Portal</h1>
+                            <p className="text-xs text-secondary-500">Masjid Angullia</p>
+                        </motion.div>
+                    </div>
+
+                    {/* Close Button Mobile */}
+                    <button
+                        onClick={onClose}
+                        className="p-2 -mr-2 text-secondary-400 hover:text-white md:hidden"
                     >
-                        <ShieldCheck className="w-6 h-6 text-primary-500" />
-                    </motion.div>
-                    <motion.div
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        <h1 className="font-heading font-bold text-lg tracking-tight">Admin Portal</h1>
-                        <p className="text-xs text-secondary-500">Masjid Angullia</p>
-                    </motion.div>
+                        <X className="w-6 h-6" />
+                    </button>
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">

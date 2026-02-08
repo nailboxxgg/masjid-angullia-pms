@@ -13,19 +13,19 @@ export default function AdminFeedPage() {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-secondary-900 font-heading">Announcements, Feed & Events</h1>
-                    <p className="text-sm text-secondary-500">Manage community updates and upcoming activities.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-secondary-900 dark:text-secondary-100 font-heading">Announcements, Feed & Events</h1>
+                    <p className="text-sm text-secondary-500 dark:text-secondary-400">Manage community updates and upcoming activities.</p>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex bg-secondary-100 p-1 rounded-lg">
+                <div className="flex bg-secondary-100 dark:bg-secondary-800 p-1 rounded-lg transition-colors">
                     <button
                         onClick={() => setActiveTab('announcements')}
                         className={cn(
                             "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
                             activeTab === 'announcements'
-                                ? "bg-white text-primary-700 shadow-sm"
-                                : "text-secondary-600 hover:text-secondary-900"
+                                ? "bg-white dark:bg-secondary-900 text-primary-700 dark:text-primary-400 shadow-sm"
+                                : "text-secondary-600 dark:text-secondary-400 hover:text-secondary-900 dark:hover:text-secondary-200"
                         )}
                     >
                         <Megaphone className="w-4 h-4" />
@@ -36,8 +36,8 @@ export default function AdminFeedPage() {
                         className={cn(
                             "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
                             activeTab === 'events'
-                                ? "bg-white text-primary-700 shadow-sm"
-                                : "text-secondary-600 hover:text-secondary-900"
+                                ? "bg-white dark:bg-secondary-900 text-primary-700 dark:text-primary-400 shadow-sm"
+                                : "text-secondary-600 dark:text-secondary-400 hover:text-secondary-900 dark:hover:text-secondary-200"
                         )}
                     >
                         <Calendar className="w-4 h-4" />

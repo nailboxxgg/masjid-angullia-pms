@@ -147,10 +147,10 @@ export default function AnnouncementsManager() {
 
     const getTypeColor = (type: string) => {
         switch (type) {
-            case 'Urgent': return 'bg-red-100 text-red-700 border-red-200';
-            case 'Event': return 'bg-purple-100 text-purple-700 border-purple-200';
-            case 'Fundraising': return 'bg-green-100 text-green-700 border-green-200';
-            default: return 'bg-blue-100 text-blue-700 border-blue-200';
+            case 'Urgent': return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800';
+            case 'Event': return 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800';
+            case 'Fundraising': return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800';
+            default: return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800';
         }
     };
 
@@ -161,28 +161,28 @@ export default function AnnouncementsManager() {
                 <div className="lg:col-span-1">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg text-secondary-800">New Announcement</CardTitle>
-                            <CardDescription>Post a new update to the community hub.</CardDescription>
+                            <CardTitle className="text-lg text-secondary-800 dark:text-secondary-100">New Announcement</CardTitle>
+                            <CardDescription className="dark:text-secondary-400">Post a new update to the community hub.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleCreate} className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-secondary-700">Title</label>
+                                    <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Title</label>
                                     <input
                                         required
                                         value={newTitle}
                                         onChange={(e) => setNewTitle(e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-secondary-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none text-secondary-800"
+                                        className="flex h-10 w-full rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none text-secondary-800 dark:text-secondary-100 transition-colors"
                                         placeholder="e.g. Eid Prayer Timings"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-secondary-700">Type & Priority</label>
+                                    <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Type & Priority</label>
                                     <div className="flex gap-2">
                                         <select
                                             value={newType}
                                             onChange={(e) => setNewType(e.target.value as any)}
-                                            className="flex h-10 w-full rounded-md border border-secondary-300 px-3 py-2 text-sm outline-none text-secondary-800"
+                                            className="flex h-10 w-full rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm outline-none text-secondary-800 dark:text-secondary-100 transition-colors"
                                         >
                                             <option value="General">General</option>
                                             <option value="Event">Event</option>
@@ -192,7 +192,7 @@ export default function AnnouncementsManager() {
                                         <select
                                             value={newPriority}
                                             onChange={(e) => setNewPriority(e.target.value as any)}
-                                            className="flex h-10 w-full rounded-md border border-secondary-300 px-3 py-2 text-sm outline-none text-secondary-800"
+                                            className="flex h-10 w-full rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm outline-none text-secondary-800 dark:text-secondary-100 transition-colors"
                                         >
                                             <option value="low">Low</option>
                                             <option value="normal">Normal</option>
@@ -201,25 +201,25 @@ export default function AnnouncementsManager() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-secondary-700">Content</label>
+                                    <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Content</label>
                                     <textarea
                                         required
                                         value={newContent}
                                         onChange={(e) => setNewContent(e.target.value)}
-                                        className="flex min-h-[120px] w-full rounded-md border border-secondary-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none text-secondary-800"
+                                        className="flex min-h-[120px] w-full rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none text-secondary-800 dark:text-secondary-100 transition-colors"
                                         placeholder="Write your announcement details here..."
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 p-3 bg-secondary-50 rounded-lg border border-secondary-200">
+                                <div className="flex items-center gap-2 p-3 bg-secondary-50 dark:bg-secondary-900 rounded-lg border border-secondary-200 dark:border-secondary-800 transition-colors">
                                     <input
                                         type="checkbox"
                                         id="sms-broadcast"
-                                        className="w-4 h-4 text-primary-600 rounded border-secondary-300 focus:ring-primary-500"
+                                        className="w-4 h-4 text-primary-600 rounded border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 focus:ring-primary-500"
                                         checked={sendSMS}
                                         onChange={(e) => setSendSMS(e.target.checked)}
                                     />
-                                    <label htmlFor="sms-broadcast" className="text-sm font-medium text-secondary-700 select-none cursor-pointer flex items-center gap-2">
-                                        <Megaphone className="w-4 h-4 text-secondary-500" />
+                                    <label htmlFor="sms-broadcast" className="text-sm font-medium text-secondary-700 dark:text-secondary-300 select-none cursor-pointer flex items-center gap-2">
+                                        <Megaphone className="w-4 h-4 text-secondary-500 dark:text-secondary-400" />
                                         Broadcast via SMS
                                     </label>
                                 </div>
@@ -248,16 +248,16 @@ export default function AnnouncementsManager() {
                     ) : (
                         announcements.map((item) => (
                             <AnimationWrapper key={item.id} animation="fadeIn">
-                                <div className="bg-white p-4 rounded-xl border border-secondary-200 shadow-sm hover:shadow-md transition-shadow flex gap-4">
+                                <div className="bg-white dark:bg-secondary-900 p-4 rounded-xl border border-secondary-200 dark:border-secondary-800 shadow-sm hover:shadow-md transition-all duration-300 flex gap-4">
                                     <div className={cn("p-3 rounded-full h-fit", getTypeColor(item.type))}>
                                         <Megaphone className="w-5 h-5" />
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <h3 className="font-bold text-secondary-900">{item.title}</h3>
-                                                <div className="flex items-center gap-2 text-xs text-secondary-500 mt-1">
-                                                    <span className={cn("px-2 py-0.5 rounded-full border bg-white", getTypeColor(item.type))}>
+                                                <h3 className="font-bold text-secondary-900 dark:text-secondary-100">{item.title}</h3>
+                                                <div className="flex items-center gap-2 text-xs text-secondary-500 dark:text-secondary-400 mt-1">
+                                                    <span className={cn("px-2 py-0.5 rounded-full border bg-white dark:bg-secondary-900", getTypeColor(item.type))}>
                                                         {item.type}
                                                     </span>
                                                     <span>•</span>
@@ -266,12 +266,12 @@ export default function AnnouncementsManager() {
                                             </div>
                                             <button
                                                 onClick={() => handleDelete(item.id)}
-                                                className="text-red-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors"
+                                                className="text-red-400 hover:text-red-600 dark:hover:text-red-300 p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
-                                        <p className="text-sm text-secondary-600 mt-2 line-clamp-3">
+                                        <p className="text-sm text-secondary-600 dark:text-secondary-400 mt-2 line-clamp-3">
                                             {item.content}
                                         </p>
                                     </div>
@@ -287,23 +287,23 @@ export default function AnnouncementsManager() {
                 onClose={() => setShowStatusModal(false)}
                 title={statusData.title}
             >
-                <div className="flex flex-col items-center justify-center text-center py-4">
+                <div className="flex flex-col items-center justify-center text-center py-4 bg-white dark:bg-secondary-900 transition-colors">
                     {statusData.success ? (
-                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
+                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4 text-green-600 dark:text-green-400">
                             <CheckCircle className="w-8 h-8" />
                         </div>
                     ) : (
-                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 text-red-600 dark:text-red-400">
                             <AlertCircle className="w-8 h-8" />
                         </div>
                     )}
 
-                    <h3 className="text-xl font-bold text-secondary-900 mb-2">{statusData.title}</h3>
-                    <p className="text-secondary-600 mb-6">{statusData.message}</p>
+                    <h3 className="text-xl font-bold text-secondary-900 dark:text-secondary-100 mb-2">{statusData.title}</h3>
+                    <p className="text-secondary-600 dark:text-secondary-400 mb-6">{statusData.message}</p>
 
                     <button
                         onClick={() => setShowStatusModal(false)}
-                        className="bg-primary-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors w-full"
+                        className="bg-primary-600 dark:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-700 dark:hover:bg-primary-800 transition-colors w-full"
                     >
                         Okay, Got it
                     </button>
@@ -317,26 +317,26 @@ export default function AnnouncementsManager() {
                 title="Delete Announcement"
                 className="max-w-sm"
             >
-                <div className="flex flex-col items-center justify-center text-center py-4">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                <div className="flex flex-col items-center justify-center text-center py-4 bg-white dark:bg-secondary-900 transition-colors">
+                    <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 text-red-600 dark:text-red-400">
                         <AlertCircle className="w-8 h-8" />
                     </div>
 
-                    <h3 className="text-xl font-bold text-secondary-900 mb-2">Are you sure?</h3>
-                    <p className="text-secondary-600 mb-6">
+                    <h3 className="text-xl font-bold text-secondary-900 dark:text-secondary-100 mb-2">Are you sure?</h3>
+                    <p className="text-secondary-600 dark:text-secondary-400 mb-6">
                         This action cannot be undone. This announcement will be permanently removed from the website.
                     </p>
 
                     <div className="flex gap-3 w-full">
                         <button
                             onClick={() => setIsDeleteModalOpen(false)}
-                            className="flex-1 px-4 py-2 border border-secondary-200 text-secondary-700 font-medium rounded-lg hover:bg-secondary-50 transition-colors"
+                            className="flex-1 px-4 py-2 border border-secondary-200 dark:border-secondary-700 text-secondary-700 dark:text-secondary-300 font-medium rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={confirmDelete}
-                            className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                            className="flex-1 px-4 py-2 bg-red-600 dark:bg-red-700 text-white font-medium rounded-lg hover:bg-red-700 dark:hover:bg-red-800 transition-colors shadow-sm"
                         >
                             Delete
                         </button>

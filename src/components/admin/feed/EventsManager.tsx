@@ -112,18 +112,18 @@ export default function EventsManager() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                         >
-                            <Card className="h-full hover:shadow-md transition-all border-secondary-200 group relative">
+                            <Card className="h-full hover:shadow-md transition-all border-secondary-200 dark:border-secondary-800 bg-white dark:bg-secondary-900 group relative transition-colors duration-300">
                                 <CardHeader className="pb-2">
                                     <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
                                             onClick={() => handleEdit(event)}
-                                            className="p-1.5 text-secondary-500 hover:text-primary-600 hover:bg-primary-50 rounded-full transition-colors"
+                                            className="p-1.5 text-secondary-500 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-full transition-colors"
                                         >
                                             <Edit2 className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(event.id)}
-                                            className="p-1.5 text-secondary-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                            className="p-1.5 text-secondary-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors"
                                         >
                                             {isDeleting === event.id ? (
                                                 <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
@@ -132,38 +132,38 @@ export default function EventsManager() {
                                             )}
                                         </button>
                                     </div>
-                                    <div className={`text-xs font-semibold px-2 py-1 rounded w-fit ${event.registrationOpen ? "bg-green-100 text-green-700" : "bg-secondary-100 text-secondary-500"
+                                    <div className={`text-xs font-semibold px-2 py-1 rounded w-fit ${event.registrationOpen ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : "bg-secondary-100 dark:bg-secondary-800 text-secondary-500 dark:text-secondary-400"
                                         }`}>
                                         {event.registrationOpen ? "Open" : "Closed"}
                                     </div>
-                                    <CardTitle className="text-lg font-heading leading-tight mt-2">{event.title}</CardTitle>
+                                    <CardTitle className="text-lg font-heading leading-tight mt-2 text-secondary-900 dark:text-secondary-100">{event.title}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <p className="text-sm text-secondary-500 line-clamp-2">{event.description}</p>
+                                    <p className="text-sm text-secondary-500 dark:text-secondary-400 line-clamp-2">{event.description}</p>
 
-                                    <div className="space-y-2 text-sm text-secondary-600">
+                                    <div className="space-y-2 text-sm text-secondary-600 dark:text-secondary-400">
                                         <div className="flex items-center gap-2">
-                                            <Calendar className="w-4 h-4 text-secondary-400" />
+                                            <Calendar className="w-4 h-4 text-secondary-400 dark:text-secondary-500" />
                                             {event.date}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Clock className="w-4 h-4 text-secondary-400" />
+                                            <Clock className="w-4 h-4 text-secondary-400 dark:text-secondary-500" />
                                             {event.time}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <MapPin className="w-4 h-4 text-secondary-400" />
+                                            <MapPin className="w-4 h-4 text-secondary-400 dark:text-secondary-500" />
                                             {event.location}
                                         </div>
-                                        <div className="flex items-center justify-between pt-2 border-t border-secondary-100 mt-3">
+                                        <div className="flex items-center justify-between pt-2 border-t border-secondary-100 dark:border-secondary-800 mt-3">
                                             <div className="flex items-center gap-2">
                                                 <Users className="w-4 h-4 text-primary-500" />
-                                                <span className="font-medium text-secondary-900">{(event.registrantsCount || 0)}</span>
-                                                <span className="text-secondary-400">/{event.capacity}</span>
+                                                <span className="font-medium text-secondary-900 dark:text-secondary-200">{(event.registrantsCount || 0)}</span>
+                                                <span className="text-secondary-400 dark:text-secondary-500">/{event.capacity}</span>
                                             </div>
                                             {(event.registrantsCount || 0) > 0 && (
                                                 <button
                                                     onClick={() => handleViewRegistrants(event)}
-                                                    className="text-xs text-primary-600 hover:text-primary-800 hover:underline font-medium"
+                                                    className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium"
                                                 >
                                                     View List
                                                 </button>
@@ -177,13 +177,13 @@ export default function EventsManager() {
                 </AnimatePresence>
 
                 {events.length === 0 && !isLoading && (
-                    <div className="col-span-full py-20 text-center bg-white rounded-xl border border-dashed border-secondary-300">
-                        <Calendar className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-secondary-900">No events found</h3>
-                        <p className="text-secondary-500 mb-6">Get started by creating your first event.</p>
+                    <div className="col-span-full py-20 text-center bg-white dark:bg-secondary-900 transition-colors rounded-xl border border-dashed border-secondary-300 dark:border-secondary-700">
+                        <Calendar className="w-12 h-12 text-secondary-300 dark:text-secondary-600 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium text-secondary-900 dark:text-secondary-100">No events found</h3>
+                        <p className="text-secondary-500 dark:text-secondary-400 mb-6">Get started by creating your first event.</p>
                         <button
                             onClick={() => { resetForm(); setIsFormOpen(true); }}
-                            className="px-4 py-2 bg-secondary-100 text-secondary-700 rounded-md text-sm font-medium hover:bg-secondary-200 transition-colors"
+                            className="px-4 py-2 bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 rounded-md text-sm font-medium hover:bg-secondary-200 dark:hover:bg-secondary-700 transition-colors"
                         >
                             Create Event
                         </button>
@@ -201,69 +201,69 @@ export default function EventsManager() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="col-span-2">
-                            <label className="block text-sm font-medium text-secondary-700 mb-1">Event Title</label>
+                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Event Title</label>
                             <input
                                 required
                                 value={formData.title}
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                className="w-full h-10 px-3 rounded-md border border-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                className="w-full h-10 px-3 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                                 placeholder="e.g., Annual Iftar Gathering"
                             />
                         </div>
 
                         <div className="col-span-2">
-                            <label className="block text-sm font-medium text-secondary-700 mb-1">Description</label>
+                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Description</label>
                             <textarea
                                 required
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="w-full h-24 px-3 py-2 rounded-md border border-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                                className="w-full h-24 px-3 py-2 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none transition-colors"
                                 placeholder="Details about this event..."
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-secondary-700 mb-1">Date</label>
+                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Date</label>
                             <input
                                 type="date"
                                 required
                                 value={formData.date}
                                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                className="w-full h-10 px-3 rounded-md border border-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                className="w-full h-10 px-3 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors [color-scheme:light] dark:[color-scheme:dark]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-secondary-700 mb-1">Time</label>
+                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Time</label>
                             <input
                                 type="time"
                                 required
                                 value={formData.time}
                                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                className="w-full h-10 px-3 rounded-md border border-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                className="w-full h-10 px-3 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors [color-scheme:light] dark:[color-scheme:dark]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-secondary-700 mb-1">Location</label>
+                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Location</label>
                             <input
                                 required
                                 value={formData.location}
                                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                className="w-full h-10 px-3 rounded-md border border-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                className="w-full h-10 px-3 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                                 placeholder="e.g., Main Prayer Hall"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-secondary-700 mb-1">Capacity</label>
+                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Capacity</label>
                             <input
                                 type="number"
                                 required
                                 min="1"
                                 value={formData.capacity}
                                 onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
-                                className="w-full h-10 px-3 rounded-md border border-secondary-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                className="w-full h-10 px-3 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
                             />
                         </div>
 
@@ -273,17 +273,17 @@ export default function EventsManager() {
                                 id="regOpen"
                                 checked={formData.registrationOpen}
                                 onChange={(e) => setFormData({ ...formData, registrationOpen: e.target.checked })}
-                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 rounded transition-colors"
                             />
-                            <label htmlFor="regOpen" className="text-sm font-medium text-secondary-700">Registration Open</label>
+                            <label htmlFor="regOpen" className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Registration Open</label>
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-4 border-t border-secondary-100 mt-4">
+                    <div className="flex justify-end gap-3 pt-4 border-t border-secondary-100 dark:border-secondary-800 mt-4">
                         <button
                             type="button"
                             onClick={() => setIsFormOpen(false)}
-                            className="px-4 py-2 text-sm font-medium text-secondary-700 hover:bg-secondary-100 rounded-lg transition-colors"
+                            className="px-4 py-2 text-sm font-medium text-secondary-700 dark:text-secondary-300 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-lg transition-colors"
                         >
                             Cancel
                         </button>
@@ -307,7 +307,7 @@ export default function EventsManager() {
             >
                 <div className="overflow-x-auto max-h-[60vh]">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-secondary-50 text-secondary-600 font-medium border-b border-secondary-200">
+                        <thead className="bg-secondary-50 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 font-medium border-b border-secondary-200 dark:border-secondary-700 transition-colors">
                             <tr>
                                 <th className="px-4 py-3">Name</th>
                                 <th className="px-4 py-3">Contact</th>
@@ -315,21 +315,21 @@ export default function EventsManager() {
                                 <th className="px-4 py-3">Registered At</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-secondary-100">
+                        <tbody className="divide-y divide-secondary-100 dark:divide-secondary-800 bg-white dark:bg-secondary-900/50 transition-colors">
                             {registrants.length > 0 ? (
                                 registrants.map((reg) => (
-                                    <tr key={reg.id}>
-                                        <td className="px-4 py-3 font-medium text-secondary-900">{reg.name}</td>
-                                        <td className="px-4 py-3 text-secondary-600">{reg.contactNumber}</td>
-                                        <td className="px-4 py-3 text-secondary-600">{reg.email || "-"}</td>
-                                        <td className="px-4 py-3 text-secondary-500 text-xs">
+                                    <tr key={reg.id} className="hover:bg-secondary-50/50 dark:hover:bg-secondary-800/50 transition-colors">
+                                        <td className="px-4 py-3 font-medium text-secondary-900 dark:text-secondary-100">{reg.name}</td>
+                                        <td className="px-4 py-3 text-secondary-600 dark:text-secondary-400">{reg.contactNumber}</td>
+                                        <td className="px-4 py-3 text-secondary-600 dark:text-secondary-400">{reg.email || "-"}</td>
+                                        <td className="px-4 py-3 text-secondary-500 dark:text-secondary-500 text-xs">
                                             {new Date(reg.createdAt).toLocaleString()}
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={4} className="px-4 py-8 text-center text-secondary-500 italic">
+                                    <td colSpan={4} className="px-4 py-8 text-center text-secondary-500 dark:text-secondary-500 italic bg-white dark:bg-transparent">
                                         No registrants found.
                                     </td>
                                 </tr>
@@ -337,10 +337,10 @@ export default function EventsManager() {
                         </tbody>
                     </table>
                 </div>
-                <div className="flex justify-end pt-4 border-t border-secondary-100 mt-4">
+                <div className="flex justify-end pt-4 border-t border-secondary-100 dark:border-secondary-800 mt-4">
                     <button
                         onClick={() => setViewRegistrantsOpen(false)}
-                        className="px-4 py-2 bg-secondary-100 text-secondary-700 rounded-lg text-sm font-medium hover:bg-secondary-200"
+                        className="px-4 py-2 bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 rounded-lg text-sm font-medium hover:bg-secondary-200 dark:hover:bg-secondary-700 transition-colors"
                     >
                         Close
                     </button>

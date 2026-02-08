@@ -59,7 +59,7 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
                 <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4 text-primary-600">
                     <Smartphone className="w-6 h-6" />
                 </div>
-                <p className="text-secondary-600 mb-6 text-sm">
+                <p className="text-secondary-600 mb-6 pb-1 text-sm leading-relaxed">
                     Receive urgent announcements, prayer time changes, and event reminders directly to your mobile phone.
                 </p>
 
@@ -89,15 +89,15 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
                         <button
                             type="submit"
                             disabled={isLoading || phone.length < 10}
-                            className="w-full h-10 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full h-12 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary-500/20 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe Free"}
+                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Subscribe Free"}
                         </button>
                     </form>
                 )}
 
-                <p className="text-[10px] text-secondary-400 mt-4">
-                    We simulate SMS for prototype verification. No real charges apply.
+                <p className="text-xs text-secondary-400 mt-6 leading-relaxed">
+                    We simulate SMS for prototype verification.<br />No real charges apply.
                 </p>
             </div>
         </Modal>
