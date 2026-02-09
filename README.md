@@ -94,6 +94,24 @@ src/
 └── ...
 ```
 
+## ⚙️ The Software Development Cycle
+
+We follow a structured 6-stage lifecycle to ensure continuous delivery and high quality:
+
+1.  **Planning**: Roadmap and feature scoping.
+2.  **Analysis**: User requirements and GitHub Issue management.
+3.  **Design**: UI/UX mockups and architecture planning.
+4.  **Implementation**: Coding in feature branches with PR reviews.
+5.  **Testing & Integration**: Automated CI via GitHub Actions (Lint + Vitest).
+6.  **Maintenance**: Performance monitoring and security audits.
+
+## 🧪 Quality Assurance
+
+To maintain system integrity, especially for financial modules:
+
+- **Linting**: Run `npm run lint` before committing.
+- **Critical Paths**: Features involving **Donations**, **Sms**, and **Finances** MUST be verified manually or through unit tests in `src/lib`.
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please follow these steps:
