@@ -3,17 +3,35 @@
 import { useEffect, useState } from "react";
 import { PrayerData } from "@/lib/prayer-times";
 import { fetchPrayerTimes } from "@/app/actions/prayer-times";
-import { Loader2, Moon, Sun } from "lucide-react";
+import { Loader2, Moon, Sun, CloudOff } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function PrayerTimesWidget() {
     const [data, setData] = useState<PrayerData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isOfflineFallback, setIsOfflineFallback] = useState(false);
 
     useEffect(() => {
         async function fetchTimes() {
-            const times = await fetchPrayerTimes();
-            setData(times);
-            setLoading(false);
+            try {
+                const times = await fetchPrayerTimes();
+                if (times) {
+                    setData(times);
+                    localStorage.setItem('prayer-times-cache', JSON.stringify(times));
+                    setIsOfflineFallback(false);
+                } else {
+                    throw new Error("Fetch returned null");
+                }
+            } catch (err) {
+                console.warn("Prayer times fetch failed, attempting cache fallback", err);
+                const cached = localStorage.getItem('prayer-times-cache');
+                if (cached) {
+                    setData(JSON.parse(cached));
+                    setIsOfflineFallback(true);
+                }
+            } finally {
+                setLoading(false);
+            }
         }
         fetchTimes();
     }, []);
@@ -56,6 +74,12 @@ export default function PrayerTimesWidget() {
 
     return (
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-white overflow-hidden relative group">
+            {isOfflineFallback && (
+                <div className="absolute top-2 right-4 flex items-center gap-1.5 text-[10px] font-medium text-white/60 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
+                    <CloudOff className="w-3 h-3" />
+                    Cached Data
+                </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-r from-primary-900/40 to-secondary-900/40 opacity-0 group-hover:opacity-100 transition-opacity" />
 
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -75,8 +99,14 @@ export default function PrayerTimesWidget() {
 
                 {/* Timings Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-2 w-full max-w-lg">
-                    {prayers.map((prayer) => (
-                        <div key={prayer.name} className="flex flex-col items-center p-3 md:p-2 rounded-lg bg-white/5 md:bg-transparent hover:bg-white/10 transition-colors border border-white/10 md:border-transparent">
+                    {prayers.map((prayer, idx) => (
+                        <div
+                            key={prayer.name}
+                            className={cn(
+                                "flex flex-col items-center p-3 md:p-2 rounded-lg bg-white/5 md:bg-transparent hover:bg-white/10 transition-colors border border-white/10 md:border-transparent",
+                                idx === 4 ? "col-span-2 sm:col-span-1" : ""
+                            )}
+                        >
                             <span className="text-xs text-secondary-300 font-medium uppercase mb-1">{prayer.name}</span>
                             <span className="text-base font-bold whitespace-nowrap">{
                                 formatTo12Hour(prayer.time)

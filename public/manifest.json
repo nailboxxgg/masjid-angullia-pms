@@ -1,0 +1,21 @@
+{
+    "name": "Masjid Angullia Portal",
+    "short_name": "Angullia",
+    "description": "Comprehensive management system for Masjid Angullia community",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#064e3b",
+    "theme_color": "#064e3b",
+    "icons": [
+        {
+            "src": "/logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

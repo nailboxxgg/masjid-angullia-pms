@@ -126,139 +126,137 @@ export default function Home() {
 
       {/* Community Hub & Donations Section */}
       <section className="py-10 md:py-16 bg-secondary-50 dark:bg-secondary-950 relative overflow-hidden transition-colors duration-300">
-        <AnimationWrapper withScroll animation="reveal" duration={0.8} className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
-            <div>
-              <h2 className="text-3xl font-bold text-secondary-900 dark:text-secondary-50 font-heading">Community Hub</h2>
-              <p className="text-secondary-600 dark:text-secondary-400 mt-1">Updates, events, and contributions from our jama&apos;ah.</p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setIsSubscriptionOpen(true)}
-                className="hidden md:flex items-center gap-2 px-4 py-2 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 font-medium rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-colors"
-              >
-                <Bell className="w-4 h-4" /> Get SMS Alerts
-              </button>
-              <Link href="/updates" className="text-primary-600 dark:text-primary-400 font-medium hover:text-primary-700 dark:hover:text-primary-300 flex items-center gap-1 transition-colors px-4 py-2">
-                View All Updates <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+            <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.1}>
+              <div>
+                <h2 className="text-3xl font-bold text-secondary-900 dark:text-secondary-50 font-heading">Community Hub</h2>
+                <p className="text-secondary-600 dark:text-secondary-400 mt-1">Updates, events, and contributions from our jama&apos;ah.</p>
+              </div>
+            </AnimationWrapper>
+
+            <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.3}>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsSubscriptionOpen(true)}
+                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 font-medium rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-colors"
+                >
+                  <Bell className="w-4 h-4" /> Get SMS Alerts
+                </button>
+                <Link href="/updates" className="text-primary-600 dark:text-primary-400 font-medium hover:text-primary-700 dark:hover:text-primary-300 flex items-center gap-1 transition-colors px-4 py-2">
+                  View All Updates <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </AnimationWrapper>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Announcements & Events (Span 2) */}
-            <div className="lg:col-span-2 space-y-8">
-
-              {filteredAnnouncements.length > 0 ? (
-                <div className="space-y-6">
-                  {filteredAnnouncements.map((post) => (
-                    <SocialPost key={post.id} post={post} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-secondary-200">
-                  <p className="text-secondary-500">No updates at the moment.</p>
-                </div>
-              )}
-            </div>
+            <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.5} className="lg:col-span-2">
+              <div className="space-y-8">
+                {filteredAnnouncements.length > 0 ? (
+                  <div className="space-y-6">
+                    {filteredAnnouncements.map((post) => (
+                      <SocialPost key={post.id} post={post} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-24 bg-secondary-950 dark:bg-white rounded-3xl border border-dashed border-secondary-800 dark:border-secondary-200 transition-colors">
+                    <p className="text-secondary-300 dark:text-secondary-700 font-medium">No updates at the moment.</p>
+                  </div>
+                )}
+              </div>
+            </AnimationWrapper>
 
             {/* Right Column: Recent Donations & Quick Stats (Span 1) */}
-            <div className="space-y-8">
-              {/* Donations Card */}
-              <div className={cn(
-                "bg-gradient-to-br from-primary-900 to-secondary-900 dark:from-primary-950 dark:to-secondary-950 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden transition-all duration-500",
-                recentDonations.length === 0 ? "min-h-[400px]" : "min-h-[240px]"
-              )}>
-                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
-                <div className="relative z-10">
-                  <h3 className="text-2xl font-bold font-heading mb-6 flex items-center gap-2">
-                    <Heart className="w-6 h-6 text-pink-500 fill-pink-500 animate-pulse" />
-                    Recent Giving
-                  </h3>
+            <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.7}>
+              <div className="space-y-8">
+                {/* Donations Card */}
+                <div className={cn(
+                  "rounded-3xl p-6 shadow-xl relative overflow-hidden transition-all duration-500",
+                  "bg-gradient-to-br from-primary-900 to-secondary-900 text-white", // Default (Light Mode) -> Dark Card
+                  "dark:from-secondary-50 dark:to-white dark:text-secondary-900", // Dark Mode -> Light Card
+                  recentDonations.length === 0 ? "min-h-[400px]" : "min-h-[240px]"
+                )}>
+                  <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-white/10 dark:bg-primary-500/10 rounded-full blur-3xl"></div>
+                  <div className="relative z-10">
+                    <h3 className="text-2xl font-bold font-heading mb-6 flex items-center gap-2">
+                      <Heart className="w-6 h-6 text-pink-500 fill-pink-500 animate-pulse" />
+                      Recent Giving
+                    </h3>
 
-                  <div className="relative">
-                    {recentDonations.length === 0 ? (
-                      <div className="text-center py-8 text-secondary-300 italic text-sm">
-                        Join our community of donors to support Masjid Angullia.
-                      </div>
-                    ) : (
-                      <motion.div
-                        className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x touch-pan-x cursor-grab active:cursor-grabbing"
-                        drag="x"
-                        dragConstraints={{ right: 0, left: -((recentDonations.length - 1) * 200) }} // Rough estimate for constraints
-                      >
-                        {recentDonations.map((donation, idx) => (
-                          <div
-                            key={idx}
-                            className="bg-white/10 backdrop-blur-sm rounded-xl p-3 flex flex-col gap-2 border border-white/5 hover:bg-white/20 transition-colors group min-w-[180px] snap-center shrink-0"
+                    <div className="relative overflow-hidden group/marquee">
+                      {recentDonations.length === 0 ? (
+                        <div className="text-center py-8 text-secondary-300 italic text-sm">
+                          Join our community of donors to support Masjid Angullia.
+                        </div>
+                      ) : (
+                        <div className="flex overflow-hidden no-scrollbar">
+                          <motion.div
+                            className="flex gap-4 pr-4"
+                            animate={{
+                              x: ["0%", "-50%"]
+                            }}
+                            transition={{
+                              duration: 20,
+                              ease: "linear",
+                              repeat: Infinity,
+                            }}
+                            whileHover={{ animationPlayState: "paused" }}
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-300 font-bold text-xs uppercase shrink-0">
-                                {(donation.isAnonymous ? "A" : donation.donorName[0])}
+                            {/* Duplicate items for seamless loop */}
+                            {[...recentDonations, ...recentDonations].map((donation, idx) => (
+                              <div
+                                key={`${donation.id}-${idx}`}
+                                className={cn(
+                                  "rounded-xl p-3 flex flex-col gap-2 border transition-colors group min-w-[200px] shrink-0",
+                                  "bg-white/10 border-white/5 hover:bg-white/20", // Light Mode (Inverted Dark)
+                                  "dark:bg-secondary-100 dark:border-secondary-200 dark:hover:bg-secondary-200" // Dark Mode (Inverted Light)
+                                )}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-300 dark:text-primary-600 font-bold text-xs uppercase shrink-0">
+                                    {(donation.isAnonymous ? "A" : donation.donorName[0])}
+                                  </div>
+                                  <div className="overflow-hidden">
+                                    <p className="font-medium text-sm text-secondary-100 dark:text-secondary-900 truncate">
+                                      {donation.isAnonymous ? "Anonymous" : donation.donorName}
+                                    </p>
+                                    <p className="text-[10px] text-secondary-400 dark:text-secondary-500 truncate">{donation.type}</p>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-end mt-1">
+                                  <span className="font-bold text-secondary-100 dark:text-secondary-900 text-sm">₱{donation.amount.toLocaleString()}</span>
+                                  <span className="text-[10px] text-secondary-400 dark:text-secondary-500 group-hover:text-secondary-300 dark:group-hover:text-secondary-700 transition-colors">{formatTimeAgo(donation.date)}</span>
+                                </div>
                               </div>
-                              <div className="overflow-hidden">
-                                <p className="font-medium text-sm text-secondary-100 truncate">
-                                  {donation.isAnonymous ? "Anonymous" : donation.donorName}
-                                </p>
-                                <p className="text-[10px] text-secondary-400 truncate">{donation.type}</p>
-                              </div>
-                            </div>
-                            <div className="flex justify-between items-end mt-1">
-                              <span className="font-bold text-secondary-100 text-sm">₱{donation.amount.toLocaleString()}</span>
-                              <span className="text-[10px] text-secondary-400 group-hover:text-secondary-300 transition-colors">{formatTimeAgo(donation.date)}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </motion.div>
+                            ))}
+                          </motion.div>
+                        </div>
+                      )}
+                    </div>
+
+                    {recentDonations.length === 0 && (
+                      <div className={cn(
+                        "rounded-2xl p-4 border text-center animate-fade-in",
+                        "bg-white/5 border-white/10", // Light Mode (Inverted Dark)
+                        "dark:bg-secondary-100/50 dark:border-secondary-200" // Dark Mode (Inverted Light)
+                      )}>
+                        <p className="text-secondary-300 dark:text-secondary-600 text-sm mb-3 font-medium">Support our masjid & community</p>
+                        <Link
+                          href="/donations"
+                          className="block w-full py-3 bg-white dark:bg-primary-600 text-primary-900 dark:text-white font-bold rounded-xl hover:bg-secondary-100 dark:hover:bg-primary-700 transition-colors shadow-lg"
+                        >
+                          Donate Now
+                        </Link>
+                      </div>
                     )}
                   </div>
-
-                  {recentDonations.length === 0 && (
-                    <div className="bg-white/5 rounded-2xl p-4 border border-white/10 text-center animate-fade-in">
-                      <p className="text-secondary-300 text-sm mb-3">Support our masjid & community</p>
-                      <Link href="/donations" className="block w-full py-3 bg-white text-primary-900 font-bold rounded-xl hover:bg-secondary-100 transition-colors shadow-lg">
-                        Donate Now
-                      </Link>
-                    </div>
-                  )}
                 </div>
               </div>
-
-              {/* Upcoming Events List */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border border-secondary-100">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold font-heading text-secondary-900">Upcoming Events</h3>
-                  <Calendar className="w-5 h-5 text-primary-600" />
-                </div>
-
-                <div className="space-y-4">
-                  {events.length > 0 ? (
-                    events.map(event => (
-                      <div key={event.id} className="group relative pl-4 border-l-2 border-secondary-200 hover:border-primary-500 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-semibold text-secondary-900 line-clamp-1">{event.title}</h4>
-                            <p className="text-xs text-secondary-500 mb-1">{new Date(event.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {event.time}</p>
-                          </div>
-                          {event.registrationOpen && (
-                            <button
-                              onClick={() => handleRegister(event)}
-                              className="text-xs font-bold text-primary-600 bg-primary-50 px-2 py-1 rounded hover:bg-primary-100 transition-colors"
-                            >
-                              Register
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-secondary-500 italic">No upcoming events.</p>
-                  )}
-                </div>
-              </div>
-            </div>
+            </AnimationWrapper>
           </div>
-        </AnimationWrapper>
+        </div>
       </section>
 
       {/* SMS Subscription Section */}

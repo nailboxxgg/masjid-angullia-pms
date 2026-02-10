@@ -30,14 +30,16 @@ export default function UpdatesPage() {
     return (
         <AnimationWrapper className="min-h-screen bg-gray-50 dark:bg-secondary-950 flex flex-col transition-colors duration-300">
             {/* Top Navigation */}
-            <div className="max-w-7xl mx-auto w-full px-6 py-6">
-                <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 text-secondary-500 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium text-sm"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to Home
-                </Link>
+            <div className="bg-secondary-900 py-6">
+                <div className="max-w-7xl mx-auto w-full px-6">
+                    <Link
+                        href="/"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all text-sm font-medium group"
+                    >
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        Back to Home
+                    </Link>
+                </div>
             </div>
 
             {/* Main Content */}

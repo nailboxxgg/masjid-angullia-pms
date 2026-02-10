@@ -45,14 +45,16 @@ export default function FeedbackPage() {
     return (
         <AnimationWrapper className="min-h-screen bg-gray-50 flex flex-col">
             {/* Top Navigation */}
-            <div className="max-w-7xl mx-auto w-full px-6 py-6">
-                <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 text-secondary-500 hover:text-primary-600 transition-colors font-medium text-sm"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to Home
-                </Link>
+            <div className="bg-secondary-900 py-6">
+                <div className="max-w-7xl mx-auto w-full px-6">
+                    <Link
+                        href="/"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all text-sm font-medium group"
+                    >
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        Back to Home
+                    </Link>
+                </div>
             </div>
 
             {/* Main Content */}
@@ -191,9 +193,12 @@ export default function FeedbackPage() {
                     </motion.div>
 
                     {/* Bottom Back Button */}
-                    <div className="mt-8 text-center">
-                        <Link href="/" className="inline-flex items-center gap-2 text-secondary-400 hover:text-secondary-600 transition-colors text-sm">
-                            <ArrowLeft className="w-3 h-3" />
+                    <div className="mt-12 text-center pb-10">
+                        <Link
+                            href="/"
+                            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-secondary-100 text-secondary-700 border border-secondary-200 hover:bg-secondary-200 transition-all text-sm font-bold group"
+                        >
+                            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                             Return to Homepage
                         </Link>
                     </div>

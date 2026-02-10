@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertCircle, RotateCcw } from "lucide-react";
+import { AlertCircle, RotateCcw, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function DonationFailedPage() {
@@ -32,8 +32,9 @@ export default function DonationFailedPage() {
                     </Link>
                     <Link
                         href="/"
-                        className="block w-full py-3 text-gray-500 font-medium hover:text-primary-600 transition-colors"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-secondary-50 text-secondary-600 border border-secondary-100 hover:bg-secondary-100 transition-all text-sm font-bold group w-full"
                     >
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                         Return Home
                     </Link>
                 </div>
