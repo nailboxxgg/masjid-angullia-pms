@@ -21,6 +21,7 @@ export interface Announcement {
     type: 'General' | 'Event' | 'Urgent' | 'Fundraising';
     priority: 'low' | 'normal' | 'high';
     imageUrl?: string;
+    externalUrl?: string;
     createdAt: number;
 }
 

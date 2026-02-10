@@ -31,6 +31,7 @@ export default function AnnouncementsManager() {
     const [newContent, setNewContent] = useState("");
     const [newType, setNewType] = useState<Announcement['type']>("General");
     const [newPriority, setNewPriority] = useState<Announcement['priority']>("normal");
+    const [externalUrl, setExternalUrl] = useState("");
     const [sendSMS, setSendSMS] = useState(false);
 
     useEffect(() => {
@@ -54,6 +55,7 @@ export default function AnnouncementsManager() {
             content: newContent,
             type: newType,
             priority: newPriority,
+            externalUrl: externalUrl,
             date: new Date().toISOString()
         });
 
@@ -111,6 +113,7 @@ export default function AnnouncementsManager() {
             setNewContent("");
             setNewType("General");
             setNewPriority("normal");
+            setExternalUrl("");
             setSendSMS(false);
 
         } else {
@@ -159,30 +162,30 @@ export default function AnnouncementsManager() {
             <div className="grid lg:grid-cols-3 gap-6">
                 {/* Create Form */}
                 <div className="lg:col-span-1">
-                    <Card>
+                    <Card className="transition-colors duration-300 bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
                         <CardHeader>
-                            <CardTitle className="text-lg text-secondary-800 dark:text-secondary-100">New Announcement</CardTitle>
-                            <CardDescription className="dark:text-secondary-400">Post a new update to the community hub.</CardDescription>
+                            <CardTitle className="text-lg text-white dark:text-secondary-900">New Announcement</CardTitle>
+                            <CardDescription className="text-secondary-400 dark:text-secondary-500">Post a new update to the community hub.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleCreate} className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Title</label>
+                                    <label className="text-sm font-medium text-secondary-300 dark:text-secondary-700">Title</label>
                                     <input
                                         required
                                         value={newTitle}
                                         onChange={(e) => setNewTitle(e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none text-secondary-800 dark:text-secondary-100 transition-colors"
+                                        className="flex h-10 w-full rounded-md border text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-colors bg-secondary-800 border-secondary-700 text-secondary-100 dark:bg-secondary-50 dark:border-secondary-200 dark:text-secondary-900"
                                         placeholder="e.g. Eid Prayer Timings"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Type & Priority</label>
+                                    <label className="text-sm font-medium text-secondary-300 dark:text-secondary-700">Type & Priority</label>
                                     <div className="flex gap-2">
                                         <select
                                             value={newType}
                                             onChange={(e) => setNewType(e.target.value as any)}
-                                            className="flex h-10 w-full rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm outline-none text-secondary-800 dark:text-secondary-100 transition-colors"
+                                            className="flex h-10 w-full rounded-md border text-sm outline-none transition-colors bg-secondary-800 border-secondary-700 text-secondary-100 dark:bg-secondary-50 dark:border-secondary-200 dark:text-secondary-900"
                                         >
                                             <option value="General">General</option>
                                             <option value="Event">Event</option>
@@ -192,7 +195,7 @@ export default function AnnouncementsManager() {
                                         <select
                                             value={newPriority}
                                             onChange={(e) => setNewPriority(e.target.value as any)}
-                                            className="flex h-10 w-full rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm outline-none text-secondary-800 dark:text-secondary-100 transition-colors"
+                                            className="flex h-10 w-full rounded-md border text-sm outline-none transition-colors bg-secondary-800 border-secondary-700 text-secondary-100 dark:bg-secondary-50 dark:border-secondary-200 dark:text-secondary-900"
                                         >
                                             <option value="low">Low</option>
                                             <option value="normal">Normal</option>
@@ -201,25 +204,36 @@ export default function AnnouncementsManager() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Content</label>
+                                    <label className="text-sm font-medium text-secondary-300 dark:text-secondary-700">Content</label>
                                     <textarea
                                         required
                                         value={newContent}
                                         onChange={(e) => setNewContent(e.target.value)}
-                                        className="flex min-h-[120px] w-full rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none text-secondary-800 dark:text-secondary-100 transition-colors"
+                                        className="flex min-h-[120px] w-full rounded-md border text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none transition-colors bg-secondary-800 border-secondary-700 text-secondary-100 dark:bg-secondary-50 dark:border-secondary-200 dark:text-secondary-900"
                                         placeholder="Write your announcement details here..."
                                     />
                                 </div>
-                                <div className="flex items-center gap-2 p-3 bg-secondary-50 dark:bg-secondary-900 rounded-lg border border-secondary-200 dark:border-secondary-800 transition-colors">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-secondary-300 dark:text-secondary-700">Facebook Post URL (Optional)</label>
+                                    <input
+                                        type="url"
+                                        value={externalUrl}
+                                        onChange={(e) => setExternalUrl(e.target.value)}
+                                        className="flex h-10 w-full rounded-md border text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-colors bg-secondary-800 border-secondary-700 text-secondary-100 dark:bg-secondary-50 dark:border-secondary-200 dark:text-secondary-900"
+                                        placeholder="https://www.facebook.com/..."
+                                    />
+                                    <p className="text-[10px] text-secondary-500 dark:text-secondary-400">If linked, this post will be embedded instead of the text above.</p>
+                                </div>
+                                <div className="flex items-center gap-2 p-3 rounded-lg border transition-colors bg-secondary-800 border-secondary-700 dark:bg-secondary-50 dark:border-secondary-200">
                                     <input
                                         type="checkbox"
                                         id="sms-broadcast"
-                                        className="w-4 h-4 text-primary-600 rounded border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 focus:ring-primary-500"
+                                        className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500 bg-secondary-700 border-secondary-600 dark:bg-white dark:border-secondary-300"
                                         checked={sendSMS}
                                         onChange={(e) => setSendSMS(e.target.checked)}
                                     />
-                                    <label htmlFor="sms-broadcast" className="text-sm font-medium text-secondary-700 dark:text-secondary-300 select-none cursor-pointer flex items-center gap-2">
-                                        <Megaphone className="w-4 h-4 text-secondary-500 dark:text-secondary-400" />
+                                    <label htmlFor="sms-broadcast" className="text-sm font-medium select-none cursor-pointer flex items-center gap-2 text-secondary-300 dark:text-secondary-700">
+                                        <Megaphone className="w-4 h-4 text-secondary-400 dark:text-secondary-500" />
                                         Broadcast via SMS
                                     </label>
                                 </div>
@@ -248,16 +262,16 @@ export default function AnnouncementsManager() {
                     ) : (
                         announcements.map((item) => (
                             <AnimationWrapper key={item.id} animation="fadeIn">
-                                <div className="bg-white dark:bg-secondary-900 p-4 rounded-xl border border-secondary-200 dark:border-secondary-800 shadow-sm hover:shadow-md transition-all duration-300 flex gap-4">
+                                <div className="p-4 rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 flex gap-4 bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
                                     <div className={cn("p-3 rounded-full h-fit", getTypeColor(item.type))}>
                                         <Megaphone className="w-5 h-5" />
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <h3 className="font-bold text-secondary-900 dark:text-secondary-100">{item.title}</h3>
-                                                <div className="flex items-center gap-2 text-xs text-secondary-500 dark:text-secondary-400 mt-1">
-                                                    <span className={cn("px-2 py-0.5 rounded-full border bg-white dark:bg-secondary-900", getTypeColor(item.type))}>
+                                                <h3 className="font-bold text-white dark:text-secondary-900">{item.title}</h3>
+                                                <div className="flex items-center gap-2 text-xs text-secondary-400 dark:text-secondary-500 mt-1">
+                                                    <span className={cn("px-2 py-0.5 rounded-full border bg-secondary-800 dark:bg-white", getTypeColor(item.type))}>
                                                         {item.type}
                                                     </span>
                                                     <span>•</span>
@@ -271,7 +285,7 @@ export default function AnnouncementsManager() {
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
-                                        <p className="text-sm text-secondary-600 dark:text-secondary-400 mt-2 line-clamp-3">
+                                        <p className="text-sm text-secondary-400 dark:text-secondary-600 mt-2 line-clamp-3">
                                             {item.content}
                                         </p>
                                     </div>

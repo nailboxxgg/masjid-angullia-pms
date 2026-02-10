@@ -35,6 +35,7 @@ export const getAnnouncements = async (limitCount = 10): Promise<Announcement[]>
                 type: data.type,
                 priority: data.priority,
                 imageUrl: data.imageUrl,
+                externalUrl: data.externalUrl,
                 createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : Date.now()
             } as Announcement;
         });

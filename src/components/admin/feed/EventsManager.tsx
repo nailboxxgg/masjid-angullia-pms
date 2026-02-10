@@ -112,7 +112,7 @@ export default function EventsManager() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                         >
-                            <Card className="h-full hover:shadow-md transition-all border-secondary-200 dark:border-secondary-800 bg-white dark:bg-secondary-900 group relative transition-colors duration-300">
+                            <Card className="h-full hover:shadow-md transition-all group relative duration-300 bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
                                 <CardHeader className="pb-2">
                                     <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
@@ -132,16 +132,17 @@ export default function EventsManager() {
                                             )}
                                         </button>
                                     </div>
-                                    <div className={`text-xs font-semibold px-2 py-1 rounded w-fit ${event.registrationOpen ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : "bg-secondary-100 dark:bg-secondary-800 text-secondary-500 dark:text-secondary-400"
+
+                                    <div className={`text-xs font-semibold px-2 py-1 rounded w-fit ${event.registrationOpen ? "bg-green-900/30 text-green-400 border border-green-800 dark:bg-green-100 dark:text-green-700 dark:border-green-200" : "bg-secondary-800 text-secondary-400 border border-secondary-700 dark:bg-secondary-100 dark:text-secondary-500 dark:border-secondary-200"
                                         }`}>
                                         {event.registrationOpen ? "Open" : "Closed"}
                                     </div>
-                                    <CardTitle className="text-lg font-heading leading-tight mt-2 text-secondary-900 dark:text-secondary-100">{event.title}</CardTitle>
+                                    <CardTitle className="text-lg font-heading leading-tight mt-2 text-white dark:text-secondary-900">{event.title}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <p className="text-sm text-secondary-500 dark:text-secondary-400 line-clamp-2">{event.description}</p>
+                                    <p className="text-sm text-secondary-400 dark:text-secondary-600 line-clamp-2">{event.description}</p>
 
-                                    <div className="space-y-2 text-sm text-secondary-600 dark:text-secondary-400">
+                                    <div className="space-y-2 text-sm text-secondary-400 dark:text-secondary-600">
                                         <div className="flex items-center gap-2">
                                             <Calendar className="w-4 h-4 text-secondary-400 dark:text-secondary-500" />
                                             {event.date}
@@ -154,11 +155,11 @@ export default function EventsManager() {
                                             <MapPin className="w-4 h-4 text-secondary-400 dark:text-secondary-500" />
                                             {event.location}
                                         </div>
-                                        <div className="flex items-center justify-between pt-2 border-t border-secondary-100 dark:border-secondary-800 mt-3">
+                                        <div className="flex items-center justify-between pt-2 border-t mt-3 border-secondary-800 dark:border-secondary-100">
                                             <div className="flex items-center gap-2">
                                                 <Users className="w-4 h-4 text-primary-500" />
-                                                <span className="font-medium text-secondary-900 dark:text-secondary-200">{(event.registrantsCount || 0)}</span>
-                                                <span className="text-secondary-400 dark:text-secondary-500">/{event.capacity}</span>
+                                                <span className="font-medium text-white dark:text-secondary-900">{(event.registrantsCount || 0)}</span>
+                                                <span className="text-secondary-500 dark:text-secondary-400">/{event.capacity}</span>
                                             </div>
                                             {(event.registrantsCount || 0) > 0 && (
                                                 <button
@@ -177,10 +178,10 @@ export default function EventsManager() {
                 </AnimatePresence>
 
                 {events.length === 0 && !isLoading && (
-                    <div className="col-span-full py-20 text-center bg-white dark:bg-secondary-900 transition-colors rounded-xl border border-dashed border-secondary-300 dark:border-secondary-700">
-                        <Calendar className="w-12 h-12 text-secondary-300 dark:text-secondary-600 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-secondary-900 dark:text-secondary-100">No events found</h3>
-                        <p className="text-secondary-500 dark:text-secondary-400 mb-6">Get started by creating your first event.</p>
+                    <div className="col-span-full py-20 text-center transition-colors rounded-xl border border-dashed bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
+                        <Calendar className="w-12 h-12 mx-auto mb-4 text-secondary-600 dark:text-secondary-300" />
+                        <h3 className="text-lg font-medium text-white dark:text-secondary-900">No events found</h3>
+                        <p className="text-secondary-400 dark:text-secondary-500 mb-6">Get started by creating your first event.</p>
                         <button
                             onClick={() => { resetForm(); setIsFormOpen(true); }}
                             className="px-4 py-2 bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 rounded-md text-sm font-medium hover:bg-secondary-200 dark:hover:bg-secondary-700 transition-colors"
@@ -307,7 +308,7 @@ export default function EventsManager() {
             >
                 <div className="overflow-x-auto max-h-[60vh]">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-secondary-50 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 font-medium border-b border-secondary-200 dark:border-secondary-700 transition-colors">
+                        <thead className="font-medium border-b transition-colors bg-secondary-800 text-secondary-200 border-secondary-700 dark:bg-secondary-50 dark:text-secondary-700 dark:border-secondary-200 !dark:bg-secondary-50 !dark:text-secondary-700 !dark:border-secondary-200">
                             <tr>
                                 <th className="px-4 py-3">Name</th>
                                 <th className="px-4 py-3">Contact</th>
@@ -315,13 +316,13 @@ export default function EventsManager() {
                                 <th className="px-4 py-3">Registered At</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-secondary-100 dark:divide-secondary-800 bg-white dark:bg-secondary-900/50 transition-colors">
+                        <tbody className="divide-y transition-colors divide-secondary-800 dark:divide-secondary-100">
                             {registrants.length > 0 ? (
                                 registrants.map((reg) => (
-                                    <tr key={reg.id} className="hover:bg-secondary-50/50 dark:hover:bg-secondary-800/50 transition-colors">
-                                        <td className="px-4 py-3 font-medium text-secondary-900 dark:text-secondary-100">{reg.name}</td>
-                                        <td className="px-4 py-3 text-secondary-600 dark:text-secondary-400">{reg.contactNumber}</td>
-                                        <td className="px-4 py-3 text-secondary-600 dark:text-secondary-400">{reg.email || "-"}</td>
+                                    <tr key={reg.id} className="transition-colors hover:bg-white/5 dark:hover:bg-secondary-50">
+                                        <td className="px-4 py-3 font-medium text-white dark:text-secondary-900">{reg.name}</td>
+                                        <td className="px-4 py-3 text-secondary-400 dark:text-secondary-600">{reg.contactNumber}</td>
+                                        <td className="px-4 py-3 text-secondary-400 dark:text-secondary-600">{reg.email || "-"}</td>
                                         <td className="px-4 py-3 text-secondary-500 dark:text-secondary-500 text-xs">
                                             {new Date(reg.createdAt).toLocaleString()}
                                         </td>
@@ -329,7 +330,7 @@ export default function EventsManager() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={4} className="px-4 py-8 text-center text-secondary-500 dark:text-secondary-500 italic bg-white dark:bg-transparent">
+                                    <td colSpan={4} className="px-4 py-8 text-center italic bg-transparent text-secondary-500">
                                         No registrants found.
                                     </td>
                                 </tr>
@@ -346,6 +347,6 @@ export default function EventsManager() {
                     </button>
                 </div>
             </Modal>
-        </div>
+        </div >
     );
 }

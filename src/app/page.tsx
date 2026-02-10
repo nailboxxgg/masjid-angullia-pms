@@ -161,8 +161,8 @@ export default function Home() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-24 bg-secondary-950 dark:bg-white rounded-3xl border border-dashed border-secondary-800 dark:border-secondary-200 transition-colors">
-                    <p className="text-secondary-300 dark:text-secondary-700 font-medium">No updates at the moment.</p>
+                  <div className="text-center py-20 bg-white dark:bg-secondary-900/50 rounded-3xl border border-dashed border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
+                    <p className="text-secondary-500 dark:text-secondary-400 font-medium">No updates at the moment.</p>
                   </div>
                 )}
               </div>
@@ -173,12 +173,12 @@ export default function Home() {
               <div className="space-y-8">
                 {/* Donations Card */}
                 <div className={cn(
-                  "rounded-3xl p-6 shadow-xl relative overflow-hidden transition-all duration-500",
-                  "bg-gradient-to-br from-primary-900 to-secondary-900 text-white", // Default (Light Mode) -> Dark Card
-                  "dark:from-secondary-50 dark:to-white dark:text-secondary-900", // Dark Mode -> Light Card
+                  "rounded-3xl p-6 shadow-xl relative overflow-hidden transition-all duration-500 border border-secondary-100 dark:border-secondary-800",
+                  "bg-white text-secondary-900", // Standard (Light Mode)
+                  "dark:bg-secondary-900 dark:text-white", // Standard (Dark Mode)
                   recentDonations.length === 0 ? "min-h-[400px]" : "min-h-[240px]"
                 )}>
-                  <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-white/10 dark:bg-primary-500/10 rounded-full blur-3xl"></div>
+                  <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-3xl"></div>
                   <div className="relative z-10">
                     <h3 className="text-2xl font-bold font-heading mb-6 flex items-center gap-2">
                       <Heart className="w-6 h-6 text-pink-500 fill-pink-500 animate-pulse" />
@@ -210,8 +210,8 @@ export default function Home() {
                                 key={`${donation.id}-${idx}`}
                                 className={cn(
                                   "rounded-xl p-3 flex flex-col gap-2 border transition-colors group min-w-[200px] shrink-0",
-                                  "bg-white/10 border-white/5 hover:bg-white/20", // Light Mode (Inverted Dark)
-                                  "dark:bg-secondary-100 dark:border-secondary-200 dark:hover:bg-secondary-200" // Dark Mode (Inverted Light)
+                                  "bg-secondary-50 border-secondary-100 hover:bg-secondary-100", // Standard Light
+                                  "dark:bg-white/5 dark:border-white/5 dark:hover:bg-white/10" // Standard Dark
                                 )}
                               >
                                 <div className="flex items-center gap-3">
@@ -219,14 +219,14 @@ export default function Home() {
                                     {(donation.isAnonymous ? "A" : donation.donorName[0])}
                                   </div>
                                   <div className="overflow-hidden">
-                                    <p className="font-medium text-sm text-secondary-100 dark:text-secondary-900 truncate">
+                                    <p className="font-medium text-sm text-secondary-900 dark:text-secondary-100 truncate">
                                       {donation.isAnonymous ? "Anonymous" : donation.donorName}
                                     </p>
                                     <p className="text-[10px] text-secondary-400 dark:text-secondary-500 truncate">{donation.type}</p>
                                   </div>
                                 </div>
                                 <div className="flex justify-between items-end mt-1">
-                                  <span className="font-bold text-secondary-100 dark:text-secondary-900 text-sm">₱{donation.amount.toLocaleString()}</span>
+                                  <span className="font-bold text-secondary-900 dark:text-secondary-100 text-sm">₱{donation.amount.toLocaleString()}</span>
                                   <span className="text-[10px] text-secondary-400 dark:text-secondary-500 group-hover:text-secondary-300 dark:group-hover:text-secondary-700 transition-colors">{formatTimeAgo(donation.date)}</span>
                                 </div>
                               </div>
@@ -239,13 +239,13 @@ export default function Home() {
                     {recentDonations.length === 0 && (
                       <div className={cn(
                         "rounded-2xl p-4 border text-center animate-fade-in",
-                        "bg-white/5 border-white/10", // Light Mode (Inverted Dark)
-                        "dark:bg-secondary-100/50 dark:border-secondary-200" // Dark Mode (Inverted Light)
+                        "bg-secondary-50 border-secondary-100", // Standard Light
+                        "dark:bg-white/5 dark:border-white/10" // Standard Dark
                       )}>
                         <p className="text-secondary-300 dark:text-secondary-600 text-sm mb-3 font-medium">Support our masjid & community</p>
                         <Link
                           href="/donations"
-                          className="block w-full py-3 bg-white dark:bg-primary-600 text-primary-900 dark:text-white font-bold rounded-xl hover:bg-secondary-100 dark:hover:bg-primary-700 transition-colors shadow-lg"
+                          className="block w-full py-3 bg-primary-600 dark:bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-lg"
                         >
                           Donate Now
                         </Link>

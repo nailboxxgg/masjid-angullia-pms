@@ -104,38 +104,38 @@ export default function FinancesPage() {
 
             {/* Stats Overview */}
             <div className="grid md:grid-cols-3 gap-6">
-                <Card className="dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
+                <Card className="transition-colors duration-300 bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-secondary-500 dark:text-secondary-400">Total Collections</CardTitle>
+                        <CardTitle className="text-sm font-medium text-secondary-400 dark:text-secondary-500">Total Collections</CardTitle>
                         <DollarSign className="w-4 h-4 text-primary-500 dark:text-primary-400" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold font-heading text-secondary-800 dark:text-secondary-100">₱{stats.totalCollected.toLocaleString()}</div>
+                        <div className="text-2xl font-bold font-heading text-white dark:text-secondary-900">₱{stats.totalCollected.toLocaleString()}</div>
                         <p className="text-xs text-secondary-400 dark:text-secondary-500 mt-1">Lifetime contributions</p>
                     </CardContent>
                 </Card>
 
-                <Card className="dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
+                <Card className="transition-colors duration-300 bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 ">
-                        <CardTitle className="text-sm font-medium text-secondary-500 dark:text-secondary-400">This Month</CardTitle>
+                        <CardTitle className="text-sm font-medium text-secondary-400 dark:text-secondary-500">This Month</CardTitle>
                         <TrendingUp className="w-4 h-4 text-green-500 dark:text-green-400" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold font-heading text-secondary-800 dark:text-secondary-100">₱{stats.monthlyCollected.toLocaleString()}</div>
+                        <div className="text-2xl font-bold font-heading text-white dark:text-secondary-900">₱{stats.monthlyCollected.toLocaleString()}</div>
                         <p className="text-xs text-secondary-400 dark:text-secondary-500 mt-1">
                             {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
                         </p>
                     </CardContent>
                 </Card>
 
-                <Card className="dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
+                <Card className="transition-colors duration-300 bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-secondary-500 dark:text-secondary-400">Top Category</CardTitle>
+                        <CardTitle className="text-sm font-medium text-secondary-400 dark:text-secondary-500">Top Category</CardTitle>
                         <PieChart className="w-4 h-4 text-secondary-400 dark:text-secondary-500" />
                     </CardHeader>
                     <CardContent>
                         {/* Simple logic to find max category */}
-                        <div className="text-lg font-bold font-heading truncate text-secondary-800 dark:text-secondary-100">
+                        <div className="text-lg font-bold font-heading truncate text-white dark:text-secondary-900">
                             {Object.entries(stats.breakdown).sort((a, b) => b[1] - a[1])[0]?.[0] || "None"}
                         </div>
                         <p className="text-xs text-secondary-400 dark:text-secondary-500 mt-1">Most supported fund</p>
@@ -144,10 +144,10 @@ export default function FinancesPage() {
             </div>
 
             {/* Recent Transactions Table */}
-            <Card className="dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
+            <Card className="transition-colors duration-300 bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
                 <CardHeader>
-                    <CardTitle className="text-lg text-secondary-800 dark:text-secondary-200">Recent Donations</CardTitle>
-                    <CardDescription className="text-secondary-500 dark:text-secondary-400">Latest contributions from the community.</CardDescription>
+                    <CardTitle className="text-lg text-white dark:text-secondary-900">Recent Donations</CardTitle>
+                    <CardDescription className="text-secondary-400 dark:text-secondary-500">Latest contributions from the community.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {/* Filters */}
@@ -159,15 +159,15 @@ export default function FinancesPage() {
                                 placeholder="Search donor..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-9 h-9 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                                className="w-full pl-9 h-9 rounded-md border text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors bg-secondary-800 border-secondary-700 text-secondary-100 placeholder:text-secondary-500 dark:bg-secondary-50 dark:border-secondary-200 dark:text-secondary-900 dark:placeholder:text-secondary-400"
                             />
                         </div>
                         <div className="relative">
                             <button
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                                 className={`flex items-center gap-2 px-3 h-9 border rounded-md text-sm transition-colors ${typeFilter !== 'All'
-                                    ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400'
-                                    : 'border-secondary-300 dark:border-secondary-700 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800'
+                                    ? 'bg-primary-900/50 border-primary-800 text-primary-400 dark:bg-primary-50 dark:border-primary-200 dark:text-primary-700'
+                                    : 'border-secondary-700 text-secondary-400 hover:bg-white/5 dark:border-secondary-200 dark:text-secondary-600 dark:hover:bg-secondary-50'
                                     }`}
                             >
                                 <Filter className="w-3 h-3" /> Filter
@@ -205,17 +205,17 @@ export default function FinancesPage() {
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-secondary-50 dark:bg-secondary-800/50 text-secondary-500 dark:text-secondary-400 font-medium border-b border-secondary-200 dark:border-secondary-800 transition-colors">
+                            <thead className="font-medium border-b transition-colors bg-secondary-800 text-secondary-200 border-secondary-700 dark:bg-secondary-50 dark:text-secondary-700 dark:border-secondary-200 !dark:bg-secondary-50 !dark:text-secondary-700 !dark:border-secondary-200">
                                 <tr>
-                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Donor</th>
-                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Type/Fund</th>
-                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Date</th>
-                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Amount</th>
-                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Status</th>
-                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-100">Actions</th>
+                                    <th className="px-4 py-3">Donor</th>
+                                    <th className="px-4 py-3">Type/Fund</th>
+                                    <th className="px-4 py-3">Date</th>
+                                    <th className="px-4 py-3">Amount</th>
+                                    <th className="px-4 py-3">Status</th>
+                                    <th className="px-4 py-3">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-secondary-100 dark:divide-secondary-800 transition-colors">
+                            <tbody className="divide-y transition-colors divide-secondary-800 dark:divide-secondary-100">
                                 {isLoading ? (
                                     <tr>
                                         <td colSpan={5} className="px-4 py-8 text-center text-secondary-500">Loading transactions...</td>
@@ -226,9 +226,9 @@ export default function FinancesPage() {
                                     </tr>
                                 ) : (
                                     filteredDonations.map((donation) => (
-                                        <tr key={donation.id} className="hover:bg-secondary-50/50 dark:hover:bg-secondary-800/30 transition-colors">
+                                        <tr key={donation.id} className="transition-colors hover:bg-white/5 dark:hover:bg-secondary-50">
                                             <td className="px-4 py-3">
-                                                <div className="font-medium text-secondary-900 dark:text-secondary-100">
+                                                <div className="font-medium text-white dark:text-secondary-900">
                                                     {donation.isAnonymous ? "Anonymous" : donation.donorName}
                                                 </div>
                                                 <div className="text-xs text-secondary-400 dark:text-secondary-500">
@@ -248,7 +248,7 @@ export default function FinancesPage() {
                                             <td className="px-4 py-3 text-secondary-500 dark:text-secondary-400 whitespace-nowrap">
                                                 {formatDate(donation.date)}
                                             </td>
-                                            <td className="px-4 py-3 font-medium text-secondary-900 dark:text-secondary-100">
+                                            <td className="px-4 py-3 font-medium text-white dark:text-secondary-900">
                                                 ₱{donation.amount.toLocaleString()}
                                             </td>
                                             <td className="px-4 py-3">

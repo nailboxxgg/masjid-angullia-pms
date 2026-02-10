@@ -6,8 +6,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatTimeAgo(date: any) {
+    if (!date) return "";
     const d = new Date(date);
-    const seconds = Math.floor((Date.now() - d.getTime()) / 1000);
+    const now = typeof window !== 'undefined' ? Date.now() : d.getTime(); // Match on server to avoid 'Just now' mismatch
+    const seconds = Math.floor((now - d.getTime()) / 1000);
+
     if (seconds < 60) return 'Just now';
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes}m ago`;

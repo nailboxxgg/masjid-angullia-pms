@@ -18,14 +18,14 @@ export default function AdminFeedPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex bg-secondary-100 dark:bg-secondary-800 p-1 rounded-lg transition-colors">
+                <div className="flex p-1 rounded-lg transition-colors bg-secondary-100 dark:bg-secondary-900">
                     <button
                         onClick={() => setActiveTab('announcements')}
                         className={cn(
                             "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
                             activeTab === 'announcements'
-                                ? "bg-white dark:bg-secondary-900 text-primary-700 dark:text-primary-400 shadow-sm"
-                                : "text-secondary-600 dark:text-secondary-400 hover:text-secondary-900 dark:hover:text-secondary-200"
+                                ? "bg-white text-primary-700 shadow-sm dark:bg-secondary-800 dark:text-primary-400"
+                                : "text-secondary-600 hover:text-secondary-900 dark:text-secondary-400 dark:hover:text-secondary-200"
                         )}
                     >
                         <Megaphone className="w-4 h-4" />
@@ -36,8 +36,8 @@ export default function AdminFeedPage() {
                         className={cn(
                             "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
                             activeTab === 'events'
-                                ? "bg-white dark:bg-secondary-900 text-primary-700 dark:text-primary-400 shadow-sm"
-                                : "text-secondary-600 dark:text-secondary-400 hover:text-secondary-900 dark:hover:text-secondary-200"
+                                ? "bg-white text-primary-700 shadow-sm dark:bg-secondary-800 dark:text-primary-400"
+                                : "text-secondary-600 hover:text-secondary-900 dark:text-secondary-400 dark:hover:text-secondary-200"
                         )}
                     >
                         <Calendar className="w-4 h-4" />

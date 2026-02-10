@@ -91,9 +91,9 @@ export default function AdminFeedbackPage() {
                 </div>
             </div>
 
-            <Card className="dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
+            <Card className="transition-colors duration-300 bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
                 <CardHeader>
-                    <CardTitle className="text-lg text-secondary-800 dark:text-secondary-200">Inbox</CardTitle>
+                    <CardTitle className="text-lg text-white dark:text-secondary-900">Inbox</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {/* Filters */}
@@ -105,15 +105,15 @@ export default function AdminFeedbackPage() {
                                 placeholder="Search..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-9 h-9 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                                className="w-full pl-9 h-9 rounded-md border text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors bg-secondary-800 border-secondary-700 text-secondary-100 placeholder:text-secondary-500 dark:bg-secondary-50 dark:border-secondary-200 dark:text-secondary-900 dark:placeholder:text-secondary-400"
                             />
                         </div>
                         <div className="relative">
                             <button
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                                 className={`flex items-center gap-2 px-3 h-9 border rounded-md text-sm transition-colors ${statusFilter !== 'All' || typeFilter !== 'All'
-                                    ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400'
-                                    : 'border-secondary-300 dark:border-secondary-700 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800'
+                                    ? 'bg-primary-900/50 border-primary-800 text-primary-400 dark:bg-primary-50 dark:border-primary-200 dark:text-primary-700'
+                                    : 'border-secondary-700 text-secondary-400 hover:bg-white/5 dark:border-secondary-200 dark:text-secondary-600 dark:hover:bg-secondary-50'
                                     }`}
                             >
                                 <Filter className="w-3 h-3" /> Filter
@@ -173,16 +173,16 @@ export default function AdminFeedbackPage() {
                                 <div
                                     key={item.id}
                                     onClick={() => handleView(item)}
-                                    className="p-4 rounded-xl border border-secondary-200 dark:border-secondary-800 hover:border-primary-300 dark:hover:border-primary-500/50 hover:shadow-sm transition-all bg-white dark:bg-secondary-900 group cursor-pointer"
+                                    className="p-4 rounded-xl border hover:shadow-sm transition-all group cursor-pointer bg-white/5 border-white/10 hover:border-white/20 dark:bg-secondary-50 dark:border-secondary-200 dark:hover:border-primary-300 !dark:bg-secondary-50 !dark:border-secondary-200"
                                 >
                                     <div className="flex flex-col md:flex-row gap-4 items-start justify-between mb-3">
                                         <div className="flex items-start gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-secondary-100 dark:bg-secondary-800 flex items-center justify-center shrink-0 text-secondary-600 dark:text-secondary-300 font-bold transition-colors">
+                                            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold transition-colors bg-white/10 text-white dark:bg-secondary-200 dark:text-secondary-700">
                                                 {item.name.charAt(0)}
                                             </div>
                                             <div>
-                                                <h4 className="font-semibold text-secondary-900 dark:text-secondary-100">{item.name}</h4>
-                                                <div className="flex items-center gap-3 text-xs text-secondary-500 dark:text-secondary-400 mt-1">
+                                                <h4 className="font-semibold text-white dark:text-secondary-900">{item.name}</h4>
+                                                <div className="flex items-center gap-3 text-xs text-secondary-400 dark:text-secondary-500 mt-1">
                                                     {item.email && (
                                                         <span className="flex items-center gap-1">
                                                             <Mail className="w-3 h-3" /> {item.email}
@@ -216,7 +216,7 @@ export default function AdminFeedbackPage() {
                                         </div>
                                     </div>
                                     <div className="pl-0 md:pl-13 ml-0 md:ml-13">
-                                        <p className="text-sm text-secondary-700 dark:text-secondary-300 bg-secondary-50 dark:bg-secondary-800/50 p-3 rounded-lg mb-3 line-clamp-2 transition-colors">
+                                        <p className="text-sm p-3 rounded-lg mb-3 line-clamp-2 transition-colors text-secondary-300 bg-black/20 dark:text-secondary-600 dark:bg-white/50">
                                             {item.message}
                                         </p>
 

@@ -84,11 +84,11 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 className={cn(
-                    "fixed md:relative flex flex-col h-screen w-64 bg-secondary-900 text-white border-r border-secondary-800 z-50 transition-all duration-300",
+                    "fixed md:relative flex flex-col h-screen w-64 bg-secondary-900 border-secondary-800 text-white dark:bg-white dark:border-secondary-200 dark:text-secondary-900 z-50 transition-all duration-300",
                     !isOpen && "-translate-x-full md:translate-x-0"
                 )}
             >
-                <div className="p-6 flex items-center justify-between border-b border-secondary-800">
+                <div className="p-6 flex items-center justify-between border-b border-secondary-800 dark:border-secondary-200">
                     <div className="flex items-center gap-3">
                         <motion.div
                             initial={{ scale: 0 }}
@@ -103,15 +103,15 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 }}
                         >
-                            <h1 className="font-heading font-bold text-lg tracking-tight">Admin Portal</h1>
-                            <p className="text-xs text-secondary-500">Masjid Angullia</p>
+                            <h1 className="font-heading font-bold text-lg tracking-tight text-white dark:text-secondary-900">Admin Portal</h1>
+                            <p className="text-xs text-secondary-500 dark:text-secondary-400">Masjid Angullia</p>
                         </motion.div>
                     </div>
 
                     {/* Close Button Mobile */}
                     <button
                         onClick={onClose}
-                        className="p-2 -mr-2 text-secondary-400 hover:text-white md:hidden"
+                        className="p-2 -mr-2 text-secondary-400 hover:text-white dark:text-secondary-500 dark:hover:text-secondary-900 md:hidden"
                     >
                         <X className="w-6 h-6" />
                     </button>
@@ -133,8 +133,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                                     className={cn(
                                         "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group relative overflow-hidden",
                                         isActive
-                                            ? "text-primary-400"
-                                            : "text-secondary-400 hover:text-white"
+                                            ? "text-primary-400 dark:text-primary-600"
+                                            : "text-secondary-400 hover:text-white dark:text-secondary-500 dark:hover:text-secondary-900"
                                     )}
                                 >
                                     {isActive && (
@@ -146,10 +146,10 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                                         />
                                     )}
                                     {!isActive && (
-                                        <div className="absolute inset-0 bg-secondary-800 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
+                                        <div className="absolute inset-0 bg-secondary-800 dark:bg-secondary-100 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
                                     )}
 
-                                    <Icon className={cn("w-5 h-5 relative z-10 group-hover:scale-105 transition-transform", isActive ? "text-primary-500" : "text-secondary-500 group-hover:text-white")} />
+                                    <Icon className={cn("w-5 h-5 relative z-10 group-hover:scale-105 transition-transform", isActive ? "text-primary-500" : "text-secondary-500 group-hover:text-white dark:text-secondary-400 dark:group-hover:text-secondary-900")} />
                                     <span className="relative z-10">{route.name}</span>
                                 </Link>
                             </motion.div>
@@ -161,7 +161,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
-                    className="p-4 border-t border-secondary-800"
+                    className="p-4 border-t border-secondary-800 dark:border-secondary-200"
                 >
                     <button
                         onClick={handleSignOutClick}

@@ -79,15 +79,15 @@ export default function AdminRequestsPage() {
                 </div>
             </div>
 
-            <Card className="shadow-sm dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
-                <CardHeader className="pb-3 border-b border-secondary-100 dark:border-secondary-800">
+            <Card className="shadow-sm transition-colors duration-300 bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
+                <CardHeader className="pb-3 border-b border-secondary-800 dark:border-secondary-100 !dark:border-secondary-100">
                     <div className="flex items-center justify-between relative z-20">
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-secondary-600 dark:text-secondary-400" />
                             <input
                                 type="text"
                                 placeholder="Search requests..."
-                                className="w-full sm:w-80 pl-9 pr-4 py-2 rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-800 dark:text-secondary-100 transition-colors"
+                                className="w-full sm:w-80 pl-9 pr-4 py-2 rounded-md border text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors bg-secondary-800 border-secondary-700 text-secondary-100 placeholder:text-secondary-500 dark:bg-secondary-50 dark:border-secondary-200 dark:text-secondary-900 dark:placeholder:text-secondary-400"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -96,8 +96,8 @@ export default function AdminRequestsPage() {
                             <button
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                                 className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md border transition-colors ${statusFilter !== 'All'
-                                    ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400'
-                                    : 'bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-600 dark:text-secondary-400 hover:text-secondary-900 dark:hover:text-secondary-200'
+                                    ? 'bg-primary-900/50 border-primary-800 text-primary-400 dark:bg-primary-50 dark:border-primary-200 dark:text-primary-700'
+                                    : 'bg-secondary-800 border-secondary-700 text-secondary-400 hover:text-white dark:bg-secondary-50 dark:border-secondary-200 dark:text-secondary-600 dark:hover:text-secondary-900'
                                     }`}
                             >
                                 <Filter className="w-4 h-4" /> Filter
@@ -133,16 +133,16 @@ export default function AdminRequestsPage() {
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-secondary-50 dark:bg-secondary-800/50 text-secondary-600 dark:text-secondary-400 font-medium border-b border-secondary-200 dark:border-secondary-800 transition-colors">
+                            <thead className="font-medium border-b transition-colors bg-secondary-800 text-secondary-200 border-secondary-700 dark:bg-secondary-50 dark:text-secondary-700 dark:border-secondary-200 !dark:bg-secondary-50 !dark:text-secondary-700 !dark:border-secondary-200">
                                 <tr>
-                                    <th className="px-6 py-3 text-secondary-900 dark:text-secondary-100">Details</th>
-                                    <th className="px-6 py-3 text-secondary-900 dark:text-secondary-100">Requestor</th>
-                                    <th className="px-6 py-3 text-secondary-900 dark:text-secondary-100">Date Submitted</th>
-                                    <th className="px-6 py-3 text-secondary-900 dark:text-secondary-100">Status</th>
-                                    <th className="px-6 py-3 text-secondary-900 dark:text-secondary-100">Actions</th>
+                                    <th className="px-6 py-3">Details</th>
+                                    <th className="px-6 py-3">Requestor</th>
+                                    <th className="px-6 py-3">Date Submitted</th>
+                                    <th className="px-6 py-3">Status</th>
+                                    <th className="px-6 py-3">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-secondary-100 dark:divide-secondary-800 transition-colors">
+                            <tbody className="divide-y transition-colors divide-secondary-800 dark:divide-secondary-100">
                                 {isLoading ? (
                                     <tr>
                                         <td colSpan={5} className="px-6 py-8 text-center text-secondary-500">Loading requests...</td>
@@ -153,22 +153,22 @@ export default function AdminRequestsPage() {
                                     </tr>
                                 ) : (
                                     filteredRequests.map((req) => (
-                                        <tr key={req.id} className="hover:bg-secondary-50/50 dark:hover:bg-secondary-800/30 transition-colors">
+                                        <tr key={req.id} className="transition-colors hover:bg-white/5 dark:hover:bg-secondary-50">
                                             <td className="px-6 py-4">
-                                                <div className="text-secondary-900 dark:text-secondary-100 font-medium line-clamp-2 max-w-sm">{req.message}</div>
+                                                <div className="text-white dark:text-secondary-900 font-medium line-clamp-2 max-w-sm">{req.message}</div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="font-medium text-secondary-900 dark:text-secondary-100">{req.name}</div>
-                                                <div className="text-xs text-secondary-500 dark:text-secondary-400">{req.email}</div>
-                                                {req.contactNumber && <div className="text-xs text-secondary-500 dark:text-secondary-400">{req.contactNumber}</div>}
+                                                <div className="font-medium text-white dark:text-secondary-900">{req.name}</div>
+                                                <div className="text-xs text-secondary-400 dark:text-secondary-500">{req.email}</div>
+                                                {req.contactNumber && <div className="text-xs text-secondary-400 dark:text-secondary-500">{req.contactNumber}</div>}
                                             </td>
-                                            <td className="px-6 py-4 text-secondary-500 dark:text-secondary-400 text-xs text-nowrap">
+                                            <td className="px-6 py-4 text-secondary-400 dark:text-secondary-500 text-xs text-nowrap">
                                                 {req.createdAt?.toDate ? new Date(req.createdAt.toDate()).toLocaleDateString('en-PH', { day: 'numeric', month: 'short', year: 'numeric' }) : (req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'Just now')}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${req.status === 'New' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800' :
-                                                    req.status === 'Resolved' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800' :
-                                                        'bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700'
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${req.status === 'New' ? 'bg-blue-900/30 text-blue-300 border-blue-800 dark:bg-blue-50 dark:text-blue-700 dark:border-blue-100' :
+                                                    req.status === 'Resolved' ? 'bg-green-900/30 text-green-300 border-green-800 dark:bg-green-50 dark:text-green-700 dark:border-green-100' :
+                                                        'bg-secondary-800 text-secondary-400 border-secondary-700 dark:bg-secondary-100 dark:text-secondary-600 dark:border-secondary-200'
                                                     }`}>
                                                     {req.status}
                                                 </span>
@@ -176,7 +176,7 @@ export default function AdminRequestsPage() {
                                             <td className="px-6 py-4">
                                                 <button
                                                     onClick={() => openReview(req)}
-                                                    className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 hover:underline"
+                                                    className="font-medium text-primary-400 hover:text-primary-300 dark:text-primary-600 dark:hover:text-primary-800 hover:underline"
                                                 >
                                                     Review
                                                 </button>
@@ -283,6 +283,6 @@ export default function AdminRequestsPage() {
                     </div>
                 </div>
             </Modal>
-        </div>
+        </div >
     );
 }

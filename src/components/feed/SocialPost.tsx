@@ -5,6 +5,7 @@ import { ShieldCheck, Clock, MoreHorizontal, ThumbsUp, MessageCircle, Share2 } f
 import { Announcement } from "@/lib/types";
 import { formatTimeAgo } from "@/lib/utils";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
+import FacebookEmbed from "@/components/ui/FacebookEmbed";
 
 interface SocialPostProps {
     post: Announcement;
@@ -45,20 +46,24 @@ export default function SocialPost({ post, delay = 0 }: SocialPostProps) {
                 </div>
 
                 {/* Media Section */}
-                <div className="relative aspect-video w-full bg-secondary-100 dark:bg-secondary-800 overflow-hidden">
-                    <Image
-                        src={post.imageUrl || "/images/mosque2.png"}
-                        alt={post.title}
-                        fill
-                        className="object-cover transition-transform duration-500 hover:scale-105"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                    {post.type === 'Urgent' && (
-                        <div className="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider animate-pulse shadow-lg z-10">
-                            Urgent
-                        </div>
-                    )}
-                </div>
+                {post.externalUrl ? (
+                    <FacebookEmbed url={post.externalUrl} />
+                ) : (
+                    <div className="relative aspect-video w-full bg-secondary-100 dark:bg-secondary-800 overflow-hidden">
+                        <Image
+                            src={post.imageUrl || "/images/mosque2.png"}
+                            alt={post.title}
+                            fill
+                            className="object-cover transition-transform duration-500 hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                        {post.type === 'Urgent' && (
+                            <div className="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider animate-pulse shadow-lg z-10">
+                                Urgent
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Action Bar */}
                 <div className="p-2 border-t border-secondary-50 dark:border-secondary-800 flex items-center justify-between px-2 md:px-4">
