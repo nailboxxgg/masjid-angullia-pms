@@ -40,8 +40,10 @@ export default function Home() {
 
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [selectedFullImage, setSelectedFullImage] = useState<{ src: string, alt: string } | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const fetchUpdates = async () => {
       const [announcementData, eventData, donationData] = await Promise.all([
         getAnnouncements(3),
@@ -154,16 +156,20 @@ export default function Home() {
             {/* Left Column: Announcements & Events (Span 2) */}
             <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.5} className="lg:col-span-2">
               <div className="space-y-8">
-                {filteredAnnouncements.length > 0 ? (
+                {mounted && filteredAnnouncements.length > 0 ? (
                   <div className="space-y-6">
                     {filteredAnnouncements.map((post) => (
                       <SocialPost key={post.id} post={post} />
                     ))}
                   </div>
-                ) : (
-                  <div className="text-center py-20 bg-white dark:bg-secondary-900/50 rounded-3xl border border-dashed border-secondary-200 dark:border-secondary-800 transition-colors duration-300">
+                ) : mounted ? (
+                  <div
+                    className="text-center py-20 bg-white dark:bg-secondary-900/50 rounded-3xl border border-dashed border-secondary-200 dark:border-secondary-800 transition-colors duration-300"
+                  >
                     <p className="text-secondary-500 dark:text-secondary-400 font-medium">No updates at the moment.</p>
                   </div>
+                ) : (
+                  <div className="h-40 animate-pulse bg-secondary-100 dark:bg-secondary-800 rounded-3xl" />
                 )}
               </div>
             </AnimationWrapper>
@@ -172,12 +178,13 @@ export default function Home() {
             <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.7}>
               <div className="space-y-8">
                 {/* Donations Card */}
-                <div className={cn(
-                  "rounded-3xl p-6 shadow-xl relative overflow-hidden transition-all duration-500 border border-secondary-100 dark:border-secondary-800",
-                  "bg-white text-secondary-900", // Standard (Light Mode)
-                  "dark:bg-secondary-900 dark:text-white", // Standard (Dark Mode)
-                  recentDonations.length === 0 ? "min-h-[400px]" : "min-h-[240px]"
-                )}>
+                <div
+                  className={cn(
+                    "rounded-3xl p-6 shadow-xl relative overflow-hidden transition-all duration-500 border border-secondary-100 dark:border-secondary-800",
+                    "bg-white text-secondary-900", // Standard (Light Mode)
+                    "dark:bg-secondary-900 dark:text-white", // Standard (Dark Mode)
+                    (!mounted || recentDonations.length === 0) ? "min-h-[400px]" : "min-h-[240px]"
+                  )}>
                   <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-3xl"></div>
                   <div className="relative z-10">
                     <h3 className="text-2xl font-bold font-heading mb-6 flex items-center gap-2">
@@ -186,7 +193,12 @@ export default function Home() {
                     </h3>
 
                     <div className="relative overflow-hidden group/marquee">
-                      {recentDonations.length === 0 ? (
+                      {!mounted ? (
+                        <div className="space-y-4 animate-pulse">
+                          <div className="h-16 bg-secondary-50 dark:bg-white/5 rounded-xl" />
+                          <div className="h-16 bg-secondary-50 dark:bg-white/5 rounded-xl" />
+                        </div>
+                      ) : recentDonations.length === 0 ? (
                         <div className="text-center py-8 text-secondary-300 italic text-sm">
                           Join our community of donors to support Masjid Angullia.
                         </div>

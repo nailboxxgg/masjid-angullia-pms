@@ -1,6 +1,7 @@
 "use server";
 
 import { QRPhTransaction } from "@/lib/instapay";
+import { getDonationStats } from "@/lib/donations";
 
 export async function generatePaymentQR(amount: number, description: string): Promise<QRPhTransaction> {
     // Simulate server-side processing delay
@@ -37,4 +38,9 @@ export async function verifyPaymentStatus(referenceNumber: string): Promise<'pen
 
     // Always return completed for mock
     return 'completed';
+}
+
+export async function getDonationStatsAction() {
+    // Move the potentially sensitive calculation to the server
+    return await getDonationStats();
 }

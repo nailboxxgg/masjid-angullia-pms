@@ -5,13 +5,17 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query } from "firebase/firestore";
 import { getSMSProvider } from "@/lib/sms";
 
-// Basic security check (in production, use proper session/auth check)
-// For this prototype, we'll assume the request comes from an authenticated source or add a simple header check if needed.
-// However, since this is a server-side route called by the client, Next.js Middleware or session check is best.
-// We will focus on functionality first.
 
 export async function POST(request: Request) {
     try {
+        // Basic security check: Verify Authorization header
+        const authHeader = request.headers.get("Authorization");
+        const adminSecret = process.env.ADMIN_SECRET;
+
+        if (!authHeader || authHeader !== `Bearer ${adminSecret}`) {
+            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        }
+
         const { message } = await request.json();
 
         if (!message) {

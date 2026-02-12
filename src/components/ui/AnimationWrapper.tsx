@@ -21,6 +21,12 @@ export default function AnimationWrapper({
     withScroll = true,
     ...props
 }: AnimationWrapperProps & { withScroll?: boolean }) {
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const variants = {
         fadeIn: {
             hidden: { opacity: 0 },
@@ -47,8 +53,8 @@ export default function AnimationWrapper({
     return (
         <motion.div
             initial="hidden"
-            animate={withScroll ? undefined : "visible"}
-            whileInView={withScroll ? "visible" : undefined}
+            animate={!mounted ? "hidden" : (withScroll ? undefined : "visible")}
+            whileInView={mounted && withScroll ? "visible" : undefined}
             exit="hidden"
             viewport={withScroll ? { once: false, margin: "-100px" } : undefined}
             variants={variants[animation]}

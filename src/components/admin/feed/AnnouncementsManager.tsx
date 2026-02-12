@@ -8,6 +8,7 @@ import { Megaphone, Plus, Trash2, CheckCircle, AlertCircle } from "lucide-react"
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import { cn } from "@/lib/utils";
 import Modal from "@/components/ui/modal"; // Re-using existing Modal component
+import { broadcastSMSAction } from "@/app/actions/sms";
 
 export default function AnnouncementsManager() {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -66,13 +67,8 @@ export default function AnnouncementsManager() {
                     // Shorten message for SMS to save cost/segments if needed
                     const smsMessage = `[Masjid Update] ${newTitle}: ${newContent.substring(0, 100)}${newContent.length > 100 ? '...' : ''}`;
 
-                    const res = await fetch('/api/sms/broadcast', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: smsMessage })
-                    });
+                    const data = await broadcastSMSAction(smsMessage);
 
-                    const data = await res.json();
                     if (data.success) {
                         setStatusData({
                             success: true,
@@ -83,7 +79,7 @@ export default function AnnouncementsManager() {
                         setStatusData({
                             success: true, // Announcement still successful, just SMS failed
                             title: "Posted with SMS Error",
-                            message: `Announcement created, but SMS failed: ${data.message || 'Unknown error'}`
+                            message: `Announcement created, but SMS failed: ${data.error || 'Unknown error'}`
                         });
                     }
                 } catch (err) {
