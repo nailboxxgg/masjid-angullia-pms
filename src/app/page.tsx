@@ -22,6 +22,7 @@ import { cn, formatTimeAgo } from "@/lib/utils";
 import { motion } from "framer-motion";
 import SocialPost from "@/components/feed/SocialPost";
 import ImageModal from "@/components/ui/ImageModal";
+import AttendancePortal from "@/components/attendance/AttendancePortal";
 
 const Modal = dynamic(() => import("@/components/ui/modal"), { ssr: false });
 
@@ -91,6 +92,19 @@ export default function Home() {
   };
 
 
+  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
+
+  const handleAttendanceSuccess = () => {
+    // Keep modal open briefly to show success state from component
+    setTimeout(() => {
+      setIsAttendanceOpen(false);
+    }, 3000);
+  };
+
+  if (!mounted) {
+    return <div className="min-h-screen bg-secondary-50 dark:bg-secondary-950 opacity-0" />;
+  }
+
   return (
     <div className="flex min-h-screen flex-col animate-fade-in">
       {/* ... Hero Section remains ... */}
@@ -122,6 +136,29 @@ export default function Home() {
           {/* Prayer Times Widget */}
           <AnimationWrapper animation="reveal" delay={0.4} duration={1} withScroll={false} className="mt-8 w-full max-w-3xl">
             <PrayerTimesWidget />
+          </AnimationWrapper>
+        </div>
+      </section>
+
+      {/* Attendance Quick Access */}
+      <section className="relative z-30 -mt-8 px-4">
+        <div className="max-w-7xl mx-auto">
+          <AnimationWrapper animation="reveal" delay={0.6} duration={0.8}>
+            <div className="flex justify-center">
+              <button
+                onClick={() => setIsAttendanceOpen(true)}
+                className="flex items-center gap-4 px-8 py-5 bg-white dark:bg-secondary-900 rounded-3xl shadow-2xl border border-secondary-100 dark:border-secondary-800 hover:scale-105 transition-all group"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-primary-600 dark:text-primary-400 group-hover:rotate-12 transition-transform">
+                  <Clock className="w-6 h-6" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-bold text-secondary-900 dark:text-white leading-tight">Jama&apos;ah Presence</h3>
+                  <p className="text-sm text-secondary-500 dark:text-secondary-400">Mark your attendance for mosque activities</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-secondary-300 group-hover:translate-x-1 transition-transform ml-4" />
+              </button>
+            </div>
           </AnimationWrapper>
         </div>
       </section>
@@ -375,6 +412,15 @@ export default function Home() {
         isOpen={isSubscriptionOpen}
         onClose={() => setIsSubscriptionOpen(false)}
       />
+
+      <Modal
+        isOpen={isAttendanceOpen}
+        onClose={() => setIsAttendanceOpen(false)}
+        title=""
+        className="max-w-md p-0 bg-transparent border-none shadow-none"
+      >
+        <AttendancePortal onSuccess={handleAttendanceSuccess} />
+      </Modal>
 
       <Modal
         // ... (keep modal)

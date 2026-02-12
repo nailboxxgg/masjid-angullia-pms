@@ -17,10 +17,10 @@ export default function SocialPost({ post, delay = 0 }: SocialPostProps) {
         <AnimationWrapper animation="reveal" duration={0.6} delay={delay}>
             <div className="bg-white dark:bg-secondary-900 rounded-2xl shadow-sm border border-secondary-100 dark:border-secondary-800 overflow-hidden hover:shadow-md transition-all duration-300">
                 {/* Social Post Header */}
-                <div className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-white shadow-inner shrink-0 leading-none">
-                            <span className="font-bold text-sm">MA</span>
+                <div className="p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white shadow-inner shrink-0 leading-none">
+                            <span className="font-bold text-xs">MA</span>
                         </div>
                         <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
@@ -38,8 +38,8 @@ export default function SocialPost({ post, delay = 0 }: SocialPostProps) {
                 </div>
 
                 {/* Post Body */}
-                <div className="px-4 pb-3">
-                    <h5 className="text-lg font-bold text-secondary-900 dark:text-secondary-100 mb-2 line-clamp-2 md:line-clamp-none leading-tight">{post.title}</h5>
+                <div className="px-4 pb-2.5">
+                    <h5 className="text-base font-bold text-secondary-900 dark:text-secondary-100 mb-1.5 line-clamp-2 md:line-clamp-none leading-tight">{post.title}</h5>
                     <p className="text-secondary-600 dark:text-secondary-400 text-sm leading-relaxed whitespace-pre-wrap break-words">
                         {post.content}
                     </p>
@@ -68,17 +68,17 @@ export default function SocialPost({ post, delay = 0 }: SocialPostProps) {
                 {/* Action Bar */}
                 <div className="p-2 border-t border-secondary-50 dark:border-secondary-800 flex items-center justify-between px-2 md:px-4">
                     <div className="flex items-center gap-1">
-                        <button className="flex items-center gap-2 px-3 py-2 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800 rounded-lg transition-colors text-xs md:text-sm font-medium group">
-                            <ThumbsUp className="w-4 h-4 md:w-5 h-5 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
+                        <button className="flex items-center gap-2 px-3 py-1.5 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800 rounded-xl transition-colors text-xs font-medium group">
+                            <ThumbsUp className="w-4 h-4 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
                             <span>Like</span>
                         </button>
-                        <button className="flex items-center gap-2 px-3 py-2 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800 rounded-lg transition-colors text-xs md:text-sm font-medium">
-                            <MessageCircle className="w-4 h-4 md:w-5 h-5" />
+                        <button className="flex items-center gap-2 px-3 py-1.5 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800 rounded-xl transition-colors text-xs font-medium">
+                            <MessageCircle className="w-4 h-4" />
                             <span>Comment</span>
                         </button>
                     </div>
-                    <button className="flex items-center gap-2 px-3 py-2 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800 rounded-lg transition-colors text-xs md:text-sm font-medium">
-                        <Share2 className="w-4 h-4 md:w-5 h-5" />
+                    <button className="flex items-center gap-2 px-3 py-1.5 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800 rounded-xl transition-colors text-xs font-medium">
+                        <Share2 className="w-4 h-4" />
                         <span>Share</span>
                     </button>
                 </div>

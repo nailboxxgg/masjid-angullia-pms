@@ -153,7 +153,7 @@ export default function AdminSettingsPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="pt-6">
-                        <div className="flex items-center justify-between py-3 border-b border-secondary-50 dark:border-secondary-800">
+                        <div className="flex items-center justify-between py-3 border-b border-secondary-800 dark:border-secondary-200">
                             <div>
                                 <p className="font-medium text-white dark:text-secondary-900">New Request Alerts</p>
                                 <p className="text-xs text-secondary-400 dark:text-secondary-500">Get notified when a new community request is submitted.</p>

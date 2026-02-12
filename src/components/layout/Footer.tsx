@@ -26,7 +26,7 @@ export default function Footer({ onAdminClick }: FooterProps) {
                         <h4 className="text-white font-bold mb-4">Quick Links</h4>
                         <div className="flex flex-col gap-2">
                             <Link href="/donations" className="hover:text-primary-400 transition-colors">Donate</Link>
-                            <Link href="#" className="hover:text-primary-400 transition-colors">Events</Link>
+                            <Link href="/" className="hover:text-primary-400 transition-colors">Jama&apos;ah Presence</Link>
                             <Link href="/feedback" className="hover:text-primary-400 transition-colors">Concerns, Feedbacks, and Request</Link>
                         </div>
                     </div>

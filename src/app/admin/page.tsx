@@ -97,7 +97,7 @@ export default function AdminDashboard() {
                     "bg-white dark:bg-secondary-900"
                 )}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-secondary-900 dark:text-secondary-100">Month&apos;s Donations</CardTitle>
+                        <CardTitle className="text-sm font-medium text-secondary-400 dark:text-secondary-500">Month&apos;s Donations</CardTitle>
                         <DollarSign className="h-4 w-4 text-accent-500" />
                     </CardHeader>
                     <CardContent>
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
                     "bg-white dark:bg-secondary-900"
                 )}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-secondary-900 dark:text-secondary-100">Upcoming Events</CardTitle>
+                        <CardTitle className="text-sm font-medium text-secondary-400 dark:text-secondary-500">Upcoming Events</CardTitle>
                         <Calendar className="h-4 w-4 text-secondary-400" />
                     </CardHeader>
                     <CardContent>

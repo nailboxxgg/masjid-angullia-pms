@@ -53,7 +53,7 @@ export default function Modal({ isOpen, onClose, title, children, className }: M
                     {title && <h3 className="text-lg font-heading font-semibold text-secondary-900 dark:text-secondary-100">{title}</h3>}
                     <button
                         onClick={onClose}
-                        className="rounded-full p-1.5 bg-secondary-50 text-secondary-400 hover:bg-secondary-100 hover:text-secondary-600 transition-colors dark:hover:bg-secondary-800"
+                        className="rounded-full p-1.5 bg-secondary-50 dark:bg-secondary-800 text-secondary-400 dark:text-secondary-500 hover:bg-secondary-100 hover:text-secondary-600 dark:hover:bg-secondary-700 dark:hover:text-secondary-300 transition-colors"
                     >
                         <X className="h-4 w-4" />
                         <span className="sr-only">Close</span>

@@ -55,3 +55,14 @@ export interface Family {
     address: string;
     createdAt?: number;
 }
+
+export interface AttendanceRecord {
+    id: string;
+    uid: string;
+    displayName: string;
+    email: string;
+    type: 'clock_in' | 'clock_out';
+    timestamp: number;
+    date: string; // YYYY-MM-DD for easier querying
+    deviceInfo?: string;
+}

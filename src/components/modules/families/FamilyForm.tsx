@@ -74,6 +74,13 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Basic phone validation for +63
+        if (!phone.startsWith("+63") || phone.length < 12) {
+            alert("Phone number must start with +63 and be at least 12 characters long (e.g. +639123456789)");
+            return;
+        }
+
         setLoading(true);
 
         const familyData: Omit<Family, "id"> = {
@@ -129,9 +136,10 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                         <div className="space-y-1.5">
                             <label className="text-xs font-medium text-secondary-600 dark:text-secondary-400">Phone</label>
                             <input
+                                required
                                 type="tel"
                                 placeholder="Enter Phone Number"
-                                value={phone}
+                                value={phone || "+63"}
                                 onChange={(e) => setPhone(e.target.value)}
                                 className="flex h-10 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100"
                             />

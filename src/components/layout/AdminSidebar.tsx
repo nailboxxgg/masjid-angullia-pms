@@ -15,6 +15,7 @@ import {
     ShieldCheck,
     MessageSquare,
     Megaphone,
+    Clock,
     X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ const adminRoutes = [
     { name: "Requests", href: "/admin/requests", icon: FileText },
     { name: "Families", href: "/admin/families", icon: Users },
     { name: "Finances", href: "/admin/finances", icon: DollarSign },
+    { name: "Attendance", href: "/admin/attendance", icon: Clock },
     { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

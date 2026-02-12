@@ -98,17 +98,17 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden relative"
+                            className="bg-white dark:bg-secondary-900 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden relative transition-colors"
                         >
                             <button
                                 onClick={onClose}
-                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                                className="absolute top-4 right-4 text-secondary-400 dark:text-secondary-500 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors z-10"
                             >
                                 <X className="w-5 h-5" />
                             </button>
 
                             <div className="p-8">
-                                <h3 className="text-xl font-bold text-center mb-1 text-gray-900 font-heading">
+                                <h3 className="text-xl font-bold text-center mb-1 text-secondary-900 dark:text-secondary-100 font-heading">
                                     Donate to {fundName}
                                 </h3>
 
@@ -116,24 +116,24 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                                     <form onSubmit={handleGenerateQR} className="space-y-6 mt-6">
                                         <div className="space-y-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₱)</label>
+                                                <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Amount (₱)</label>
                                                 <input
                                                     type="number"
                                                     required
                                                     min="1"
                                                     value={amount}
                                                     onChange={(e) => setAmount(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg font-semibold text-secondary-800"
+                                                    className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg font-semibold text-secondary-800 dark:text-secondary-100 placeholder:text-secondary-400 dark:placeholder:text-secondary-500"
                                                     placeholder="0.00"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Name (Optional)</label>
+                                                <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Name (Optional)</label>
                                                 <input
                                                     type="text"
                                                     value={donorName}
                                                     onChange={(e) => setDonorName(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-secondary-800"
+                                                    className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-secondary-800 dark:text-secondary-100 placeholder:text-secondary-400 dark:placeholder:text-secondary-500"
                                                     placeholder="Anonymous"
                                                 />
                                             </div>
@@ -166,13 +166,13 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                                                 <Smartphone className="w-8 h-8 text-primary-600" />
                                             </motion.div>
                                         </div>
-                                        <p className="text-gray-500 font-medium animate-pulse">Generating Secure QR...</p>
+                                        <p className="text-secondary-500 dark:text-secondary-400 font-medium animate-pulse">Generating Secure QR...</p>
                                     </div>
                                 )}
 
                                 {step === "qr" && transaction && (
                                     <div className="flex flex-col items-center mt-6 space-y-6 animate-fade-in">
-                                        <div className="bg-white p-4 rounded-2xl shadow-inner border border-gray-100">
+                                        <div className="bg-white dark:bg-secondary-800 p-4 rounded-2xl shadow-inner border border-secondary-100 dark:border-secondary-700">
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={transaction.qrCodeUrl}
@@ -182,8 +182,8 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                                         </div>
 
                                         <div className="text-center space-y-2">
-                                            <p className="text-sm text-gray-500">Scan via Any Bank App or E-Wallet</p>
-                                            <div className="flex items-center justify-center gap-2 text-xs font-mono bg-gray-50 px-3 py-1 rounded-full text-gray-600">
+                                            <p className="text-sm text-secondary-500 dark:text-secondary-400">Scan via Any Bank App or E-Wallet</p>
+                                            <div className="flex items-center justify-center gap-2 text-xs font-mono bg-secondary-50 dark:bg-secondary-800 px-3 py-1 rounded-full text-secondary-600 dark:text-secondary-300">
                                                 Ref: {transaction.referenceNumber}
                                                 <Copy className="w-3 h-3 cursor-pointer hover:text-primary-600" />
                                             </div>
@@ -197,7 +197,7 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                                             I Have Completed Payment
                                         </button>
                                         <button
-                                            className="text-gray-400 text-sm hover:text-gray-600 underline"
+                                            className="text-secondary-400 dark:text-secondary-500 text-sm hover:text-secondary-600 dark:hover:text-secondary-300 underline"
                                             onClick={() => setStep("details")}
                                         >
                                             Cancel
@@ -226,7 +226,7 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                                                 />
                                             ))}
                                         </div>
-                                        <p className="text-gray-600 font-medium">Verifying Transaction...</p>
+                                        <p className="text-secondary-600 dark:text-secondary-400 font-medium">Verifying Transaction...</p>
                                     </div>
                                 )}
                             </div>

@@ -28,16 +28,19 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    // Only cache GET requests
+    // Only handle GET requests
     if (event.request.method !== 'GET') return;
 
-    event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-                return cachedResponse;
-            }
+    // Bypass caching for localhost/development to prevent HMR issues
+    const url = new URL(event.request.url);
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+        return;
+    }
 
-            return fetch(event.request).then((response) => {
+    // Network-First Strategy: Try network, fall back to cache
+    event.respondWith(
+        fetch(event.request)
+            .then((response) => {
                 // Don't cache if not a success or if it's a cross-origin request
                 if (!response || response.status !== 200 || response.type !== 'basic') {
                     return response;
@@ -49,10 +52,10 @@ self.addEventListener('fetch', (event) => {
                 });
 
                 return response;
-            }).catch(() => {
-                // Return nothing if fetch fails and no cache
-                return null;
-            });
-        })
+            })
+            .catch(() => {
+                // Fallback to cache if network fails
+                return caches.match(event.request);
+            })
     );
 });

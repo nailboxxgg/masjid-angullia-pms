@@ -91,7 +91,7 @@ export default function AdminLayout({
 
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 <AdminHeader onMenuClick={() => setIsSidebarOpen(true)} />
-                <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50 dark:bg-secondary-950 transition-colors duration-300">
+                <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-secondary-50 dark:bg-secondary-950 transition-colors duration-300">
                     <div className="max-w-7xl mx-auto">
                         {children}
                     </div>

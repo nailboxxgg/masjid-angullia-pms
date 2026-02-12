@@ -96,11 +96,11 @@ export default function AdminFamiliesPage() {
                             <tbody className="divide-y transition-colors divide-secondary-800 dark:divide-secondary-100">
                                 {isLoading ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-8 text-center text-slate-500">Loading families...</td>
+                                        <td colSpan={5} className="px-6 py-8 text-center text-secondary-500">Loading families...</td>
                                     </tr>
                                 ) : filteredFamilies.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                                        <td colSpan={5} className="px-6 py-8 text-center text-secondary-500">
                                             No families found matching specific search query.
                                         </td>
                                     </tr>

@@ -43,7 +43,7 @@ export default function FeedbackPage() {
     };
 
     return (
-        <AnimationWrapper className="min-h-screen bg-gray-50 flex flex-col">
+        <AnimationWrapper className="min-h-screen bg-secondary-50 dark:bg-secondary-950 flex flex-col">
             {/* Top Navigation */}
             <div className="bg-secondary-900 py-6">
                 <div className="max-w-7xl mx-auto w-full px-6">
@@ -61,30 +61,30 @@ export default function FeedbackPage() {
             <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 mb-10">
                 <div className="max-w-xl w-full">
                     <div className="text-center mb-10">
-                        <h1 className="text-3xl font-bold font-heading text-secondary-900 mb-2">We Value Your Voice</h1>
-                        <p className="text-secondary-500">Share your concerns, feedback, or requests to help us improve.</p>
+                        <h1 className="text-3xl font-bold font-heading text-secondary-900 dark:text-secondary-100 mb-2">We Value Your Voice</h1>
+                        <p className="text-secondary-500 dark:text-secondary-400">Share your concerns, feedback, or requests to help us improve.</p>
                     </div>
 
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-2xl shadow-xl overflow-hidden border border-secondary-100"
+                        className="bg-white dark:bg-secondary-900 rounded-2xl shadow-xl overflow-hidden border border-secondary-100 dark:border-secondary-800"
                     >
                         {status === 'success' ? (
                             <div className="p-12 text-center">
                                 <motion.div
                                     initial={{ scale: 0.8, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
-                                    className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6"
+                                    className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-6"
                                 >
                                     <CheckCircle className="w-8 h-8" />
                                 </motion.div>
-                                <h3 className="text-2xl font-bold text-secondary-900 mb-2">Thank You!</h3>
-                                <p className="text-secondary-500 mb-8">Your submission has been received. We appreciate your input.</p>
+                                <h3 className="text-2xl font-bold text-secondary-900 dark:text-secondary-100 mb-2">Thank You!</h3>
+                                <p className="text-secondary-500 dark:text-secondary-400 mb-8">Your submission has been received. We appreciate your input.</p>
                                 <div className="flex flex-col gap-3">
                                     <button
                                         onClick={() => setStatus('idle')}
-                                        className="px-6 py-2 bg-secondary-100 text-secondary-700 font-medium rounded-lg hover:bg-secondary-200 transition-colors"
+                                        className="px-6 py-2 bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 font-medium rounded-lg hover:bg-secondary-200 dark:hover:bg-secondary-700 transition-colors"
                                     >
                                         Send Another
                                     </button>
@@ -98,22 +98,22 @@ export default function FeedbackPage() {
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-secondary-700">Your Name</label>
+                                            <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Your Name</label>
                                             <input
                                                 required
                                                 value={name}
                                                 onChange={(e) => setName(e.target.value)}
-                                                className="w-full px-4 py-2 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-900 placeholder:text-secondary-300"
+                                                className="w-full px-4 py-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-900 dark:text-secondary-100 placeholder:text-secondary-300 dark:placeholder:text-secondary-500"
                                                 placeholder="John Doe"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-secondary-700">Contact Number</label>
+                                            <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Contact Number</label>
                                             <input
                                                 required
                                                 value={contact}
                                                 onChange={(e) => setContact(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                                                className="w-full px-4 py-2 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-900 placeholder:text-secondary-300"
+                                                className="w-full px-4 py-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-900 dark:text-secondary-100 placeholder:text-secondary-300 dark:placeholder:text-secondary-500"
                                                 placeholder="09123456789"
                                                 inputMode="numeric"
                                                 pattern="[0-9]*"
@@ -123,18 +123,18 @@ export default function FeedbackPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-secondary-700">Email Address (Optional)</label>
+                                        <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Email Address (Optional)</label>
                                         <input
                                             type="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full px-4 py-2 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-900 placeholder:text-secondary-300"
+                                            className="w-full px-4 py-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-900 dark:text-secondary-100 placeholder:text-secondary-300 dark:placeholder:text-secondary-500"
                                             placeholder="john@example.com"
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-secondary-700">Submission Type</label>
+                                        <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Submission Type</label>
                                         <div className="grid grid-cols-3 gap-3">
                                             {(['Concern', 'Feedback', 'Request'] as const).map((t) => (
                                                 <button
@@ -142,8 +142,8 @@ export default function FeedbackPage() {
                                                     type="button"
                                                     onClick={() => setType(t)}
                                                     className={`py-2 px-1 rounded-lg text-sm font-medium border transition-all ${type === t
-                                                        ? "bg-primary-50 border-primary-500 text-primary-700"
-                                                        : "bg-white border-secondary-200 text-secondary-600 hover:bg-secondary-50"
+                                                        ? "bg-primary-50 dark:bg-primary-900/30 border-primary-500 text-primary-700 dark:text-primary-400"
+                                                        : "bg-white dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-700"
                                                         }`}
                                                 >
                                                     {t}
@@ -153,18 +153,18 @@ export default function FeedbackPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-secondary-700">Message</label>
+                                        <label className="text-sm font-medium text-secondary-700 dark:text-secondary-300">Message</label>
                                         <textarea
                                             required
                                             value={message}
                                             onChange={(e) => setMessage(e.target.value)}
-                                            className="w-full h-32 px-4 py-3 rounded-lg border border-secondary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-900 placeholder:text-secondary-300 resize-none"
+                                            className="w-full h-32 px-4 py-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-900 dark:text-secondary-100 placeholder:text-secondary-300 dark:placeholder:text-secondary-500 resize-none"
                                             placeholder="How can we help or improve?"
                                         />
                                     </div>
 
                                     {status === 'error' && (
-                                        <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2">
+                                        <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm rounded-lg flex items-center gap-2 border border-red-100 dark:border-red-800">
                                             <AlertCircle className="w-4 h-4" />
                                             <span>Something went wrong. Please try again later.</span>
                                         </div>
@@ -196,7 +196,7 @@ export default function FeedbackPage() {
                     <div className="mt-12 text-center pb-10">
                         <Link
                             href="/"
-                            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-secondary-100 text-secondary-700 border border-secondary-200 hover:bg-secondary-200 transition-all text-sm font-bold group"
+                            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 border border-secondary-200 dark:border-secondary-700 hover:bg-secondary-200 dark:hover:bg-secondary-700 transition-all text-sm font-bold group"
                         >
                             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                             Return to Homepage

@@ -79,7 +79,7 @@ export default function DonationsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen bg-secondary-50 dark:bg-secondary-950 pb-20">
             {/* Hero */}
             <section className="bg-primary-900 text-white py-16 px-4 relative">
                 <div className="max-w-4xl mx-auto text-center space-y-4">
@@ -110,7 +110,7 @@ export default function DonationsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {funds.map((fund, index) => (
                         <AnimationWrapper key={fund.id} animation="scaleIn" delay={index * 0.1}>
-                            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden group hover:shadow-xl transition-all h-full flex flex-col">
+                            <div className="bg-white dark:bg-secondary-900 rounded-2xl shadow-lg border border-secondary-100 dark:border-secondary-800 overflow-hidden group hover:shadow-xl transition-all h-full flex flex-col">
                                 <div className="relative h-48 w-full overflow-hidden">
                                     <div className={`absolute inset-0 ${fund.color}/10 mix-blend-multiply z-10`} />
                                     <Image
@@ -119,18 +119,18 @@ export default function DonationsPage() {
                                         fill
                                         className="object-cover group-hover:scale-105 transition-transform duration-700"
                                     />
-                                    <div className="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-sm transition-all group-hover:bg-white">
+                                    <div className="absolute top-4 left-4 z-20 bg-white/90 dark:bg-secondary-900/90 backdrop-blur-sm p-2 rounded-lg shadow-sm transition-all group-hover:bg-white dark:group-hover:bg-secondary-800">
                                         <fund.icon className={`w-6 h-6 ${fund.color.replace('bg-', 'text-')} opacity-90 group-hover:opacity-100 transition-opacity`} />
                                     </div>
                                 </div>
 
                                 <div className="p-6 flex-1 flex flex-col">
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-2 font-heading">{fund.name}</h3>
-                                    <p className="text-gray-600 mb-6 flex-1">{fund.description}</p>
+                                    <h3 className="text-2xl font-bold text-secondary-900 dark:text-secondary-100 mb-2 font-heading">{fund.name}</h3>
+                                    <p className="text-secondary-600 dark:text-secondary-400 mb-6 flex-1">{fund.description}</p>
 
                                     <button
                                         onClick={() => setSelectedFund(fund.name)}
-                                        className="w-full py-3 bg-white border-2 border-primary-600 text-primary-700 font-bold rounded-xl hover:bg-primary-600 hover:text-white transition-all"
+                                        className="w-full py-3 bg-white dark:bg-secondary-800 border-2 border-primary-600 text-primary-700 dark:text-primary-400 font-bold rounded-xl hover:bg-primary-600 hover:text-white dark:hover:bg-primary-600 dark:hover:text-white transition-all"
                                     >
                                         Donate Now
                                     </button>

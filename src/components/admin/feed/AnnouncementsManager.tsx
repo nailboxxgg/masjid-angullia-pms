@@ -251,7 +251,7 @@ export default function AnnouncementsManager() {
                     {isLoading ? (
                         <div className="text-center py-10 text-secondary-500">Loading announcements...</div>
                     ) : announcements.length === 0 ? (
-                        <div className="text-center py-10 text-secondary-400 bg-white rounded-xl border border-dashed border-secondary-200">
+                        <div className="text-center py-10 text-secondary-400 dark:text-secondary-500 bg-secondary-900 dark:bg-white rounded-xl border border-dashed border-secondary-700 dark:border-secondary-200">
                             <Megaphone className="w-10 h-10 mx-auto mb-2 opacity-20" />
                             <p>No announcements yet.</p>
                         </div>

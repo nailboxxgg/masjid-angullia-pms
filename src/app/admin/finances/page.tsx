@@ -193,7 +193,7 @@ export default function FinancesPage() {
                                     {typeFilter !== 'All' && (
                                         <button
                                             onClick={() => setTypeFilter('All')}
-                                            className="w-full text-xs text-red-600 hover:text-red-700 text-center mt-2 underline"
+                                            className="w-full text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-center mt-2 underline"
                                         >
                                             Clear Filters
                                         </button>

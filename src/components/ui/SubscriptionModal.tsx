@@ -56,10 +56,10 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
             className="max-w-sm"
         >
             <div className="text-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 text-primary-600">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-50 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 text-primary-600 dark:text-primary-400">
                     <Smartphone className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <p className="text-secondary-600 mb-4 sm:mb-6 text-sm leading-relaxed max-w-[280px] mx-auto">
+                <p className="text-secondary-600 dark:text-secondary-400 mb-4 sm:mb-6 text-sm leading-relaxed max-w-[280px] mx-auto">
                     Receive urgent announcements, prayer time changes, and event reminders directly to your mobile phone.
                 </p>
 
@@ -71,7 +71,7 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
                 ) : (
                     <form onSubmit={handleSubscribe} className="space-y-4">
                         <div className="flex gap-2">
-                            <div className="w-[80px] h-12 flex items-center justify-center bg-secondary-50 border border-secondary-300 rounded-xl text-secondary-700 font-medium">
+                            <div className="w-[80px] h-12 flex items-center justify-center bg-secondary-50 dark:bg-secondary-800 border border-secondary-300 dark:border-secondary-700 rounded-xl text-secondary-700 dark:text-secondary-300 font-medium">
                                 <span>🇵🇭 +63</span>
                             </div>
                             <input
@@ -79,7 +79,7 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
                                 placeholder="9xxxxxxxxx"
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
-                                className="flex-1 h-12 px-4 rounded-xl border border-secondary-300 text-lg tracking-widest focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all placeholder:tracking-normal"
+                                className="flex-1 h-12 px-4 rounded-xl border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-lg tracking-widest text-secondary-900 dark:text-secondary-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all placeholder:tracking-normal placeholder:text-secondary-400 dark:placeholder:text-secondary-500"
                                 required
                             />
                         </div>
