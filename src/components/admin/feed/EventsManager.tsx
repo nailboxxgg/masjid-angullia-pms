@@ -97,13 +97,13 @@ export default function EventsManager() {
             <div className="flex justify-end items-center">
                 <button
                     onClick={() => { resetForm(); setIsFormOpen(true); }}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-black uppercase tracking-widest hover:bg-primary-700 transition-all shadow-xl shadow-primary-500/20"
                 >
-                    <Plus className="w-4 h-4" /> Create Event
+                    <Plus className="w-4 h-4" /> Create New Event
                 </button>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <AnimatePresence>
                     {events.map((event) => (
                         <motion.div
@@ -112,18 +112,18 @@ export default function EventsManager() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                         >
-                            <Card className="h-full hover:shadow-md transition-all group relative duration-300 bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
+                            <Card className="h-full hover:shadow-2xl transition-all group relative duration-500 bg-white border-none ring-1 ring-secondary-200 dark:bg-secondary-900 dark:ring-secondary-800 rounded-3xl overflow-hidden">
                                 <CardHeader className="pb-2">
                                     <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
                                             onClick={() => handleEdit(event)}
-                                            className="p-1.5 text-secondary-500 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-full transition-colors"
+                                            className="p-1.5 text-secondary-900 dark:text-secondary-100 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-full transition-colors"
                                         >
                                             <Edit2 className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(event.id)}
-                                            className="p-1.5 text-secondary-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors"
+                                            className="p-1.5 text-secondary-900 dark:text-secondary-100 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors"
                                         >
                                             {isDeleting === event.id ? (
                                                 <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
@@ -133,33 +133,32 @@ export default function EventsManager() {
                                         </button>
                                     </div>
 
-                                    <div className={`text-xs font-semibold px-2 py-1 rounded w-fit ${event.registrationOpen ? "bg-green-900/30 text-green-400 border border-green-800 dark:bg-green-100 dark:text-green-700 dark:border-green-200" : "bg-secondary-800 text-secondary-400 border border-secondary-700 dark:bg-secondary-100 dark:text-secondary-500 dark:border-secondary-200"
-                                        }`}>
+                                    <div className={`text-xs font-bold px-2 py-1 rounded w-fit ${event.registrationOpen ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" : "bg-secondary-100 text-secondary-900 border border-secondary-200 dark:bg-secondary-800 dark:text-secondary-200 dark:border-secondary-700"}`} >
                                         {event.registrationOpen ? "Open" : "Closed"}
                                     </div>
-                                    <CardTitle className="text-lg font-heading leading-tight mt-2 text-white dark:text-secondary-900">{event.title}</CardTitle>
+                                    <CardTitle className="text-lg font-heading leading-tight mt-2 text-secondary-900 dark:text-secondary-100">{event.title}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <p className="text-sm text-secondary-400 dark:text-secondary-600 line-clamp-2">{event.description}</p>
+                                    <p className="text-sm text-secondary-900 dark:text-secondary-200 font-medium line-clamp-2">{event.description}</p>
 
-                                    <div className="space-y-2 text-sm text-secondary-400 dark:text-secondary-600">
+                                    <div className="space-y-2 text-sm text-secondary-900 dark:text-secondary-200 font-semibold">
                                         <div className="flex items-center gap-2">
-                                            <Calendar className="w-4 h-4 text-secondary-400 dark:text-secondary-500" />
+                                            <Calendar className="w-4 h-4 text-secondary-900 dark:text-secondary-200" />
                                             {event.date}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Clock className="w-4 h-4 text-secondary-400 dark:text-secondary-500" />
+                                            <Clock className="w-4 h-4 text-secondary-900 dark:text-secondary-200" />
                                             {event.time}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <MapPin className="w-4 h-4 text-secondary-400 dark:text-secondary-500" />
+                                            <MapPin className="w-4 h-4 text-secondary-900 dark:text-secondary-200" />
                                             {event.location}
                                         </div>
-                                        <div className="flex items-center justify-between pt-2 border-t mt-3 border-secondary-800 dark:border-secondary-100">
+                                        <div className="flex items-center justify-between pt-2 border-t mt-3 border-secondary-200 dark:border-secondary-800">
                                             <div className="flex items-center gap-2">
                                                 <Users className="w-4 h-4 text-primary-500" />
-                                                <span className="font-medium text-white dark:text-secondary-900">{(event.registrantsCount || 0)}</span>
-                                                <span className="text-secondary-500 dark:text-secondary-400">/{event.capacity}</span>
+                                                <span className="font-bold text-secondary-900 dark:text-white">{(event.registrantsCount || 0)}</span>
+                                                <span className="text-secondary-900 dark:text-secondary-200 font-medium">/{event.capacity}</span>
                                             </div>
                                             {(event.registrantsCount || 0) > 0 && (
                                                 <button
@@ -178,10 +177,10 @@ export default function EventsManager() {
                 </AnimatePresence>
 
                 {events.length === 0 && !isLoading && (
-                    <div className="col-span-full py-20 text-center transition-colors rounded-xl border border-dashed bg-secondary-900 border-secondary-800 dark:bg-white dark:border-secondary-200 !dark:bg-white !dark:border-secondary-200">
-                        <Calendar className="w-12 h-12 mx-auto mb-4 text-secondary-600 dark:text-secondary-300" />
-                        <h3 className="text-lg font-medium text-white dark:text-secondary-900">No events found</h3>
-                        <p className="text-secondary-400 dark:text-secondary-500 mb-6">Get started by creating your first event.</p>
+                    <div className="col-span-full py-20 text-center transition-colors rounded-xl border border-dashed bg-white border-secondary-200 dark:bg-secondary-900 dark:border-secondary-800">
+                        <Calendar className="w-12 h-12 mx-auto mb-4 text-secondary-900 dark:text-secondary-100" />
+                        <h3 className="text-lg font-medium text-secondary-900 dark:text-secondary-100">No events found</h3>
+                        <p className="text-secondary-900 dark:text-secondary-200 font-medium mb-6">Get started by creating your first event.</p>
                         <button
                             onClick={() => { resetForm(); setIsFormOpen(true); }}
                             className="px-4 py-2 bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 rounded-md text-sm font-medium hover:bg-secondary-200 dark:hover:bg-secondary-700 transition-colors"
@@ -202,62 +201,62 @@ export default function EventsManager() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="col-span-2">
-                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Event Title</label>
+                            <label className="block text-sm font-semibold text-secondary-900 dark:text-secondary-200 mb-1">Event Title</label>
                             <input
                                 required
                                 value={formData.title}
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                className="w-full h-10 px-3 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                                className="w-full h-10 px-3 rounded-md border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 placeholder="e.g., Annual Iftar Gathering"
                             />
                         </div>
 
                         <div className="col-span-2">
-                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Description</label>
+                            <label className="block text-sm font-semibold text-secondary-900 dark:text-secondary-200 mb-1">Description</label>
                             <textarea
                                 required
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="w-full h-24 px-3 py-2 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none transition-colors"
+                                className="w-full h-24 px-3 py-2 rounded-md border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none transition-colors"
                                 placeholder="Details about this event..."
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Date</label>
+                            <label className="block text-sm font-semibold text-secondary-900 dark:text-secondary-200 mb-1">Date</label>
                             <input
                                 type="date"
                                 required
                                 value={formData.date}
                                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                className="w-full h-10 px-3 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors [color-scheme:light] dark:[color-scheme:dark]"
+                                className="w-full h-10 px-3 rounded-md border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors [color-scheme:light] dark:[color-scheme:dark]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Time</label>
+                            <label className="block text-sm font-semibold text-secondary-900 dark:text-secondary-200 mb-1">Time</label>
                             <input
                                 type="time"
                                 required
                                 value={formData.time}
                                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                className="w-full h-10 px-3 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors [color-scheme:light] dark:[color-scheme:dark]"
+                                className="w-full h-10 px-3 rounded-md border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors [color-scheme:light] dark:[color-scheme:dark]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Location</label>
+                            <label className="block text-sm font-semibold text-secondary-900 dark:text-secondary-200 mb-1">Location</label>
                             <input
                                 required
                                 value={formData.location}
                                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                className="w-full h-10 px-3 rounded-md border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+                                className="w-full h-10 px-3 rounded-md border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 placeholder="e.g., Main Prayer Hall"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Capacity</label>
+                            <label className="block text-sm font-semibold text-secondary-900 dark:text-secondary-200 mb-1">Capacity</label>
                             <input
                                 type="number"
                                 required
@@ -308,7 +307,7 @@ export default function EventsManager() {
             >
                 <div className="overflow-x-auto max-h-[60vh]">
                     <table className="w-full text-sm text-left">
-                        <thead className="font-medium border-b transition-colors bg-secondary-800 text-secondary-200 border-secondary-700 dark:bg-secondary-50 dark:text-secondary-700 dark:border-secondary-200 !dark:bg-secondary-50 !dark:text-secondary-700 !dark:border-secondary-200">
+                        <thead className="font-medium border-b transition-colors bg-secondary-50 text-secondary-700 border-secondary-200 dark:bg-secondary-800 dark:text-secondary-200 dark:border-secondary-700">
                             <tr>
                                 <th className="px-4 py-3">Name</th>
                                 <th className="px-4 py-3">Contact</th>
@@ -316,21 +315,21 @@ export default function EventsManager() {
                                 <th className="px-4 py-3">Registered At</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y transition-colors divide-secondary-800 dark:divide-secondary-100">
+                        <tbody className="divide-y transition-colors divide-secondary-100 dark:divide-secondary-800">
                             {registrants.length > 0 ? (
                                 registrants.map((reg) => (
-                                    <tr key={reg.id} className="transition-colors hover:bg-white/5 dark:hover:bg-secondary-50">
-                                        <td className="px-4 py-3 font-medium text-white dark:text-secondary-900">{reg.name}</td>
-                                        <td className="px-4 py-3 text-secondary-400 dark:text-secondary-600">{reg.contactNumber}</td>
-                                        <td className="px-4 py-3 text-secondary-400 dark:text-secondary-600">{reg.email || "-"}</td>
-                                        <td className="px-4 py-3 text-secondary-500 dark:text-secondary-500 text-xs">
+                                    <tr key={reg.id} className="transition-colors hover:bg-secondary-50 dark:hover:bg-white/5">
+                                        <td className="px-4 py-3 font-bold text-secondary-900 dark:text-white">{reg.name}</td>
+                                        <td className="px-4 py-3 text-secondary-900 dark:text-secondary-100 font-semibold">{reg.contactNumber}</td>
+                                        <td className="px-4 py-3 text-secondary-900 dark:text-secondary-100 font-semibold">{reg.email || "-"}</td>
+                                        <td className="px-4 py-3 text-secondary-900 dark:text-secondary-200 font-medium text-xs">
                                             {new Date(reg.createdAt).toLocaleString()}
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={4} className="px-4 py-8 text-center italic bg-transparent text-secondary-500">
+                                    <td colSpan={4} className="px-4 py-8 text-center italic font-semibold bg-transparent text-secondary-900 dark:text-secondary-200">
                                         No registrants found.
                                     </td>
                                 </tr>
@@ -347,6 +346,6 @@ export default function EventsManager() {
                     </button>
                 </div>
             </Modal>
-        </div >
+        </div>
     );
 }

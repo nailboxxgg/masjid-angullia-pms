@@ -8,6 +8,8 @@ import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { startPresenceHeartbeat } from "@/lib/presence";
 
+import { motion, AnimatePresence } from "framer-motion";
+
 export default function AdminLayout({
     children,
 }: {
@@ -71,18 +73,18 @@ export default function AdminLayout({
 
     if (loading) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-secondary-950 transition-colors duration-300">
+            <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-secondary-950">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400"></div>
             </div>
         );
     }
 
     return (
-        <div className="flex min-h-screen bg-slate-50 dark:bg-secondary-950 text-secondary-900 dark:text-secondary-100 transition-colors duration-300">
+        <div className="flex min-h-screen bg-slate-50 dark:bg-secondary-950 text-secondary-900 dark:text-secondary-100">
             {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-40 md:hidden animate-fade-in"
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
                     onClick={() => setIsSidebarOpen(false)}
                 />
             )}
@@ -91,10 +93,15 @@ export default function AdminLayout({
 
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 <AdminHeader onMenuClick={() => setIsSidebarOpen(true)} />
-                <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-secondary-50 dark:bg-secondary-950 transition-colors duration-300">
-                    <div className="max-w-7xl mx-auto">
+                <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-secondary-50 dark:bg-secondary-950">
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className="max-w-7xl mx-auto"
+                    >
                         {children}
-                    </div>
+                    </motion.div>
                 </main>
             </div>
         </div>

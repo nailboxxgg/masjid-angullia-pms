@@ -9,6 +9,8 @@ import { auth, db } from "@/lib/firebase"; // Make sure to export db from fireba
 import { doc, setDoc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import Footer from "@/components/layout/Footer";
+import { useSessionRecovery } from "@/hooks/useSessionRecovery";
+import { motion } from "framer-motion";
 
 export default function SignupPage() {
     const router = useRouter();
@@ -17,17 +19,34 @@ export default function SignupPage() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState("");
 
+    // Form states
+    const [formData, setFormData] = useState({
+        familyName: "",
+        email: "",
+        phoneNumber: "+63"
+    });
+
+    const { savedData, recover, saveProgress, clearProgress } = useSessionRecovery("signup", {
+        familyName: "",
+        email: "",
+        phoneNumber: "+63"
+    });
+
+    const updateField = (field: string, value: string) => {
+        const newData = { ...formData, [field]: value };
+        setFormData(newData);
+        saveProgress(newData);
+    };
+
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError("");
 
         const form = e.target as HTMLFormElement;
-        const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
+        const { email, familyName, phoneNumber } = formData;
         const password = (form.elements.namedItem("password") as HTMLInputElement).value;
         const confirmPassword = (form.elements.namedItem("confirmPassword") as HTMLInputElement).value;
-        const familyName = (form.elements.namedItem("familyName") as HTMLInputElement).value.trim();
-        const phoneNumber = (form.elements.namedItem("phoneNumber") as HTMLInputElement).value.trim();
 
         // Basic phone validation for +63
         if (!phoneNumber.startsWith("+63") || phoneNumber.length < 12) {
@@ -53,6 +72,7 @@ export default function SignupPage() {
                 role: 'user'
             });
 
+            clearProgress();
             router.push("/");
         } catch (err: unknown) {
             console.error(err);
@@ -86,6 +106,34 @@ export default function SignupPage() {
                         </p>
                     </div>
 
+                    {savedData && savedData.email && savedData.email !== formData.email && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-primary-50 border border-primary-100 p-3 rounded-lg flex items-center justify-between gap-3"
+                        >
+                            <p className="text-xs text-primary-700 font-medium">
+                                Resume registration for <span className="font-bold">{savedData.familyName || savedData.email}</span>?
+                            </p>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData(recover()!)}
+                                    className="text-[10px] font-bold uppercase tracking-wider text-primary-700 hover:text-primary-800"
+                                >
+                                    Resume
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={clearProgress}
+                                    className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600"
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+
                     <form className="mt-8 space-y-6" onSubmit={handleSignup}>
                         <div className="space-y-4 rounded-md shadow-sm">
                             <div>
@@ -95,7 +143,9 @@ export default function SignupPage() {
                                     name="familyName"
                                     type="text"
                                     required
-                                    className="relative block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
+                                    value={formData.familyName}
+                                    onChange={(e) => updateField("familyName", e.target.value)}
+                                    className="relative block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 transition-all"
                                     placeholder="Family Name (e.g. Abdul Family)"
                                 />
                             </div>
@@ -107,7 +157,9 @@ export default function SignupPage() {
                                     type="email"
                                     autoComplete="email"
                                     required
-                                    className="relative block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
+                                    value={formData.email}
+                                    onChange={(e) => updateField("email", e.target.value)}
+                                    className="relative block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 transition-all"
                                     placeholder="Email address"
                                 />
                             </div>
@@ -118,8 +170,9 @@ export default function SignupPage() {
                                     name="phoneNumber"
                                     type="tel"
                                     required
-                                    defaultValue="+63"
-                                    className="relative block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
+                                    value={formData.phoneNumber}
+                                    onChange={(e) => updateField("phoneNumber", e.target.value)}
+                                    className="relative block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 transition-all"
                                     placeholder="Mobile Number (e.g. +639123456789)"
                                 />
                             </div>

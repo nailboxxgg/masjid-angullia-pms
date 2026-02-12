@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${outfit.variable} ${scheherazade.variable} antialiased transition-colors duration-300`}
+        className={`${inter.variable} ${outfit.variable} ${scheherazade.variable} antialiased transition-colors duration-300 no-scrollbar`}
       >
         <ThemeProvider
           attribute="class"

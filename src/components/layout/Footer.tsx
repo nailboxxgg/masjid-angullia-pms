@@ -7,9 +7,10 @@ import SubscriptionModal from "@/components/ui/SubscriptionModal";
 
 interface FooterProps {
     onAdminClick?: () => void;
+    onFeedbackClick?: () => void;
 }
 
-export default function Footer({ onAdminClick }: FooterProps) {
+export default function Footer({ onAdminClick, onFeedbackClick }: FooterProps) {
     const [isSubModalOpen, setIsSubModalOpen] = useState(false);
 
     return (
@@ -27,7 +28,16 @@ export default function Footer({ onAdminClick }: FooterProps) {
                         <div className="flex flex-col gap-2">
                             <Link href="/donations" className="hover:text-primary-400 transition-colors">Donate</Link>
                             <Link href="/" className="hover:text-primary-400 transition-colors">Jama&apos;ah Presence</Link>
-                            <Link href="/feedback" className="hover:text-primary-400 transition-colors">Concerns, Feedbacks, and Request</Link>
+                            {onFeedbackClick ? (
+                                <button
+                                    onClick={onFeedbackClick}
+                                    className="text-left hover:text-primary-400 transition-colors focus:outline-none"
+                                >
+                                    Concerns, Feedbacks, and Request
+                                </button>
+                            ) : (
+                                <Link href="/feedback" className="hover:text-primary-400 transition-colors">Concerns, Feedbacks, and Request</Link>
+                            )}
                         </div>
                     </div>
                     <div className="flex flex-col items-center md:items-start">

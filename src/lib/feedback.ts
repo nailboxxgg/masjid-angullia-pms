@@ -2,7 +2,7 @@
 import { db } from "./firebase";
 import { collection, addDoc, serverTimestamp, getDocs, query, orderBy, where, doc, updateDoc, deleteDoc } from "firebase/firestore";
 
-export type FeedbackType = 'Concern' | 'Feedback' | 'Request';
+export type FeedbackType = 'Concern' | 'Feedback' | 'Request' | 'Message';
 
 export interface FeedbackData {
     id?: string;

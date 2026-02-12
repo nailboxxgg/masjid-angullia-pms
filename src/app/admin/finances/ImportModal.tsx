@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Dialog } from "@headlessui/react";
+import { Dialog, DialogTitle, DialogDescription } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -153,11 +153,11 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white dark:bg-secondary-900 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden transition-colors"
+                            className="bg-white dark:bg-secondary-900 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
                         >
-                            <div className="p-6 border-b border-secondary-100 dark:border-secondary-800 flex justify-between items-center transition-colors">
+                            <div className="p-6 border-b border-secondary-100 dark:border-secondary-800 flex justify-between items-center">
                                 <h3 className="text-lg font-bold text-secondary-900 dark:text-secondary-100">Import Donations</h3>
-                                <button onClick={onClose} disabled={isProcessing} className="text-secondary-400 hover:text-secondary-600 dark:text-secondary-500 dark:hover:text-secondary-300">
+                                <button onClick={onClose} disabled={isProcessing} className="text-secondary-900 hover:text-black dark:text-secondary-100 dark:hover:text-white font-bold">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
@@ -166,15 +166,19 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                                 {uploadStatus === "success" ? (
                                     <div className="flex flex-col items-center justify-center py-8 text-green-600 dark:text-green-400">
                                         <CheckCircle className="w-16 h-16 mb-4" />
-                                        <h4 className="text-xl font-bold">Import Successful!</h4>
-                                        <p className="text-sm text-secondary-500 dark:text-secondary-400 mt-2">Donations have been added to the registry.</p>
+                                        <DialogTitle className="text-2xl font-bold font-heading text-secondary-900 dark:text-white">Import Donation Data</DialogTitle>
+                                        <DialogDescription className="text-secondary-900 dark:text-secondary-200 font-medium">
+                                            Upload your CSV file from the donation system to bulk import records.
+                                        </DialogDescription>
                                     </div>
                                 ) : (
                                     <>
                                         {/* Drop Zone / File Input */}
-                                        <div
+                                        <motion.div
+                                            whileHover={{ scale: 1.01, borderColor: "var(--primary-500)" }}
+                                            whileTap={{ scale: 0.99 }}
                                             onClick={() => fileInputRef.current?.click()}
-                                            className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-colors ${file
+                                            className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all ${file
                                                 ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/20'
                                                 : 'border-secondary-200 dark:border-secondary-700 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-secondary-50 dark:hover:bg-secondary-800/50'
                                                 }`}
@@ -189,21 +193,21 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                                             {file ? (
                                                 <>
                                                     <FileSpreadsheet className="w-10 h-10 text-primary-600 dark:text-primary-400 mb-2" />
-                                                    <p className="font-medium text-secondary-900 dark:text-secondary-100">{file.name}</p>
-                                                    <p className="text-xs text-secondary-500 dark:text-secondary-400">{(file.size / 1024).toFixed(1)} KB</p>
+                                                    <p className="text-sm font-semibold text-secondary-900 dark:text-secondary-200">CSV File detected</p>
+                                                    <p className="text-xs font-medium text-secondary-900 dark:text-secondary-200">{(file.size / 1024).toFixed(2)} KB</p>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Upload className="w-8 h-8 text-secondary-400 dark:text-secondary-500 mb-2" />
+                                                    <Upload className="w-8 h-8 text-secondary-900 dark:text-secondary-100 mb-2" />
                                                     <p className="font-medium text-secondary-700 dark:text-secondary-300">Click to upload or drag & drop</p>
-                                                    <p className="text-xs text-secondary-400 dark:text-secondary-500 mt-1">Supports .xlsx, .xls, .csv</p>
+                                                    <p className="text-xs font-semibold text-secondary-900 dark:text-secondary-200 mt-1">Supports .xlsx, .xls, .csv</p>
                                                 </>
                                             )}
-                                        </div>
+                                        </motion.div>
 
                                         {/* Error Message */}
                                         {uploadStatus === "error" && (
-                                            <div className="flex items-center gap-2 mt-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 p-3 rounded-lg border border-red-100 dark:border-red-800 transition-colors">
+                                            <div className="flex items-center gap-2 mt-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 p-3 rounded-lg border border-red-100 dark:border-red-800">
                                                 <AlertTriangle className="w-4 h-4 shrink-0" />
                                                 <p>{errorMessage}</p>
                                             </div>
@@ -212,10 +216,10 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                                         {/* Preview */}
                                         {previewData.length > 0 && (
                                             <div className="mt-6">
-                                                <h4 className="text-xs font-bold text-secondary-500 dark:text-secondary-400 uppercase tracking-wider mb-2">Preview (First 5 Rows)</h4>
-                                                <div className="bg-secondary-50 dark:bg-secondary-800/50 rounded-lg border border-secondary-200 dark:border-secondary-700 overflow-hidden transition-colors">
+                                                <p className="text-xs font-medium text-secondary-900 dark:text-secondary-200 mt-1 uppercase tracking-wider">Rows</p>
+                                                <div className="bg-secondary-50 dark:bg-secondary-800/50 rounded-lg border border-secondary-200 dark:border-secondary-700 overflow-hidden">
                                                     <table className="w-full text-xs text-left">
-                                                        <thead className="bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-300 transition-colors">
+                                                        <thead className="bg-secondary-50 dark:bg-secondary-800 text-secondary-900 dark:text-secondary-200 border-y border-secondary-200 dark:border-secondary-700">
                                                             <tr>
                                                                 <th className="px-3 py-2">Date</th>
                                                                 <th className="px-3 py-2">Donor</th>
@@ -223,7 +227,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                                                                 <th className="px-3 py-2">Type</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody className="divide-y divide-secondary-200 dark:divide-secondary-700 text-secondary-700 dark:text-secondary-200 transition-colors">
+                                                        <tbody className="divide-y divide-secondary-200 dark:divide-secondary-700 text-secondary-700 dark:text-secondary-200">
                                                             {previewData.map((row, i) => (
                                                                 <tr key={i}>
                                                                     <td className="px-3 py-1.5">{row['Date'] || row['date'] || '-'}</td>
@@ -235,7 +239,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                <p className="text-[10px] text-secondary-400 dark:text-secondary-500 mt-2 text-right">
+                                                <p className="text-[10px] font-bold text-secondary-900 dark:text-secondary-100 mt-2 text-right">
                                                     * Data will be mapped to system fields automatically.
                                                 </p>
                                             </div>
@@ -245,10 +249,10 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                             </div>
 
                             {uploadStatus !== "success" && (
-                                <div className="p-6 border-t border-secondary-100 dark:border-secondary-800 flex justify-end gap-3 bg-secondary-50/50 dark:bg-secondary-900/50 transition-colors">
+                                <div className="p-6 border-t border-secondary-100 dark:border-secondary-800 flex justify-end gap-3 bg-secondary-50/50 dark:bg-secondary-900/50">
                                     <button
                                         onClick={onClose}
-                                        className="px-4 py-2 text-sm font-medium text-secondary-600 dark:text-secondary-400 hover:text-secondary-800 dark:hover:text-secondary-200 transition-colors"
+                                        className="px-4 py-2 text-sm font-bold text-secondary-900 dark:text-secondary-100 hover:text-black dark:hover:text-white"
                                         disabled={isProcessing}
                                     >
                                         Cancel
@@ -256,7 +260,7 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                                     <button
                                         onClick={handleUpload}
                                         disabled={!file || isProcessing || uploadStatus === "error"}
-                                        className="px-4 py-2 bg-secondary-900 dark:bg-primary-600 hover:bg-secondary-800 dark:hover:bg-primary-700 text-white text-sm font-bold rounded-lg shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                        className="px-4 py-2 bg-secondary-900 dark:bg-primary-600 hover:bg-secondary-800 dark:hover:bg-primary-700 text-white text-sm font-bold rounded-lg shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isProcessing ? (
                                             <>

@@ -114,3 +114,11 @@ h6 {
 .font-arabic {
   font-family: var(--font-arabic);
 }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

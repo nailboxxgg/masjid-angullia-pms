@@ -8,14 +8,25 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import Footer from "@/components/layout/Footer";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
+import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 
 function LoginForm() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
+    const [identifier, setIdentifier] = useState("");
+
+    const { savedData, recover, saveProgress, clearProgress } = useSessionRecovery("login", { identifier: "" });
+
+    // Handle input change and save progress
+    const handleIdentifierChange = (val: string) => {
+        setIdentifier(val);
+        saveProgress({ identifier: val });
+    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,7 +34,6 @@ function LoginForm() {
         setError("");
 
         const form = e.target as HTMLFormElement;
-        const identifier = (form.elements.namedItem("identifier") as HTMLInputElement).value.trim();
         const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
         if (!identifier) {
@@ -58,6 +68,7 @@ function LoginForm() {
 
         try {
             await signInWithEmailAndPassword(auth, loginEmail, password);
+            clearProgress(); // Success: clear persistence
             router.push("/");
         } catch (err: unknown) {
             console.error(err);
@@ -91,6 +102,34 @@ function LoginForm() {
                         </p>
                     </div>
 
+                    {savedData && savedData.identifier && savedData.identifier !== identifier && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-primary-50 border border-primary-100 p-3 rounded-lg flex items-center justify-between gap-3"
+                        >
+                            <p className="text-xs text-primary-700 font-medium">
+                                Continue with <span className="font-bold">{savedData.identifier}</span>?
+                            </p>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => handleIdentifierChange(savedData.identifier)}
+                                    className="text-[10px] font-bold uppercase tracking-wider text-primary-700 hover:text-primary-800"
+                                >
+                                    Resume
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={clearProgress}
+                                    className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600"
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+
                     <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                         <div className="space-y-4 rounded-md shadow-sm">
                             <div>
@@ -100,7 +139,9 @@ function LoginForm() {
                                     name="identifier"
                                     type="text"
                                     required
-                                    className="relative block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
+                                    value={identifier}
+                                    onChange={(e) => handleIdentifierChange(e.target.value)}
+                                    className="relative block w-full rounded-md border-0 py-2.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 transition-all"
                                     placeholder="Email or Mobile Number (+63...)"
                                 />
                             </div>

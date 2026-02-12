@@ -11,9 +11,10 @@ interface ModalProps {
     title?: string;
     children: React.ReactNode;
     className?: string;
+    hideScrollbar?: boolean;
 }
 
-export default function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, className, hideScrollbar }: ModalProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -60,7 +61,10 @@ export default function Modal({ isOpen, onClose, title, children, className }: M
                     </button>
                 </div>
 
-                <div className="max-h-[80vh] overflow-y-auto pr-1">
+                <div className={cn(
+                    "max-h-[80vh] overflow-y-auto pr-1",
+                    hideScrollbar && "no-scrollbar"
+                )}>
                     {children}
                 </div>
             </div>

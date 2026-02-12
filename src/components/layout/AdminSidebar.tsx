@@ -21,12 +21,12 @@ import {
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/firebase";
 import { motion } from "framer-motion";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const adminRoutes = [
     { name: "Overview", href: "/admin", icon: LayoutDashboard },
     { name: "Feed & Events", href: "/admin/feed", icon: Megaphone },
     { name: "Inbox", href: "/admin/feedback", icon: MessageSquare },
-    { name: "Requests", href: "/admin/requests", icon: FileText },
     { name: "Families", href: "/admin/families", icon: Users },
     { name: "Finances", href: "/admin/finances", icon: DollarSign },
     { name: "Attendance", href: "/admin/attendance", icon: Clock },
@@ -40,8 +40,9 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     const pathname = usePathname();
-    const router = useRouter(); // Import useRouter from next/navigation
+    const router = useRouter();
     const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+    const { unreadCount } = useNotifications();
 
     // Handle Sign Out Link Click
     const handleSignOutClick = () => {
@@ -86,7 +87,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 className={cn(
-                    "fixed md:relative flex flex-col h-screen w-64 bg-secondary-900 border-secondary-800 text-white dark:bg-white dark:border-secondary-200 dark:text-secondary-900 z-50 transition-all duration-300",
+                    "fixed md:relative flex flex-col h-screen w-64 bg-secondary-900 border-secondary-800 text-white dark:bg-white dark:border-secondary-200 dark:text-secondary-900 z-50",
                     !isOpen && "-translate-x-full md:translate-x-0"
                 )}
             >
@@ -152,7 +153,12 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                                     )}
 
                                     <Icon className={cn("w-5 h-5 relative z-10 group-hover:scale-105 transition-transform", isActive ? "text-primary-500" : "text-secondary-500 group-hover:text-white dark:text-secondary-400 dark:group-hover:text-secondary-900")} />
-                                    <span className="relative z-10">{route.name}</span>
+                                    <span className="relative z-10 flex-1">{route.name}</span>
+                                    {route.name === "Inbox" && unreadCount > 0 && (
+                                        <span className="relative z-10 min-w-[20px] h-5 flex items-center justify-center px-1.5 text-[10px] font-black text-white bg-red-500 rounded-full">
+                                            {unreadCount > 9 ? "9+" : unreadCount}
+                                        </span>
+                                    )}
                                 </Link>
                             </motion.div>
                         );

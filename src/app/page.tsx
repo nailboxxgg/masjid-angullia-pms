@@ -23,6 +23,8 @@ import { motion } from "framer-motion";
 import SocialPost from "@/components/feed/SocialPost";
 import ImageModal from "@/components/ui/ImageModal";
 import AttendancePortal from "@/components/attendance/AttendancePortal";
+import AnnouncementCard from "@/components/feed/AnnouncementCard";
+import FeedbackModal from "@/components/modules/FeedbackModal";
 
 const Modal = dynamic(() => import("@/components/ui/modal"), { ssr: false });
 
@@ -41,6 +43,8 @@ export default function Home() {
 
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [selectedFullImage, setSelectedFullImage] = useState<{ src: string, alt: string } | null>(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -182,9 +186,6 @@ export default function Home() {
                 >
                   <Bell className="w-4 h-4" /> Get SMS Alerts
                 </button>
-                <Link href="/updates" className="text-primary-600 dark:text-primary-400 font-medium hover:text-primary-700 dark:hover:text-primary-300 flex items-center gap-1 transition-colors px-4 py-2">
-                  View All Updates <ArrowRight className="w-4 h-4" />
-                </Link>
               </div>
             </AnimationWrapper>
           </div>
@@ -194,9 +195,14 @@ export default function Home() {
             <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.5} className="lg:col-span-2">
               <div className="space-y-8">
                 {mounted && filteredAnnouncements.length > 0 ? (
-                  <div className="space-y-6">
-                    {filteredAnnouncements.map((post) => (
-                      <SocialPost key={post.id} post={post} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {filteredAnnouncements.slice(0, 2).map((post, idx) => (
+                      <AnnouncementCard
+                        key={post.id}
+                        post={post}
+                        delay={0.5 + (idx * 0.1)}
+                        onClick={() => setSelectedAnnouncement(post)}
+                      />
                     ))}
                   </div>
                 ) : mounted ? (
@@ -206,7 +212,23 @@ export default function Home() {
                     <p className="text-secondary-500 dark:text-secondary-400 font-medium">No updates at the moment.</p>
                   </div>
                 ) : (
-                  <div className="h-40 animate-pulse bg-secondary-100 dark:bg-secondary-800 rounded-3xl" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="h-64 bg-secondary-100 dark:bg-secondary-800 animate-pulse rounded-3xl" />
+                    ))}
+                  </div>
+                )}
+
+                {mounted && filteredAnnouncements.length > 2 && (
+                  <div className="flex justify-center pt-4">
+                    <Link
+                      href="/updates"
+                      className="group flex items-center gap-2 px-6 py-3 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-primary-600 dark:text-primary-400 font-bold rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-all shadow-sm"
+                    >
+                      View All Updates
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
                 )}
               </div>
             </AnimationWrapper>
@@ -226,7 +248,7 @@ export default function Home() {
                   <div className="relative z-10">
                     <h3 className="text-2xl font-bold font-heading mb-6 flex items-center gap-2">
                       <Heart className="w-6 h-6 text-pink-500 fill-pink-500 animate-pulse" />
-                      Recent Giving
+                      Recent Donations
                     </h3>
 
                     <div className="relative overflow-hidden group/marquee">
@@ -305,11 +327,11 @@ export default function Home() {
               </div>
             </AnimationWrapper>
           </div>
-        </div>
-      </section>
+        </div >
+      </section >
 
       {/* SMS Subscription Section */}
-      <section className="py-12 bg-primary-900 text-white relative overflow-hidden">
+      < section className="py-12 bg-primary-900 text-white relative overflow-hidden" >
         <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-10 mix-blend-overlay"></div>
         <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left max-w-2xl">
@@ -326,12 +348,12 @@ export default function Home() {
             Subscribe for Free
           </button>
         </div>
-      </section>
+      </section >
 
 
 
       {/* About Section */}
-      <section className="py-12 md:py-20 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center border-t border-secondary-200">
+      < section className="py-12 md:py-20 px-6 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center border-t border-secondary-200" >
         <AnimationWrapper withScroll animation="reveal" delay={0.2} duration={0.9}>
           <div className="space-y-6">
             <h2 className="text-4xl font-bold font-heading">About Our Mosque</h2>
@@ -391,9 +413,14 @@ export default function Home() {
             </AnimationWrapper>
           </div>
         </div>
-      </section>
+      </section >
 
-      <Footer onAdminClick={() => setIsAdminLoginOpen(true)} />
+      <Footer onAdminClick={() => setIsAdminLoginOpen(true)} onFeedbackClick={() => setIsFeedbackOpen(true)} />
+
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+      />
 
       <ImageModal
         isOpen={!!selectedFullImage}
@@ -418,12 +445,21 @@ export default function Home() {
         onClose={() => setIsAttendanceOpen(false)}
         title=""
         className="max-w-md p-0 bg-transparent border-none shadow-none"
+        hideScrollbar={true}
       >
         <AttendancePortal onSuccess={handleAttendanceSuccess} />
       </Modal>
 
       <Modal
-        // ... (keep modal)
+        isOpen={!!selectedAnnouncement}
+        onClose={() => setSelectedAnnouncement(null)}
+        title=""
+        className="max-w-2xl p-0 bg-transparent border-none shadow-none"
+      >
+        {selectedAnnouncement && <SocialPost post={selectedAnnouncement} />}
+      </Modal>
+
+      <Modal
         isOpen={isAdminLoginOpen}
         onClose={() => setIsAdminLoginOpen(false)}
         title=""
@@ -496,7 +532,7 @@ export default function Home() {
             </button>
           </div>
         </form>
-      </Modal>
-    </div>
+      </Modal >
+    </div >
   );
 }
