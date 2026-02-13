@@ -279,14 +279,14 @@ export default function AdminFeedbackPage() {
                                                         {item.message}
                                                     </div>
 
-                                                    <div className="flex justify-end gap-3 mt-4 opacity-0 group-hover:opacity-100 transition-all transform translate-y-3 group-hover:translate-y-0">
+                                                    <div className="flex flex-col sm:flex-row justify-end gap-3 mt-4 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all transform translate-y-0 sm:translate-y-3 sm:group-hover:translate-y-0">
                                                         {item.status !== 'Resolved' && (
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     handleUpdateStatus(item.id!, 'Resolved');
                                                                 }}
-                                                                className="flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-xl border border-emerald-100 dark:border-emerald-900/30 transition-all shadow-sm"
+                                                                className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-xl border border-emerald-100 dark:border-emerald-900/30 transition-all shadow-sm w-full sm:w-auto"
                                                             >
                                                                 <Check className="w-4 h-4" /> Mark Resolved
                                                             </button>
@@ -296,7 +296,7 @@ export default function AdminFeedbackPage() {
                                                                 e.stopPropagation();
                                                                 handleDelete(item.id!);
                                                             }}
-                                                            className="flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl border border-rose-100 dark:border-rose-900/30 transition-all shadow-sm"
+                                                            className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 text-xs font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl border border-rose-100 dark:border-rose-900/30 transition-all shadow-sm w-full sm:w-auto"
                                                         >
                                                             <Trash2 className="w-4 h-4" /> Purge Record
                                                         </button>

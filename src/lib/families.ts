@@ -25,18 +25,20 @@ export const getFamilies = async (limitCount = 100): Promise<Family[]> => {
         );
         const querySnapshot = await getDocs(q);
 
-        return querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                name: data.name,
-                head: data.head,
-                members: data.members,
-                phone: data.phone,
-                address: data.address,
-                createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : new Date().getTime()
-            } as Family;
-        });
+        return querySnapshot.docs
+            .filter(doc => doc.data().role !== 'admin')
+            .map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    name: data.name,
+                    head: data.head,
+                    members: data.members,
+                    phone: data.phone,
+                    address: data.address,
+                    createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : new Date().getTime()
+                } as Family;
+            });
     } catch (error) {
         console.error("Error fetching families:", error);
         return [];

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { startPresenceHeartbeat } from "@/lib/presence";
@@ -22,13 +23,23 @@ export default function AdminLayout({
     useEffect(() => {
         let stopHeartbeat: (() => void) | undefined;
 
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 router.push("/");
             } else {
-                setLoading(false);
-                // Start presence tracking when authenticated
-                stopHeartbeat = startPresenceHeartbeat();
+                try {
+                    const userDoc = await getDoc(doc(db, "families", user.uid));
+                    if (userDoc.exists() && userDoc.data().role === 'admin') {
+                        setLoading(false);
+                        // Start presence tracking when authenticated
+                        stopHeartbeat = startPresenceHeartbeat();
+                    } else {
+                        router.push("/");
+                    }
+                } catch (error) {
+                    console.error("Error verifying admin role:", error);
+                    router.push("/");
+                }
             }
         });
 
@@ -93,7 +104,7 @@ export default function AdminLayout({
 
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 <AdminHeader onMenuClick={() => setIsSidebarOpen(true)} />
-                <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-secondary-50 dark:bg-secondary-950">
+                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-secondary-50 dark:bg-secondary-950">
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}

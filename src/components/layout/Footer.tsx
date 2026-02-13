@@ -64,7 +64,7 @@ export default function Footer({ onAdminClick, onFeedbackClick }: FooterProps) {
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary-800/50 text-secondary-500 hover:bg-secondary-800 hover:text-secondary-300 transition-all text-xs font-medium border border-secondary-800 hover:border-secondary-700"
                             >
                                 <Lock className="w-3 h-3" />
-                                <span>Staff Access</span>
+                                <span>Login</span>
                             </button>
                         </div>
                     )}

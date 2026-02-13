@@ -64,7 +64,7 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-secondary-200 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50 focus:bg-white dark:focus:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-secondary-900 dark:text-white transition-all placeholder:text-secondary-400"
+                        className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-secondary-200 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50 focus:bg-white dark:focus:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-secondary-900 dark:text-white transition-all placeholder:text-secondary-400 text-base"
                         placeholder="Full Name"
                     />
                 </div>
@@ -78,7 +78,7 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
                         required
                         value={contact}
                         onChange={(e) => setContact(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                        className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-secondary-200 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50 focus:bg-white dark:focus:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-secondary-900 dark:text-white transition-all placeholder:text-secondary-400"
+                        className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-secondary-200 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50 focus:bg-white dark:focus:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-secondary-900 dark:text-white transition-all placeholder:text-secondary-400 text-base"
                         placeholder="Contact Number"
                         inputMode="numeric"
                     />
@@ -94,7 +94,7 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-secondary-200 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50 focus:bg-white dark:focus:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-secondary-900 dark:text-white transition-all placeholder:text-secondary-400"
+                    className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-secondary-200 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50 focus:bg-white dark:focus:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-secondary-900 dark:text-white transition-all placeholder:text-secondary-400 text-base"
                     placeholder="Email Address (Optional)"
                 />
             </div>
@@ -103,7 +103,7 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
             <div className="space-y-3">
                 <label className="text-xs font-bold uppercase tracking-widest text-secondary-400 ml-1">Reason for reaching out</label>
                 <div className="flex flex-wrap gap-2">
-                    {(['Concern', 'Feedback', 'Request'] as const).map((t) => (
+                    {(['Concern', 'Feedback', 'Request', 'Registration'] as const).map((t) => (
                         <button
                             key={t}
                             type="button"
@@ -130,7 +130,7 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
                     required
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    className="w-full pl-11 pr-4 pt-3.5 pb-4 h-32 rounded-2xl border border-secondary-200 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50 focus:bg-white dark:focus:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-secondary-900 dark:text-white transition-all placeholder:text-secondary-400 resize-none"
+                    className="w-full pl-11 pr-4 pt-3.5 pb-4 h-32 rounded-2xl border border-secondary-200 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50 focus:bg-white dark:focus:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-secondary-900 dark:text-white transition-all placeholder:text-secondary-400 resize-none text-base"
                     placeholder="Tell us what's on your mind..."
                 />
             </div>

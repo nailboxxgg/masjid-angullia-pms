@@ -31,7 +31,7 @@ export default function EventForm({ onSuccess, onCancel, className }: EventFormP
                         required
                         type="text"
                         placeholder="e.g. Annual Iftar Gathering"
-                        className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="flex h-11 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                     />
                 </div>
 
@@ -40,7 +40,7 @@ export default function EventForm({ onSuccess, onCancel, className }: EventFormP
                     <input
                         required
                         type="datetime-local"
-                        className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="flex h-11 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                     />
                 </div>
 
@@ -48,7 +48,7 @@ export default function EventForm({ onSuccess, onCancel, className }: EventFormP
                     <label className="text-sm font-medium text-secondary-700">End Date & Time</label>
                     <input
                         type="datetime-local"
-                        className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="flex h-11 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                     />
                 </div>
 
@@ -57,13 +57,13 @@ export default function EventForm({ onSuccess, onCancel, className }: EventFormP
                     <input
                         type="text"
                         placeholder="e.g. Main Prayer Hall or External Venue"
-                        className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="flex h-11 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                     />
                 </div>
 
                 <div className="col-span-1 space-y-2">
                     <label className="text-sm font-medium text-secondary-700">Type</label>
-                    <select className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <select className="flex h-11 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base">
                         <option>Religious</option>
                         <option>Community</option>
                         <option>Educational</option>
@@ -76,7 +76,7 @@ export default function EventForm({ onSuccess, onCancel, className }: EventFormP
                     <input
                         type="number"
                         placeholder="e.g. 200"
-                        className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="flex h-11 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                     />
                 </div>
 
@@ -84,7 +84,7 @@ export default function EventForm({ onSuccess, onCancel, className }: EventFormP
                     <label className="text-sm font-medium text-secondary-700">Description</label>
                     <textarea
                         rows={4}
-                        className="flex w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="flex w-full rounded-md border border-secondary-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                         placeholder="Event details..."
                     />
                 </div>

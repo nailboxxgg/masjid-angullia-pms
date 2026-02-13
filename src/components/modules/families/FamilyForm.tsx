@@ -119,7 +119,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                                 placeholder="Enter Family Name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="flex h-10 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100"
+                                className="flex h-11 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -130,7 +130,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                                 placeholder="Full Name"
                                 value={head}
                                 onChange={(e) => setHead(e.target.value)}
-                                className="flex h-10 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100"
+                                className="flex h-11 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -141,7 +141,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                                 placeholder="Enter Phone Number"
                                 value={phone || "+63"}
                                 onChange={(e) => setPhone(e.target.value)}
-                                className="flex h-10 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100"
+                                className="flex h-11 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -151,7 +151,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                                 placeholder="email@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="flex h-10 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100"
+                                className="flex h-11 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
                             />
                         </div>
                         <div className="col-span-1 md:col-span-2 space-y-1.5">
@@ -160,7 +160,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                                 placeholder="Complete Address"
                                 value={address}
                                 onChange={(e) => setAddress(e.target.value)}
-                                className="flex min-h-[80px] w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 text-sm placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all resize-none text-secondary-800 dark:text-secondary-100"
+                                className="flex min-h-[80px] w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all resize-none text-secondary-800 dark:text-secondary-100 text-base"
                             />
                         </div>
                     </div>
@@ -186,7 +186,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                                 <label className="text-[10px] font-medium text-secondary-500 dark:text-secondary-400 uppercase">Full Name</label>
                                 <input
                                     type="text"
-                                    className="flex h-9 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100"
+                                    className="flex h-10 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
                                     placeholder="Family Member Name"
                                     value={member.name}
                                     onChange={(e) => updateMember(member.id, 'name', e.target.value)}
@@ -198,7 +198,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                                     <select
                                         value={member.relation}
                                         onChange={(e) => updateMember(member.id, 'relation', e.target.value)}
-                                        className="flex h-9 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100"
+                                        className="flex h-10 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
                                     >
                                         <option className="text-secondary-800 dark:text-secondary-100">Head</option>
                                         <option className="text-secondary-800 dark:text-secondary-100">Spouse</option>

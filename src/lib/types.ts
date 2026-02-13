@@ -66,3 +66,16 @@ export interface AttendanceRecord {
     date: string; // YYYY-MM-DD for easier querying
     deviceInfo?: string;
 }
+
+export interface AttendanceSession {
+    id: string; // composite id: uid_timestamp
+    uid: string;
+    displayName: string;
+    email: string;
+    date: string;
+    clockIn: number;
+    clockOut?: number;
+    deviceInfo?: string;
+    status: 'active' | 'completed';
+    duration?: string; // e.g. "8h 30m"
+}

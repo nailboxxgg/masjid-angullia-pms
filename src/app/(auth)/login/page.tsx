@@ -22,6 +22,13 @@ function LoginForm() {
 
     const { savedData, recover, saveProgress, clearProgress } = useSessionRecovery("login", { identifier: "" });
 
+    // Effect to check if there is saved data
+    useEffect(() => {
+        if (savedData && savedData.identifier && savedData.identifier !== identifier) {
+            // Optional: User notification logic could go here or render conditionally
+        }
+    }, [savedData]);
+
     // Handle input change and save progress
     const handleIdentifierChange = (val: string) => {
         setIdentifier(val);

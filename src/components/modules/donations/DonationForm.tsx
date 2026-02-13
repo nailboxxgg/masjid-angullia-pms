@@ -70,7 +70,7 @@ export default function DonationForm({ className, onSuccess, onCancel }: Donatio
                         value={amount}
                         onChange={(e) => setAmount(Number(e.target.value))}
                         placeholder="Enter custom amount"
-                        className="flex h-10 w-full rounded-md border border-secondary-300 bg-white pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="flex h-11 w-full rounded-md border border-secondary-300 bg-white pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                     />
                 </div>
             </div>
@@ -158,12 +158,12 @@ export default function DonationForm({ className, onSuccess, onCancel }: Donatio
                     <input
                         type="text"
                         placeholder="Your Name (leave blank for anonymous)"
-                        className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="flex h-11 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                     />
                     <input
                         type="email"
                         placeholder="Email for receipt"
-                        className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="flex h-11 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                     />
                 </div>
             </div>

@@ -7,10 +7,11 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { ArrowRight, MapPin, ShieldCheck, Heart, Calendar, Clock, BookOpen, Lock, Bell, Smartphone, Eye, EyeOff, ThumbsUp, MessageCircle, Share2, MoreHorizontal, ZoomIn } from "lucide-react";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { getAnnouncements } from "@/lib/announcements";
 import { Announcement } from "@/lib/types";
 import PrayerTimesWidget from "@/components/PrayerTimesWidget";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
 import { getEvents } from "@/lib/events";
@@ -30,8 +31,8 @@ const Modal = dynamic(() => import("@/components/ui/modal"), { ssr: false });
 
 export default function Home() {
   const router = useRouter();
-  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
-  const [showAdminPassword, setShowAdminPassword] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
 
@@ -75,21 +76,85 @@ export default function Home() {
     setIsRegistrationOpen(true);
   };
 
-  const handleAdminLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setLoginError("");
+
+    console.log("Firebase Config Check:", {
+      apiKey: auth.app.options.apiKey ? "Present" : "Missing",
+      projectId: auth.app.options.projectId ? "Present" : "Missing",
+      authDomain: auth.app.options.authDomain,
+    });
 
     const form = e.target as HTMLFormElement;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
     const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push("/admin");
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const uid = userCredential.user.uid;
+
+      // Check user role
+      const userDoc = await getDoc(doc(db, "families", uid));
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        console.log("Login Debug:", { uid, role: userData.role, data: userData });
+
+        if (userData.role === 'admin') {
+          console.log("Redirecting to admin...");
+          router.push("/admin");
+        } else {
+          // Check if this existing user is the seed admin causing role mismatch
+          if (email === process.env.NEXT_PUBLIC_ADMIN_SEED_EMAIL) {
+            console.log("Seed admin detected (existing user doc), upgrading role...");
+            try {
+              await setDoc(doc(db, "families", uid), { ...userData, role: 'admin' }, { merge: true });
+              console.log("Admin role upgraded. Redirecting...");
+              router.push("/admin");
+              return;
+            } catch (err) {
+              console.error("Error upgrading admin role:", err);
+            }
+          } else {
+            // Regular user: Close login modal and open attendance portal
+            console.log("Redirecting to attendance (role not admin)...");
+            setIsLoginModalOpen(false);
+            setIsAttendanceOpen(true);
+          }
+        }
+      } else {
+        // Fallback for users without a family doc (legacy or error)
+        console.log("Login Debug: No user doc found for uid:", uid);
+
+        // CHECK FOR SEED ADMIN in new user case
+        if (email === process.env.NEXT_PUBLIC_ADMIN_SEED_EMAIL) {
+          console.log("Seed admin detected (new user), creating admin profile...");
+          try {
+            await setDoc(doc(db, "families", uid), {
+              email: email,
+              role: 'admin',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              name: "Super Admin", // Default name
+              familyMembers: []
+            });
+            console.log("Admin profile created. Redirecting...");
+            router.push("/admin");
+            return;
+          } catch (writeErr) {
+            console.error("Error creating admin profile:", writeErr);
+          }
+        }
+
+        setIsLoginModalOpen(false);
+        setIsAttendanceOpen(true);
+      }
+
     } catch (err: unknown) {
       console.error(err);
-      setLoginError("Invalid admin credentials.");
+      setLoginError("Invalid email or password.");
     } finally {
       setIsLoading(false);
     }
@@ -112,33 +177,33 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col animate-fade-in">
       {/* ... Hero Section remains ... */}
-      <section className="relative w-full h-[800px] flex items-center justify-center text-center text-white">
-        <div className="absolute inset-0 bg-black/50 z-10" />
+      <section className="relative w-full min-h-[100svh] md:h-[800px] flex items-center justify-center text-center text-white overflow-hidden py-20 md:py-0">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30 z-10" />
         <div className="absolute inset-0">
           <Image
             src="/images/mosque.png"
             alt="Masjid Angullia"
             fill
             sizes="125vw"
-            className="object-cover"
+            className="object-cover scale-105 animate-slow-zoom"
             priority
           />
         </div>
 
-        <div className="relative z-20 max-w-4xl px-4 flex flex-col items-center gap-6">
-          <AnimationWrapper animation="reveal" duration={1} withScroll={false}>
-            <h1 className="text-4xl md:text-7xl font-bold tracking-tight font-heading drop-shadow-lg">
+        <div className="relative z-20 max-w-5xl px-4 flex flex-col items-center gap-6 md:gap-8">
+          <AnimationWrapper animation="reveal" duration={1.2} withScroll={false}>
+            <h1 className="text-4xl md:text-8xl font-bold tracking-tight font-heading drop-shadow-2xl bg-clip-text text-transparent bg-gradient-to-b from-white to-white/90 leading-tight">
               Masjid Angullia
             </h1>
           </AnimationWrapper>
-          <AnimationWrapper animation="reveal" delay={0.2} duration={1} withScroll={false}>
-            <p className="text-xl md:text-2xl font-light text-secondary-100 drop-shadow-md max-w-2xl">
+          <AnimationWrapper animation="reveal" delay={0.3} duration={1} withScroll={false}>
+            <p className="text-lg md:text-3xl font-light text-secondary-100 drop-shadow-lg max-w-3xl leading-relaxed tracking-wide px-4">
               A beacon of faith and community in the heart of Alaminos City.
             </p>
           </AnimationWrapper>
 
           {/* Prayer Times Widget */}
-          <AnimationWrapper animation="reveal" delay={0.4} duration={1} withScroll={false} className="mt-8 w-full max-w-3xl">
+          <AnimationWrapper animation="reveal" delay={0.4} duration={1} withScroll={false} className="mt-6 md:mt-8 w-full max-w-3xl">
             <PrayerTimesWidget />
           </AnimationWrapper>
         </div>
@@ -150,17 +215,22 @@ export default function Home() {
           <AnimationWrapper animation="reveal" delay={0.6} duration={0.8}>
             <div className="flex justify-center">
               <button
-                onClick={() => setIsAttendanceOpen(true)}
-                className="flex items-center gap-4 px-8 py-5 bg-white dark:bg-secondary-900 rounded-3xl shadow-2xl border border-secondary-100 dark:border-secondary-800 hover:scale-105 transition-all group"
+                onClick={() => setIsLoginModalOpen(true)}
+                className="flex items-center gap-4 md:gap-5 px-6 py-4 md:px-8 md:py-6 bg-white dark:bg-secondary-900 rounded-[2rem] shadow-2xl shadow-primary-900/5 hover:shadow-3xl hover:shadow-primary-500/20 border border-white/50 dark:border-secondary-800 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden w-full md:w-auto justify-between md:justify-start"
               >
-                <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-primary-600 dark:text-primary-400 group-hover:rotate-12 transition-transform">
-                  <Clock className="w-6 h-6" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/0 via-primary-500/5 to-primary-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                    <Clock className="w-6 h-6 md:w-7 md:h-7" />
+                  </div>
+                  <div className="text-left relative z-10">
+                    <h3 className="text-lg md:text-xl font-bold text-secondary-900 dark:text-white leading-tight mb-0.5">Jama&apos;ah Presence</h3>
+                    <p className="text-xs md:text-sm font-medium text-secondary-500 dark:text-secondary-400">Mark your attendance today</p>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <h3 className="text-lg font-bold text-secondary-900 dark:text-white leading-tight">Jama&apos;ah Presence</h3>
-                  <p className="text-sm text-secondary-500 dark:text-secondary-400">Mark your attendance for mosque activities</p>
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-secondary-50 dark:bg-secondary-800 flex items-center justify-center ml-2 group-hover:bg-primary-600 group-hover:text-white transition-colors duration-300 shrink-0">
+                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 transition-transform" />
                 </div>
-                <ArrowRight className="w-5 h-5 text-secondary-300 group-hover:translate-x-1 transition-transform ml-4" />
               </button>
             </div>
           </AnimationWrapper>
@@ -168,13 +238,22 @@ export default function Home() {
       </section>
 
       {/* Community Hub & Donations Section */}
-      <section className="py-10 md:py-16 bg-secondary-50 dark:bg-secondary-950 relative overflow-hidden transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="mb-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
+      <section className="py-12 md:py-24 bg-secondary-50/50 dark:bg-secondary-950 relative overflow-hidden transition-colors duration-300">
+        {/* Subtle Background Pattern */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-40">
+          <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-primary-500/5 rounded-full blur-[100px]" />
+          <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] bg-secondary-500/5 rounded-full blur-[100px]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+          <div className="mb-8 md:mb-12 flex flex-col md:flex-row items-end justify-between gap-6 md:gap-0">
             <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.1}>
-              <div>
-                <h2 className="text-3xl font-bold text-secondary-900 dark:text-secondary-50 font-heading">Community Hub</h2>
-                <p className="text-secondary-600 dark:text-secondary-400 mt-1">Updates, events, and contributions from our jama&apos;ah.</p>
+              <div className="max-w-2xl">
+                <span className="text-primary-600 dark:text-primary-400 font-bold tracking-widest text-xs uppercase mb-2 block">Community Updates</span>
+                <h2 className="text-3xl md:text-5xl font-bold text-secondary-900 dark:text-white font-heading tracking-tight leading-tight">Community Hub</h2>
+                <p className="text-secondary-600 dark:text-secondary-400 mt-3 md:mt-4 text-base md:text-lg leading-relaxed">
+                  Stay connected with the latest announcements, upcoming events, and contributions from our jama&apos;ah.
+                </p>
               </div>
             </AnimationWrapper>
 
@@ -182,7 +261,7 @@ export default function Home() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setIsSubscriptionOpen(true)}
-                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 font-medium rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-colors"
+                  className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 font-bold text-sm rounded-xl hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-all shadow-sm hover:shadow-md"
                 >
                   <Bell className="w-4 h-4" /> Get SMS Alerts
                 </button>
@@ -190,12 +269,12 @@ export default function Home() {
             </AnimationWrapper>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
             {/* Left Column: Announcements & Events (Span 2) */}
             <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.5} className="lg:col-span-2">
-              <div className="space-y-8">
+              <div className="space-y-6 md:space-y-8">
                 {mounted && filteredAnnouncements.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     {filteredAnnouncements.slice(0, 2).map((post, idx) => (
                       <AnnouncementCard
                         key={post.id}
@@ -220,13 +299,15 @@ export default function Home() {
                 )}
 
                 {mounted && filteredAnnouncements.length > 2 && (
-                  <div className="flex justify-center pt-4">
+                  <div className="flex justify-center pt-2 md:pt-4">
                     <Link
                       href="/updates"
-                      className="group flex items-center gap-2 px-6 py-3 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-primary-600 dark:text-primary-400 font-bold rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-all shadow-sm"
+                      className="group flex items-center gap-2 px-8 py-4 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-900 dark:text-white font-bold rounded-2xl hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-all shadow-lg shadow-secondary-200/20 dark:shadow-none w-full md:w-auto justify-center"
                     >
                       View All Updates
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <div className="w-6 h-6 rounded-full bg-secondary-100 dark:bg-secondary-800 flex items-center justify-center group-hover:bg-primary-500 group-hover:text-white transition-colors ml-2">
+                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
                     </Link>
                   </div>
                 )}
@@ -239,10 +320,10 @@ export default function Home() {
                 {/* Donations Card */}
                 <div
                   className={cn(
-                    "rounded-3xl p-6 shadow-xl relative overflow-hidden transition-all duration-500 border border-secondary-100 dark:border-secondary-800",
-                    "bg-white text-secondary-900", // Standard (Light Mode)
-                    "dark:bg-secondary-900 dark:text-white", // Standard (Dark Mode)
-                    (!mounted || recentDonations.length === 0) ? "min-h-[400px]" : "min-h-[240px]"
+                    "rounded-3xl p-6 md:p-8 relative overflow-hidden transition-all duration-500 border border-white/50 dark:border-white/5 shadow-2xl backdrop-blur-sm",
+                    "bg-white/90", // Standard (Light Mode)
+                    "dark:bg-secondary-900/90", // Standard (Dark Mode)
+                    (!mounted || recentDonations.length === 0) ? "min-h-[300px] md:min-h-[400px]" : "min-h-[240px]"
                   )}>
                   <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-3xl"></div>
                   <div className="relative z-10">
@@ -415,7 +496,7 @@ export default function Home() {
         </div>
       </section >
 
-      <Footer onAdminClick={() => setIsAdminLoginOpen(true)} onFeedbackClick={() => setIsFeedbackOpen(true)} />
+      <Footer onAdminClick={() => setIsLoginModalOpen(true)} onFeedbackClick={() => setIsFeedbackOpen(true)} />
 
       <FeedbackModal
         isOpen={isFeedbackOpen}
@@ -460,24 +541,24 @@ export default function Home() {
       </Modal>
 
       <Modal
-        isOpen={isAdminLoginOpen}
-        onClose={() => setIsAdminLoginOpen(false)}
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
         title=""
         className="max-w-md bg-secondary-900 border-secondary-800"
       >
         <div className="text-center flex flex-col items-center mb-6">
           <div className="bg-primary-500/10 p-3 rounded-full mb-4">
-            <ShieldCheck className="w-10 h-10 text-primary-500" />
+            <Lock className="w-10 h-10 text-primary-500" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-white font-heading">
-            Admin Portal
+            Sign In
           </h2>
           <p className="mt-2 text-sm text-secondary-400">
-            Restricted access for authorized personnel only
+            Access your account
           </p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleAdminLogin}>
+        <form className="space-y-6" onSubmit={handleLogin}>
           <div className="space-y-4 rounded-md shadow-sm">
             <div>
               <label htmlFor="email-address" className="sr-only">Email address</label>
@@ -487,8 +568,8 @@ export default function Home() {
                 type="email"
                 autoComplete="email"
                 required
-                className="relative block w-full rounded-md border-0 py-3 px-3 text-white bg-secondary-800 ring-1 ring-inset ring-secondary-700 placeholder:text-secondary-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-500 sm:text-sm sm:leading-6"
-                placeholder="Admin Email"
+                className="relative block w-full rounded-xl border-0 py-3.5 px-4 text-white bg-secondary-800 ring-1 ring-inset ring-secondary-700 placeholder:text-secondary-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-500 text-base sm:text-sm sm:leading-6 transition-all"
+                placeholder="Email Address"
               />
             </div>
             <div className="relative">
@@ -496,18 +577,18 @@ export default function Home() {
               <input
                 id="password"
                 name="password"
-                type={showAdminPassword ? "text" : "password"}
+                type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 required
-                className="relative block w-full rounded-md border-0 py-3 pl-3 pr-10 text-white bg-secondary-800 ring-1 ring-inset ring-secondary-700 placeholder:text-secondary-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-500 sm:text-sm sm:leading-6"
+                className="relative block w-full rounded-xl border-0 py-3.5 pl-4 pr-10 text-white bg-secondary-800 ring-1 ring-inset ring-secondary-700 placeholder:text-secondary-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary-500 text-base sm:text-sm sm:leading-6 transition-all"
                 placeholder="Password"
               />
               <button
                 type="button"
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-secondary-400 hover:text-white transition-colors"
-                onClick={() => setShowAdminPassword(!showAdminPassword)}
+                onClick={() => setShowPassword(!showPassword)}
               >
-                {showAdminPassword ? (
+                {showPassword ? (
                   <EyeOff className="h-5 w-5" />
                 ) : (
                   <Eye className="h-5 w-5" />
@@ -522,17 +603,24 @@ export default function Home() {
             </div>
           )}
 
-          <div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="group relative flex w-full justify-center rounded-md bg-primary-600 px-3 py-3 text-sm font-semibold text-white hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:opacity-70 transition-all shadow-lg hover:shadow-primary-500/20"
+          >
+            {isLoading ? "Signing In..." : "Sign In"}
+          </button>
+          <div className="mt-4 text-center">
             <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative flex w-full justify-center rounded-md bg-primary-600 px-3 py-3 text-sm font-semibold text-white hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:opacity-70 transition-all shadow-lg hover:shadow-primary-500/20"
+              type="button"
+              onClick={() => setIsFeedbackOpen(true)}
+              className="text-xs text-secondary-400 hover:text-white transition-colors"
             >
-              {isLoading ? "Verifying..." : "Access Dashboard"}
+              Need an account? <span className="underline">Contact Admin</span>
             </button>
           </div>
         </form>
-      </Modal >
+      </Modal>
     </div >
   );
 }

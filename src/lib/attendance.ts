@@ -13,7 +13,7 @@ import {
     addDoc,
     runTransaction
 } from "firebase/firestore";
-import { AttendanceRecord } from "./types";
+import { AttendanceRecord, AttendanceSession } from "./types";
 
 const ATTENDANCE_COLLECTION = "attendance";
 
@@ -159,6 +159,80 @@ export const getAttendanceLogs = async (dateString?: string): Promise<Attendance
         id: doc.id,
         ...doc.data()
     } as AttendanceRecord));
+};
+
+/**
+ * Get attendance sessions (paired In/Out) for a specific date
+ */
+export const getAttendanceSessions = async (dateString?: string): Promise<AttendanceSession[]> => {
+    const rawLogs = await getAttendanceLogs(dateString);
+
+    // Group by user
+    const userLogs: Record<string, AttendanceRecord[]> = {};
+    rawLogs.forEach(log => {
+        if (!userLogs[log.uid]) userLogs[log.uid] = [];
+        userLogs[log.uid].push(log);
+    });
+
+    const sessions: AttendanceSession[] = [];
+
+    Object.values(userLogs).forEach(logs => {
+        // Sort ascending by time
+        logs.sort((a, b) => a.timestamp - b.timestamp);
+
+        let currentSession: Partial<AttendanceSession> | null = null;
+
+        logs.forEach(log => {
+            if (log.type === 'clock_in') {
+                // Start a new session
+                // If there was an existing session without clock out, we might want to close it or leave it as error?
+                // For now, let's assume valid flow is In -> Out -> In -> Out
+                if (currentSession) {
+                    // Previous session was not closed. Push it as active (or weird state)
+                    sessions.push(currentSession as AttendanceSession);
+                }
+
+                currentSession = {
+                    id: `${log.uid}_${log.timestamp}`,
+                    uid: log.uid,
+                    displayName: log.displayName,
+                    email: log.email,
+                    date: log.date,
+                    clockIn: log.timestamp,
+                    deviceInfo: log.deviceInfo,
+                    status: 'active'
+                };
+            } else if (log.type === 'clock_out') {
+                if (currentSession && currentSession.status === 'active') {
+                    // Close the session
+                    currentSession.clockOut = log.timestamp;
+                    currentSession.status = 'completed';
+
+                    // Calculate duration
+                    const diffMs = log.timestamp - (currentSession.clockIn || 0);
+                    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    currentSession.duration = `${hours}h ${minutes}m`;
+
+                    sessions.push(currentSession as AttendanceSession);
+                    currentSession = null;
+                } else {
+                    // Orphaned clock out? For now ignore or handle separately
+                }
+            }
+        });
+
+        // If there's a dangling active session at the end
+        if (currentSession) {
+            sessions.push(currentSession as AttendanceSession);
+        }
+    });
+
+    // Sort active sessions first, then by clock in time desc
+    return sessions.sort((a, b) => {
+        if (a.status === b.status) return b.clockIn - a.clockIn;
+        return a.status === 'active' ? -1 : 1;
+    });
 };
 
 /**

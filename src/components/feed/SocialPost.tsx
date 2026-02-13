@@ -66,22 +66,20 @@ export default function SocialPost({ post, delay = 0 }: SocialPostProps) {
                 )}
 
                 {/* Action Bar */}
-                <div className="p-2 border-t border-secondary-50 dark:border-secondary-800 flex items-center justify-between px-2 md:px-4">
-                    <div className="flex items-center gap-1">
-                        <button className="flex items-center gap-2 px-3 py-1.5 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800 rounded-xl transition-colors text-xs font-medium group">
-                            <ThumbsUp className="w-4 h-4 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
-                            <span>Like</span>
-                        </button>
-                        <button className="flex items-center gap-2 px-3 py-1.5 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800 rounded-xl transition-colors text-xs font-medium">
-                            <MessageCircle className="w-4 h-4" />
-                            <span>Comment</span>
-                        </button>
+                {/* Action Bar / Link */}
+                {post.externalUrl && (
+                    <div className="p-3 border-t border-secondary-50 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-800/20">
+                        <a
+                            href={post.externalUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 text-secondary-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-200 dark:hover:border-primary-800 rounded-xl transition-all text-sm font-bold shadow-sm hover:shadow-md group"
+                        >
+                            <span>View on Facebook</span>
+                            <Share2 className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </a>
                     </div>
-                    <button className="flex items-center gap-2 px-3 py-1.5 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800 rounded-xl transition-colors text-xs font-medium">
-                        <Share2 className="w-4 h-4" />
-                        <span>Share</span>
-                    </button>
-                </div>
+                )}
             </div>
         </AnimationWrapper>
     );
