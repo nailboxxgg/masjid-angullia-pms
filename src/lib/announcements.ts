@@ -10,9 +10,13 @@ import {
     orderBy,
     limit,
     serverTimestamp,
-    Timestamp
+    Timestamp,
+    updateDoc,
+    arrayUnion,
+    arrayRemove,
+    getDoc
 } from "firebase/firestore";
-import { Announcement } from "./types";
+import { Announcement, Comment } from "./types";
 
 const COLLECTION_NAME = "announcements";
 
@@ -34,9 +38,10 @@ export const getAnnouncements = async (limitCount = 10): Promise<Announcement[]>
                 date: data.date,
                 type: data.type,
                 priority: data.priority,
-                imageUrl: data.imageUrl,
                 externalUrl: data.externalUrl,
-                createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : Date.now()
+                createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : Date.now(),
+                likes: data.likes || [],
+                comments: data.comments || []
             } as Announcement;
         });
     } catch (error) {
@@ -65,5 +70,34 @@ export const deleteAnnouncement = async (id: string): Promise<boolean> => {
     } catch (error) {
         console.error("Error deleting announcement:", error);
         return false;
+    }
+};
+export const toggleLikeAnnouncement = async (announcementId: string, userId: string, isLiked: boolean): Promise<boolean> => {
+    try {
+        const docRef = doc(db, COLLECTION_NAME, announcementId);
+        await updateDoc(docRef, {
+            likes: isLiked ? arrayRemove(userId) : arrayUnion(userId)
+        });
+        return true;
+    } catch (error) {
+        console.error("Error toggling like:", error);
+        return false;
+    }
+};
+
+export const addCommentToAnnouncement = async (announcementId: string, comment: Omit<Comment, "id">): Promise<Comment | null> => {
+    try {
+        const docRef = doc(db, COLLECTION_NAME, announcementId);
+        const newComment: Comment = {
+            ...comment,
+            id: Math.random().toString(36).substr(2, 9) // Simple ID generation for comments
+        };
+        await updateDoc(docRef, {
+            comments: arrayUnion(newComment)
+        });
+        return newComment;
+    } catch (error) {
+        console.error("Error adding comment:", error);
+        return null;
     }
 };

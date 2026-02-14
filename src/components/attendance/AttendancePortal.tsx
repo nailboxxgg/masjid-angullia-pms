@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import { recordVisitorPresence } from "@/lib/attendance";
+import { normalizePhoneNumber } from "@/lib/utils";
 
 interface AttendancePortalProps {
     onSuccess?: () => void;
@@ -20,6 +21,16 @@ export default function AttendancePortal({ onSuccess }: AttendancePortalProps) {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
 
+    // Auto-refresh success state
+    useEffect(() => {
+        if (success) {
+            const timer = setTimeout(() => {
+                setSuccess(false);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [success]);
+
     const handleVisitorSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!visitorName.trim()) return;
@@ -28,7 +39,8 @@ export default function AttendancePortal({ onSuccess }: AttendancePortalProps) {
         setError("");
 
         try {
-            await recordVisitorPresence(visitorName.trim(), visitorPhone.trim());
+            const normalizedPhone = normalizePhoneNumber(visitorPhone.trim());
+            await recordVisitorPresence(visitorName.trim(), normalizedPhone);
             setSuccess(true);
             setVisitorName("");
             setVisitorPhone("");
@@ -55,12 +67,6 @@ export default function AttendancePortal({ onSuccess }: AttendancePortalProps) {
                             Your visit has been recorded.
                         </p>
                     </div>
-                    <button
-                        onClick={() => setSuccess(false)}
-                        className="text-xs text-primary-500 uppercase tracking-widest font-bold hover:underline"
-                    >
-                        Register Another Guest
-                    </button>
                     <div className="pt-4">
                         <p className="text-[10px] text-secondary-400 uppercase tracking-wider font-bold">Autorefreshing to form...</p>
                     </div>
@@ -101,9 +107,10 @@ export default function AttendancePortal({ onSuccess }: AttendancePortalProps) {
                                 <label className="text-xs font-bold text-secondary-400 dark:text-secondary-500 uppercase tracking-widest mb-1.5 block">Phone Number <span className="text-secondary-300 normal-case tracking-normal">(Optional)</span></label>
                                 <input
                                     type="tel"
+                                    inputMode="numeric"
                                     value={visitorPhone}
-                                    onChange={(e) => setVisitorPhone(e.target.value)}
-                                    placeholder="+65..."
+                                    onChange={(e) => setVisitorPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                                    placeholder="Enter your mobile number"
                                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 rounded-xl px-4 py-3.5 text-secondary-900 dark:text-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                                 />
                             </div>

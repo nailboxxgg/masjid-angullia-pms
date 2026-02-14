@@ -20,3 +20,22 @@ export function formatTimeAgo(date: any) {
     if (days < 7) return `${days}d ago`;
     return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
 }
+
+/**
+ * Normalizes an 11-digit PH phone number (starting with 0) to +63 format
+ */
+export function normalizePhoneNumber(phone: string): string {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.startsWith('0') && digits.length === 11) {
+        return `+63${digits.substring(1)}`;
+    }
+    return phone;
+}
+
+/**
+ * Validates if a string is a valid 11-digit PH phone number starting with 09
+ */
+export function isValidPHPhone(phone: string): boolean {
+    const digits = phone.replace(/\D/g, '');
+    return /^09\d{9}$/.test(digits);
+}

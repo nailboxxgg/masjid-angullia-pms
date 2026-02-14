@@ -50,7 +50,7 @@ export default function Modal({ isOpen, onClose, title, children, className, hid
                     className
                 )}
             >
-                <div className="flex items-center justify-between mb-3 sm:mb-5 pb-0">
+                <div className="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-6 mb-3 sm:mb-5 pb-0">
                     {title && <h3 className="text-lg font-heading font-semibold text-secondary-900 dark:text-secondary-100">{title}</h3>}
                     <button
                         onClick={onClose}

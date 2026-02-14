@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { addFamily, updateFamily } from "@/lib/families";
 import { Family, FamilyMember } from "@/lib/types";
+import { normalizePhoneNumber, isValidPHPhone } from "@/lib/utils";
 
 interface FamilyFormProps {
     initialData?: Family | null;
@@ -27,7 +28,14 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
         if (initialData) {
             setName(initialData.name || "");
             setHead(initialData.head || "");
-            setPhone(initialData.phone || "");
+
+            // If phone starts with +63, convert to 0 for UI
+            let displayPhone = initialData.phone || "";
+            if (displayPhone.startsWith("+63")) {
+                displayPhone = "0" + displayPhone.substring(3);
+            }
+            setPhone(displayPhone);
+
             setEmail(initialData.email || "");
             setAddress(initialData.address || "");
 
@@ -75,9 +83,9 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Basic phone validation for +63
-        if (!phone.startsWith("+63") || phone.length < 12) {
-            alert("Phone number must start with +63 and be at least 12 characters long (e.g. +639123456789)");
+        // Standard validation using utility
+        if (!isValidPHPhone(phone)) {
+            alert("Please enter a valid 11-digit mobile number starting with 09 (e.g., 09123456789)");
             return;
         }
 
@@ -86,7 +94,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
         const familyData: Omit<Family, "id"> = {
             name,
             head,
-            phone,
+            phone: normalizePhoneNumber(phone),
             email,
             address,
             members: members // Save full array
@@ -119,7 +127,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                                 placeholder="Enter Family Name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="flex h-11 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
+                                className="flex h-11 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-4 py-2 placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -130,7 +138,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                                 placeholder="Full Name"
                                 value={head}
                                 onChange={(e) => setHead(e.target.value)}
-                                className="flex h-11 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
+                                className="flex h-11 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-4 py-2 placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -138,10 +146,12 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                             <input
                                 required
                                 type="tel"
-                                placeholder="Enter Phone Number"
-                                value={phone || "+63"}
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="flex h-11 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-2 placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
+                                placeholder="09XXXXXXXXX"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                                inputMode="numeric"
+                                maxLength={11}
+                                className="flex h-11 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-4 py-2 placeholder:text-secondary-400 dark:placeholder:text-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
                             />
                         </div>
                         <div className="space-y-1.5">

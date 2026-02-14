@@ -285,7 +285,6 @@ export default function AdminAttendancePage() {
                                     <>
                                         <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Phone</th>
                                         <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Date & Time</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Actions</th>
                                     </>
                                 )}
                             </tr>
@@ -384,11 +383,6 @@ export default function AdminAttendancePage() {
                                                             {new Date(session.clockIn).toLocaleDateString()}
                                                         </span>
                                                     </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <button className="text-xs font-bold text-primary-600 hover:text-primary-700 hover:underline">
-                                                        View Details
-                                                    </button>
                                                 </td>
                                             </>
                                         )}

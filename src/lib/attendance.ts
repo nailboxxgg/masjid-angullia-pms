@@ -104,9 +104,35 @@ export const clockIn = async (uid: string, displayName: string, email: string, r
 };
 
 /**
+ * Check if a visitor has already registered today based on name and phone
+ */
+export const hasVisitorRegisteredToday = async (name: string, phone?: string): Promise<boolean> => {
+    const today = getTodayDateString();
+    let q = query(
+        collection(db, ATTENDANCE_COLLECTION),
+        where("date", "==", today),
+        where("type", "==", "visitor"),
+        where("displayName", "==", name)
+    );
+
+    if (phone) {
+        q = query(q, where("phone", "==", phone));
+    }
+
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+};
+
+/**
  * Record a simple visitor presence
  */
 export const recordVisitorPresence = async (name: string, phone?: string) => {
+    // Check for duplicates
+    const isRegistered = await hasVisitorRegisteredToday(name, phone);
+    if (isRegistered) {
+        throw new Error("You have already recorded your visit for today. Thank you!");
+    }
+
     const today = getTodayDateString();
     const attendanceData: Omit<AttendanceRecord, 'id'> = {
         uid: `visitor_${Date.now()}`,

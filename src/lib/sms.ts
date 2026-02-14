@@ -165,6 +165,40 @@ export class TwilioProvider implements SMSProvider {
     }
 }
 
+export class SMSPHProvider implements SMSProvider {
+    name = "SMSPH";
+    private apiKey: string;
+    private apiUrl = "https://sms-api-ph.netlify.app/api/send";
+
+    constructor(apiKey: string) {
+        this.apiKey = apiKey;
+    }
+
+    async send(to: string, message: string): Promise<boolean> {
+        try {
+            const response = await fetch(this.apiUrl, {
+                method: "POST",
+                headers: {
+                    "x-api-key": this.apiKey,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    recipient: to,
+                    message: message,
+                }),
+            });
+
+            const data = await response.json();
+            console.log("SMSPH Response:", data);
+
+            return data && data.success === true;
+        } catch (error) {
+            console.error("SMSPH Send Error:", error);
+            return false;
+        }
+    }
+}
+
 export class MockProvider implements SMSProvider {
     name = "Mock";
 
@@ -213,6 +247,17 @@ export const getSMSProvider = (): SMSProvider => {
         }
 
         return new TwilioProvider(accountSid, authToken, { messagingServiceSid, fromNumber });
+    }
+
+    if (providerName.toLowerCase() === "smsph") {
+        const apiKey = process.env.SMSPH_API_KEY;
+
+        if (!apiKey) {
+            console.warn("SMSPH_API_KEY missing, falling back to Mock");
+            return new MockProvider();
+        }
+
+        return new SMSPHProvider(apiKey);
     }
 
     return new MockProvider();

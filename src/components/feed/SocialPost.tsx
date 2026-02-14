@@ -1,11 +1,15 @@
 "use client";
 
-import Image from "next/image";
-import { ShieldCheck, Clock, MoreHorizontal, ThumbsUp, MessageCircle, Share2 } from "lucide-react";
-import { Announcement } from "@/lib/types";
-import { formatTimeAgo } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { ShieldCheck, Clock, MoreHorizontal, ThumbsUp, MessageCircle, Send } from "lucide-react";
+import { Announcement, Comment } from "@/lib/types";
+import { formatTimeAgo, cn } from "@/lib/utils";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import FacebookEmbed from "@/components/ui/FacebookEmbed";
+import { toggleLikeAnnouncement, addCommentToAnnouncement } from "@/lib/announcements";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SocialPostProps {
     post: Announcement;
@@ -13,6 +17,71 @@ interface SocialPostProps {
 }
 
 export default function SocialPost({ post, delay = 0 }: SocialPostProps) {
+    const [likes, setLikes] = useState<string[]>(post.likes || []);
+    const [comments, setComments] = useState<Comment[]>(post.comments || []);
+    const [isLiked, setIsLiked] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [userName, setUserName] = useState<string | null>(null);
+    const [showComments, setShowComments] = useState(false);
+    const [newComment, setNewComment] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUserId(user.uid);
+                setUserName(user.displayName || user.email?.split('@')[0] || "User");
+                setIsLiked(likes.includes(user.uid));
+            } else {
+                setUserId(null);
+                setUserName(null);
+                setIsLiked(false);
+            }
+        });
+        return () => unsubscribe();
+    }, [likes]);
+
+    const handleLike = async () => {
+        if (!userId) {
+            window.dispatchEvent(new CustomEvent('open-login-modal'));
+            return;
+        }
+
+        const newLikedState = !isLiked;
+        setIsLiked(newLikedState);
+        setLikes(prev => newLikedState ? [...prev, userId] : prev.filter(id => id !== userId));
+
+        await toggleLikeAnnouncement(post.id, userId, !newLikedState);
+    };
+
+    const handleComment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!userId || !newComment.trim() || isSubmitting) return;
+
+        setIsSubmitting(true);
+        const commentData: Omit<Comment, "id"> = {
+            userId,
+            userName: userName || "User",
+            content: newComment.trim(),
+            createdAt: Date.now()
+        };
+
+        const addedComment = await addCommentToAnnouncement(post.id, commentData);
+        if (addedComment) {
+            setComments(prev => [...prev, addedComment]);
+            setNewComment("");
+        }
+        setIsSubmitting(false);
+    };
+
+    const handleRedirect = () => {
+        if (post.externalUrl) {
+            window.open(post.externalUrl, '_blank');
+        }
+    };
+
+    const isTextOnly = !post.externalUrl;
+
     return (
         <AnimationWrapper animation="reveal" duration={0.6} delay={delay}>
             <div className="bg-white dark:bg-secondary-900 rounded-2xl shadow-sm border border-secondary-100 dark:border-secondary-800 overflow-hidden hover:shadow-md transition-all duration-300">
@@ -37,47 +106,126 @@ export default function SocialPost({ post, delay = 0 }: SocialPostProps) {
                     </button>
                 </div>
 
-                {/* Post Body */}
-                <div className="px-4 pb-2.5">
-                    <h5 className="text-base font-bold text-secondary-900 dark:text-secondary-100 mb-1.5 line-clamp-2 md:line-clamp-none leading-tight">{post.title}</h5>
-                    <p className="text-secondary-600 dark:text-secondary-400 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                {/* Post Body - Clickable if External URL exists */}
+                <div
+                    className={cn(
+                        "px-4 pb-3",
+                        post.externalUrl && "cursor-pointer hover:bg-secondary-50/50 dark:hover:bg-secondary-800/20 transition-colors",
+                        isTextOnly && "py-8 md:py-12 bg-gradient-to-br from-primary-600 to-primary-800 text-white shadow-inner"
+                    )}
+                    onClick={handleRedirect}
+                >
+                    <h5 className={cn(
+                        "font-bold mb-2 leading-tight",
+                        isTextOnly ? "text-xl md:text-3xl text-center font-heading" : "text-base text-secondary-900 dark:text-secondary-100 line-clamp-2 md:line-clamp-none"
+                    )}>
+                        {post.title}
+                    </h5>
+                    <p className={cn(
+                        "leading-relaxed whitespace-pre-wrap break-words",
+                        isTextOnly ? "text-base md:text-xl text-center opacity-90 max-w-xl mx-auto" : "text-sm text-secondary-600 dark:text-secondary-400"
+                    )}>
                         {post.content}
                     </p>
                 </div>
 
                 {/* Media Section */}
                 {post.externalUrl ? (
-                    <FacebookEmbed url={post.externalUrl} />
-                ) : (
-                    <div className="relative aspect-video w-full bg-secondary-100 dark:bg-secondary-800 overflow-hidden">
-                        <Image
-                            src={post.imageUrl || "/images/mosque2.png"}
-                            alt={post.title}
-                            fill
-                            className="object-cover transition-transform duration-500 hover:scale-105"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                        {post.type === 'Urgent' && (
-                            <div className="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider animate-pulse shadow-lg z-10">
-                                Urgent
-                            </div>
+                    <div className="cursor-pointer" onClick={handleRedirect}>
+                        <FacebookEmbed url={post.externalUrl} />
+                    </div>
+                ) : null}
+
+                {/* Engagement Stats */}
+                <div className="px-4 py-2 border-t border-secondary-50 dark:border-secondary-800/50 flex items-center justify-between text-xs text-secondary-500">
+                    <div className="flex items-center gap-1">
+                        {likes.length > 0 && (
+                            <>
+                                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-white scale-75">
+                                    <ThumbsUp size={10} fill="white" />
+                                </div>
+                                <span>{likes.length}</span>
+                            </>
                         )}
                     </div>
-                )}
+                    <div className="flex items-center gap-3">
+                        {comments.length > 0 && (
+                            <span>{comments.length} comments</span>
+                        )}
+                    </div>
+                </div>
 
-                {/* Action Bar */}
-                {/* Action Bar / Link */}
-                {post.externalUrl && (
-                    <div className="p-3 border-t border-secondary-50 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-800/20">
-                        <a
-                            href={post.externalUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 text-secondary-700 dark:text-secondary-300 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-200 dark:hover:border-primary-800 rounded-xl transition-all text-sm font-bold shadow-sm hover:shadow-md group"
+                {/* Action Buttons */}
+                <div className="px-1.5 py-1 border-t border-secondary-50 dark:border-secondary-800/50 flex items-center gap-1">
+                    <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
+                        onClick={handleLike}
+                        className={cn(
+                            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors text-sm font-semibold",
+                            isLiked ? "text-blue-600 dark:text-blue-400" : "text-secondary-600 dark:text-secondary-400"
+                        )}
+                    >
+                        <motion.div
+                            animate={isLiked ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+                            transition={{ duration: 0.3 }}
                         >
-                            <span>View on Facebook</span>
-                            <Share2 className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </a>
+                            <ThumbsUp className={cn("w-5 h-5", isLiked && "fill-current")} />
+                        </motion.div>
+                        Like
+                    </motion.button>
+                    <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
+                        onClick={() => setShowComments(!showComments)}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors text-sm font-semibold text-secondary-600 dark:text-secondary-400"
+                    >
+                        <MessageCircle className="w-5 h-5" />
+                        Comment
+                    </motion.button>
+                </div>
+
+                {/* Comments Section */}
+                {showComments && (
+                    <div className="px-4 pb-4 bg-secondary-50/30 dark:bg-secondary-800/10 transition-all border-t border-secondary-50 dark:border-secondary-800/50">
+                        {/* Comment List */}
+                        <div className="space-y-4 pt-4 max-h-[300px] overflow-y-auto no-scrollbar">
+                            {comments.map((cmt) => (
+                                <div key={cmt.id} className="flex gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-secondary-200 dark:bg-secondary-700 flex items-center justify-center shrink-0">
+                                        <span className="text-[10px] font-bold">{cmt.userName[0].toUpperCase()}</span>
+                                    </div>
+                                    <div className="bg-secondary-100 dark:bg-secondary-800/80 rounded-2xl px-3 py-2 max-w-[85%]">
+                                        <p className="text-xs font-bold text-secondary-900 dark:text-secondary-100 mb-0.5">{cmt.userName}</p>
+                                        <p className="text-sm text-secondary-700 dark:text-secondary-300 leading-relaxed">{cmt.content}</p>
+                                        <p className="text-[10px] text-secondary-400 mt-1">{formatTimeAgo(cmt.createdAt)}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Comment Input */}
+                        <form onSubmit={handleComment} className="mt-4 flex gap-2 items-center">
+                            <div className="w-8 h-8 rounded-full bg-secondary-200 dark:bg-secondary-700 flex items-center justify-center shrink-0">
+                                <span className="text-[10px] font-bold">{userName?.[0]?.toUpperCase() || "U"}</span>
+                            </div>
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    placeholder="Write a comment..."
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    className="w-full bg-secondary-100 dark:bg-secondary-800 border-none rounded-full px-4 py-2 text-sm focus:ring-1 focus:ring-primary-500 pr-10 outline-none"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={!newComment.trim() || isSubmitting}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-600 disabled:opacity-30 transition-all"
+                                >
+                                    <Send className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 )}
             </div>

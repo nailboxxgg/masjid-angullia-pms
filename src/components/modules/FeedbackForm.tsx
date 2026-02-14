@@ -4,13 +4,13 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, CheckCircle, AlertCircle, User, Phone, Mail, MessageSquare } from "lucide-react";
 import { submitFeedback, FeedbackType } from "@/lib/feedback";
-import { cn } from "@/lib/utils";
+import { cn, normalizePhoneNumber } from "@/lib/utils";
 
 export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [contact, setContact] = useState("");
-    const [type, setType] = useState<FeedbackType>("Feedback");
+    const [type, setType] = useState<FeedbackType>("Concern");
     const [message, setMessage] = useState("");
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
@@ -21,7 +21,7 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
         const result = await submitFeedback({
             name,
             email,
-            contactNumber: contact,
+            contactNumber: normalizePhoneNumber(contact),
             type,
             message
         });
@@ -79,7 +79,7 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
                         value={contact}
                         onChange={(e) => setContact(e.target.value.replace(/\D/g, '').slice(0, 11))}
                         className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-secondary-200 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50 focus:bg-white dark:focus:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-secondary-900 dark:text-white transition-all placeholder:text-secondary-400 text-base"
-                        placeholder="Contact Number"
+                        placeholder="Enter your mobile number"
                         inputMode="numeric"
                     />
                 </div>

@@ -171,7 +171,7 @@ export default function AnnouncementsManager() {
                                         required
                                         value={newTitle}
                                         onChange={(e) => setNewTitle(e.target.value)}
-                                        className="flex h-10 w-full rounded-md border text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
+                                        className="flex h-11 w-full rounded-md border text-base focus:ring-2 focus:ring-primary-500 outline-none transition-all px-4 bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
                                         placeholder="e.g. Eid Prayer Timings"
                                     />
                                 </div>
@@ -181,7 +181,7 @@ export default function AnnouncementsManager() {
                                         <select
                                             value={newType}
                                             onChange={(e) => setNewType(e.target.value as any)}
-                                            className="flex h-10 w-full rounded-md border text-sm outline-none bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
+                                            className="flex h-11 w-full rounded-md border text-sm outline-none px-3 bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
                                         >
                                             <option value="General">General</option>
                                             <option value="Event">Event</option>
@@ -191,7 +191,7 @@ export default function AnnouncementsManager() {
                                         <select
                                             value={newPriority}
                                             onChange={(e) => setNewPriority(e.target.value as any)}
-                                            className="flex h-10 w-full rounded-md border text-sm outline-none bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
+                                            className="flex h-11 w-full rounded-md border text-sm outline-none px-3 bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
                                         >
                                             <option value="low">Low</option>
                                             <option value="normal">Normal</option>
@@ -205,7 +205,7 @@ export default function AnnouncementsManager() {
                                         required
                                         value={newContent}
                                         onChange={(e) => setNewContent(e.target.value)}
-                                        className="flex min-h-[120px] w-full rounded-md border text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
+                                        className="flex min-h-[140px] w-full rounded-md border text-base focus:ring-2 focus:ring-primary-500 outline-none resize-none transition-all p-4 bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
                                         placeholder="Write your announcement details here..."
                                     />
                                 </div>
@@ -215,7 +215,7 @@ export default function AnnouncementsManager() {
                                         type="url"
                                         value={externalUrl}
                                         onChange={(e) => setExternalUrl(e.target.value)}
-                                        className="flex h-10 w-full rounded-md border text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
+                                        className="flex h-11 w-full rounded-md border text-base focus:ring-2 focus:ring-primary-500 outline-none transition-all px-4 bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
                                         placeholder="https://www.facebook.com/..."
                                     />
                                     <p className="text-[10px] font-medium text-secondary-900 dark:text-secondary-200">If linked, this post will be embedded instead of the text above.</p>

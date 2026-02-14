@@ -13,6 +13,14 @@ export interface Donation {
     message?: string; // Intended use or dedication
 }
 
+export interface Comment {
+    id: string;
+    userId: string;
+    userName: string;
+    content: string;
+    createdAt: number;
+}
+
 export interface Announcement {
     id: string;
     title: string;
@@ -20,9 +28,10 @@ export interface Announcement {
     date: string; // ISO string or display string
     type: 'General' | 'Event' | 'Urgent' | 'Fundraising';
     priority: 'low' | 'normal' | 'high';
-    imageUrl?: string;
     externalUrl?: string;
     createdAt: number;
+    likes?: string[]; // Array of user UIDs
+    comments?: Comment[];
 }
 
 export interface Event {

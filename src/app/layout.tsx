@@ -22,6 +22,8 @@ const scheherazade = Scheherazade_New({
   subsets: ["arabic"],
 });
 
+import GlobalModals from "@/components/layout/GlobalModals";
+
 export const metadata: Metadata = {
   title: "Masjid Angullia Portal",
   description: "Comprehensive management system for our community",
@@ -47,6 +49,7 @@ export default function RootLayout({
           <ServiceWorkerRegistration />
           <NavbarWrapper />
           <OfflineIndicator />
+          <GlobalModals />
           <main className="min-h-screen flex flex-col bg-secondary-50 text-secondary-900 dark:bg-secondary-950 dark:text-secondary-100 transition-colors duration-300">
             {children}
           </main>

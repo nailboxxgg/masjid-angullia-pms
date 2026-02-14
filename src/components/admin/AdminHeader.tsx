@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminPresence, subscribeToActiveAdmins } from "@/lib/presence";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +19,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
     const [activeAdmins, setActiveAdmins] = useState<AdminPresence[]>([]);
     const [isNotifOpen, setIsNotifOpen] = useState(false);
     const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
+    const notifButtonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         const unsubscribe = subscribeToActiveAdmins((admins) => {
@@ -83,6 +84,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                 {/* Notification Bell */}
                 <div className="relative">
                     <button
+                        ref={notifButtonRef}
                         onClick={() => setIsNotifOpen((prev) => !prev)}
                         className="relative p-2 text-secondary-500 hover:text-secondary-900 dark:text-secondary-400 dark:hover:text-white transition-colors rounded-lg hover:bg-secondary-100 dark:hover:bg-secondary-800"
                     >
@@ -107,6 +109,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                         notifications={notifications}
                         onMarkAsRead={markAsRead}
                         onMarkAllRead={markAllRead}
+                        triggerRef={notifButtonRef}
                     />
                 </div>
 

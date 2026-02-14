@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, normalizePhoneNumber } from "@/lib/utils";
 
 interface RequestFormProps {
     onSuccess?: () => void;
@@ -11,10 +11,17 @@ interface RequestFormProps {
 
 export default function RequestForm({ onSuccess, onCancel, className }: RequestFormProps) {
     const [loading, setLoading] = useState(false);
+    const [phone, setPhone] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+
+        // In a real app, we would send the form data
+        // For now, we simulate the normalization and API call
+        const normalizedPhone = normalizePhoneNumber(phone);
+        console.log("Submitting request with phone:", normalizedPhone);
+
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1000));
         setLoading(false);
@@ -37,9 +44,12 @@ export default function RequestForm({ onSuccess, onCancel, className }: RequestF
                     <label className="text-sm font-medium text-secondary-700">Phone / Contact</label>
                     <input
                         required
-                        type="text"
-                        placeholder="Mobile Number"
-                        className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        type="tel"
+                        inputMode="numeric"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                        placeholder="Enter your mobile number"
+                        className="flex h-11 w-full rounded-md border border-secondary-300 bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all placeholder:text-secondary-400"
                     />
                 </div>
                 <div className="col-span-1 md:col-span-2 space-y-2">

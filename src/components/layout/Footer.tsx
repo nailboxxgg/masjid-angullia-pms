@@ -23,20 +23,22 @@ export default function Footer({ onAdminClick, onFeedbackClick }: FooterProps) {
                             Serving the community with faith, charity, and unity.
                         </p>
                     </div>
-                    <div>
+                    <div className="flex flex-col items-center md:items-start">
                         <h4 className="text-white font-bold mb-4">Quick Links</h4>
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 items-center md:items-start">
                             <Link href="/donations" className="hover:text-primary-400 transition-colors">Donate</Link>
-                            {onFeedbackClick ? (
-                                <button
-                                    onClick={onFeedbackClick}
-                                    className="text-left hover:text-primary-400 transition-colors focus:outline-none"
-                                >
-                                    Concerns, Feedbacks, and Request
-                                </button>
-                            ) : (
-                                <Link href="/feedback" className="hover:text-primary-400 transition-colors">Concerns, Feedbacks, and Request</Link>
-                            )}
+                            <button
+                                onClick={() => {
+                                    if (onFeedbackClick) {
+                                        onFeedbackClick();
+                                    } else {
+                                        window.dispatchEvent(new CustomEvent('open-feedback-modal'));
+                                    }
+                                }}
+                                className="text-center md:text-left hover:text-primary-400 transition-colors focus:outline-none"
+                            >
+                                Concerns, Feedbacks, and Request
+                            </button>
                         </div>
                     </div>
                     <div className="flex flex-col items-center md:items-start">

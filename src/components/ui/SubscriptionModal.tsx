@@ -70,16 +70,14 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
                     </div>
                 ) : (
                     <form onSubmit={handleSubscribe} className="space-y-4">
-                        <div className="flex gap-2">
-                            <div className="w-[80px] h-12 flex items-center justify-center bg-secondary-50 dark:bg-secondary-800 border border-secondary-300 dark:border-secondary-700 rounded-xl text-secondary-700 dark:text-secondary-300 font-medium">
-                                <span>🇵🇭 +63</span>
-                            </div>
+                        <div className="flex flex-col gap-2">
                             <input
                                 type="tel"
-                                placeholder="9xxxxxxxxx"
+                                inputMode="numeric"
+                                placeholder="Enter your mobile number"
                                 value={phone}
-                                onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
-                                className="flex-1 h-12 px-4 rounded-xl border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-lg tracking-widest text-secondary-900 dark:text-secondary-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all placeholder:tracking-normal placeholder:text-secondary-400 dark:placeholder:text-secondary-500"
+                                onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 11))}
+                                className="w-full h-12 px-4 rounded-xl border border-secondary-300 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-lg tracking-widest text-secondary-900 dark:text-secondary-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all placeholder:tracking-normal placeholder:text-secondary-400 dark:placeholder:text-secondary-500"
                                 required
                             />
                         </div>
@@ -88,7 +86,7 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
                         )}
                         <button
                             type="submit"
-                            disabled={isLoading || phone.length < 10}
+                            disabled={isLoading || phone.length !== 11}
                             className="w-full h-12 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary-500/20 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Subscribe Free"}

@@ -14,6 +14,7 @@ interface NotificationDropdownProps {
     notifications: Notification[];
     onMarkAsRead: (id: string) => void;
     onMarkAllRead: () => void;
+    triggerRef: React.RefObject<HTMLButtonElement | null>;
 }
 
 const typeConfig: Record<string, { icon: typeof MessageSquare; color: string; label: string }> = {
@@ -29,6 +30,7 @@ export default function NotificationDropdown({
     notifications,
     onMarkAsRead,
     onMarkAllRead,
+    triggerRef
 }: NotificationDropdownProps) {
     const router = useRouter();
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -36,6 +38,11 @@ export default function NotificationDropdown({
     // Close on outside click
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
+            // Ignore click if it's on the trigger button (fixes double-toggle issue)
+            if (triggerRef.current && triggerRef.current.contains(e.target as Node)) {
+                return;
+            }
+
             if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
                 onClose();
             }
@@ -62,7 +69,7 @@ export default function NotificationDropdown({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.96 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-full mt-2 w-96 max-h-[480px] bg-white dark:bg-secondary-900 rounded-2xl shadow-2xl border border-secondary-200 dark:border-secondary-800 overflow-hidden z-50"
+                    className="fixed left-4 right-4 top-[4.5rem] md:absolute md:left-auto md:right-0 md:top-full md:mt-2 md:w-96 max-h-[80vh] md:max-h-[480px] bg-white dark:bg-secondary-900 rounded-2xl shadow-3xl md:shadow-2xl border border-secondary-200 dark:border-secondary-800 overflow-hidden z-50 flex flex-col"
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between px-5 py-4 border-b border-secondary-100 dark:border-secondary-800">

@@ -26,7 +26,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 
 const adminRoutes = [
     { name: "Overview", href: "/admin", icon: LayoutDashboard },
-    { name: "Feed & Events", href: "/admin/feed", icon: Megaphone },
+    { name: "Announcements", href: "/admin/feed", icon: Megaphone },
     { name: "Inbox", href: "/admin/feedback", icon: MessageSquare },
     { name: "Families", href: "/admin/families", icon: Users },
     { name: "Finances", href: "/admin/finances", icon: DollarSign },
@@ -97,7 +97,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 className={cn(
-                    "fixed md:relative flex flex-col h-screen w-64 bg-secondary-900 border-secondary-800 text-white dark:bg-white dark:border-secondary-200 dark:text-secondary-900 z-50",
+                    "fixed md:relative flex flex-col h-screen w-72 bg-white dark:bg-secondary-950 border-r border-secondary-200 dark:border-secondary-800 text-secondary-900 dark:text-secondary-100 z-50",
                     !isOpen && "-translate-x-full md:translate-x-0"
                 )}
             >
@@ -116,8 +116,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 }}
                         >
-                            <h1 className="font-heading font-bold text-lg tracking-tight text-white dark:text-secondary-900">Admin Portal</h1>
-                            <p className="text-xs text-secondary-500 dark:text-secondary-400">Masjid Angullia</p>
+                            <h1 className="font-heading font-black text-xl tracking-tight text-secondary-900 dark:text-white">Admin Portal</h1>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-600 dark:text-primary-400">Masjid Angullia</p>
                         </motion.div>
                     </div>
 
@@ -144,28 +144,16 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                                 <Link
                                     href={route.href}
                                     className={cn(
-                                        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group relative overflow-hidden",
+                                        "flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all group relative overflow-hidden",
                                         isActive
-                                            ? "text-primary-400 dark:text-primary-600"
-                                            : "text-secondary-400 hover:text-white dark:text-secondary-500 dark:hover:text-secondary-900"
+                                            ? "text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/10 shadow-sm"
+                                            : "text-secondary-500 hover:text-secondary-900 dark:text-secondary-400 dark:hover:text-white hover:bg-secondary-50 dark:hover:bg-secondary-900/50"
                                     )}
                                 >
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="activeTab"
-                                            className="absolute inset-0 bg-primary-600/10 rounded-lg"
-                                            initial={false}
-                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                        />
-                                    )}
-                                    {!isActive && (
-                                        <div className="absolute inset-0 bg-secondary-800 dark:bg-secondary-100 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
-                                    )}
-
-                                    <Icon className={cn("w-5 h-5 relative z-10 group-hover:scale-105 transition-transform", isActive ? "text-primary-500" : "text-secondary-500 group-hover:text-white dark:text-secondary-400 dark:group-hover:text-secondary-900")} />
+                                    <Icon className={cn("w-5 h-5 relative z-10 transition-all duration-300", isActive ? "text-primary-600 scale-110" : "text-secondary-400 group-hover:scale-110 group-hover:text-primary-500")} />
                                     <span className="relative z-10 flex-1">{route.name}</span>
                                     {route.name === "Inbox" && unreadCount > 0 && (
-                                        <span className="relative z-10 min-w-[20px] h-5 flex items-center justify-center px-1.5 text-[10px] font-black text-white bg-red-500 rounded-full">
+                                        <span className="relative z-10 min-w-[20px] h-5 flex items-center justify-center px-1.5 text-[10px] font-black text-white bg-red-500 rounded-full shadow-lg shadow-red-500/20">
                                             {unreadCount > 9 ? "9+" : unreadCount}
                                         </span>
                                     )}

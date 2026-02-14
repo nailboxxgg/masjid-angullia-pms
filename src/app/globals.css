@@ -2,20 +2,20 @@
 
 @theme {
   /* User Specified Palette: Masjid Angullia Brand Theme */
-  /* Primary: Turquoise (Logo Match) */
-  --color-primary-50: #f0fdfa;
-  --color-primary-100: #ccfbf1;
-  --color-primary-200: #99f6e4;
-  --color-primary-300: #5eead4;
-  --color-primary-400: #2dd4bf;
-  --color-primary-500: #14b8a6;
-  --color-primary-600: #0d9488;
-  --color-primary-700: #0f766e;
-  --color-primary-800: #115e59;
-  --color-primary-900: #134e4a;
-  --color-primary-950: #042f2e;
+  /* Primary: Logo Teal (#4DB4BB) */
+  --color-primary-50: #f0fafa;
+  --color-primary-100: #dcf2f3;
+  --color-primary-200: #b9e5e7;
+  --color-primary-300: #96d8db;
+  --color-primary-400: #73cbcf;
+  --color-primary-500: #4db4bb;
+  --color-primary-600: #3d9096;
+  --color-primary-700: #2e6c70;
+  --color-primary-800: #1e484b;
+  --color-primary-900: #0f2425;
+  --color-primary-950: #071213;
 
-  /* Secondary: Slate (Cool Grey) to complement Turquoise */
+  /* Secondary: Slate (Cool Grey) to complement the palette */
   --color-secondary-50: #f8fafc;
   --color-secondary-100: #f1f5f9;
   --color-secondary-200: #e2e8f0;
@@ -29,10 +29,11 @@
   --color-secondary-900: #0f172a;
   --color-secondary-950: #020617;
 
-  /* Accent: Golden Amber (Logo Match) */
-  --color-accent-500: #f59e0b;
+  /* Accent: Logo Gold (#FBB718) */
+  --color-accent-500: #fbb718;
   /* Base */
-  --color-accent-600: #d97706;
+  --color-accent-600: #e5a616;
+
 
   /* Fonts */
   --font-heading: var(--font-outfit), sans-serif;
@@ -113,6 +114,7 @@ h6 {
 .font-arabic {
   font-family: var(--font-arabic);
 }
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
