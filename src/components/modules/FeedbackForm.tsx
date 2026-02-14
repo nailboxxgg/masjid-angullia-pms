@@ -103,7 +103,7 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
             <div className="space-y-3">
                 <label className="text-xs font-bold uppercase tracking-widest text-secondary-400 ml-1">Reason for reaching out</label>
                 <div className="flex flex-wrap gap-2">
-                    {(['Concern', 'Feedback', 'Request', 'Registration'] as const).map((t) => (
+                    {(['Concern', 'Feedback', 'Request', 'Inquiries', 'Registration'] as const).map((t) => (
                         <button
                             key={t}
                             type="button"

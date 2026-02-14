@@ -193,36 +193,32 @@ export default function Home() {
           <AnimationWrapper animation="reveal" delay={0.4} duration={1} withScroll={false} className="mt-6 md:mt-8 w-full max-w-3xl">
             <PrayerTimesWidget />
           </AnimationWrapper>
-        </div>
-      </section>
 
-      {/* Attendance Quick Access */}
-      <section className="relative z-30 -mt-8 px-4">
-        <div className="max-w-7xl mx-auto">
-          <AnimationWrapper animation="reveal" delay={0.6} duration={0.8}>
-            <div className="flex justify-center">
-              <button
-                onClick={() => setIsAttendanceOpen(true)}
-                className="flex items-center gap-4 md:gap-5 px-6 py-4 md:px-8 md:py-6 bg-white dark:bg-secondary-900 rounded-[2rem] shadow-2xl shadow-primary-900/5 hover:shadow-3xl hover:shadow-primary-500/20 border border-white/50 dark:border-secondary-800 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden w-full md:w-auto justify-between md:justify-start"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/0 via-primary-500/5 to-primary-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform duration-300 shrink-0">
-                    <Clock className="w-6 h-6 md:w-7 md:h-7" />
-                  </div>
-                  <div className="text-left relative z-10">
-                    <h3 className="text-lg md:text-xl font-bold text-secondary-900 dark:text-white leading-tight mb-0.5">Record your attendance</h3>
-                    <p className="text-xs md:text-sm font-medium text-secondary-500 dark:text-secondary-400">Mark your attendance today</p>
-                  </div>
+          {/* Attendance Quick Access Button */}
+          <AnimationWrapper animation="reveal" delay={0.6} duration={0.8} withScroll={false} className="w-full max-w-lg flex justify-center mt-6">
+            <button
+              onClick={() => setIsAttendanceOpen(true)}
+              className="flex items-center gap-4 md:gap-5 px-6 py-4 md:px-8 md:py-6 bg-white dark:bg-secondary-900 rounded-[2rem] shadow-2xl shadow-primary-900/5 hover:shadow-3xl hover:shadow-primary-500/20 border border-white/50 dark:border-secondary-800 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden w-full md:w-auto justify-between md:justify-start"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-primary-500/0 via-primary-500/5 to-primary-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                  <Clock className="w-6 h-6 md:w-7 md:h-7" />
                 </div>
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-secondary-50 dark:bg-secondary-800 flex items-center justify-center ml-2 group-hover:bg-primary-600 group-hover:text-white transition-colors duration-300 shrink-0">
-                  <ArrowRight className="w-4 h-4 md:w-5 md:h-5 transition-transform" />
+                <div className="text-left relative z-10">
+                  <h3 className="text-lg md:text-xl font-bold text-secondary-900 dark:text-white leading-tight mb-0.5">Record your attendance</h3>
+                  <p className="text-xs md:text-sm font-medium text-secondary-500 dark:text-secondary-400">Mark your attendance today</p>
                 </div>
-              </button>
-            </div>
+              </div>
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-secondary-50 dark:bg-secondary-800 flex items-center justify-center ml-2 group-hover:bg-primary-600 group-hover:text-white transition-colors duration-300 shrink-0">
+                <ArrowRight className="w-4 h-4 md:w-5 md:h-5 transition-transform" />
+              </div>
+            </button>
           </AnimationWrapper>
         </div>
       </section>
+
+
 
       {/* Community Hub & Donations Section */}
       <section className="py-12 md:py-24 bg-secondary-50/50 dark:bg-secondary-950 relative overflow-hidden transition-colors duration-300">
@@ -241,17 +237,6 @@ export default function Home() {
                 <p className="text-secondary-600 dark:text-secondary-400 mt-3 md:mt-4 text-base md:text-lg leading-relaxed">
                   Stay connected with the latest announcements, upcoming events, and contributions from our jama&apos;ah.
                 </p>
-              </div>
-            </AnimationWrapper>
-
-            <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.3}>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setIsSubscriptionOpen(true)}
-                  className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 font-bold text-sm rounded-xl hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-all shadow-sm hover:shadow-md"
-                >
-                  <Bell className="w-4 h-4" /> Get SMS Alerts
-                </button>
               </div>
             </AnimationWrapper>
           </div>
@@ -310,7 +295,7 @@ export default function Home() {
                     "rounded-3xl p-6 md:p-8 relative overflow-hidden transition-all duration-500 border border-white/50 dark:border-white/5 shadow-2xl backdrop-blur-sm",
                     "bg-white/90", // Standard (Light Mode)
                     "dark:bg-secondary-900/90", // Standard (Dark Mode)
-                    (!mounted || recentDonations.length === 0) ? "min-h-[300px] md:min-h-[400px]" : "min-h-[240px]"
+                    (!mounted || recentDonations.length === 0) ? "min-h-[200px]" : "min-h-[240px]"
                   )}>
                   <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-3xl"></div>
                   <div className="relative z-10">

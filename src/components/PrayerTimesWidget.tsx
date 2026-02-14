@@ -84,14 +84,13 @@ export default function PrayerTimesWidget() {
 
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                 {/* Date Section */}
+                {/* Date Section */}
                 <div className="text-center md:text-left min-w-[150px]">
                     <div className="flex items-center justify-center md:justify-start gap-2 mb-1 text-primary-300 font-medium">
                         <Moon className="w-4 h-4" />
-                        <span className="text-sm tracking-widest uppercase">Hijri Date</span>
+                        <span className="text-sm tracking-widest uppercase">Date</span>
                     </div>
-                    <h3 className="text-3xl font-bold font-heading">{hijri.day} {hijri.month.en}</h3>
-                    <p className="text-secondary-200 text-sm mt-1">{hijri.year} AH</p>
-                    <div className="mt-2 text-xs text-white/50">{data.date.readable}</div>
+                    <h3 className="text-3xl font-bold font-heading">{data.date.readable}</h3>
                 </div>
 
                 {/* Divider */}

@@ -54,6 +54,10 @@ export interface Family {
     email?: string;
     address: string;
     createdAt?: number;
+    preferences?: {
+        newRequestAlerts?: boolean;
+        dailyDonationSummary?: boolean;
+    };
 }
 
 export interface AttendanceRecord {

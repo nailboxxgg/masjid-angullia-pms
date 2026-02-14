@@ -1,12 +1,60 @@
 "use client";
 
-import { useState } from "react";
-import { User, Bell, Lock, Save, PlusCircle, ShieldCheck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Bell, ShieldCheck, PlusCircle, Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import Modal from "@/components/ui/modal";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 export default function AdminSettingsPage() {
     const [isLoading, setIsLoading] = useState(false);
+    const [isFetching, setIsFetching] = useState(true);
+    const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+    const [settings, setSettings] = useState({
+        newRequestAlerts: true,
+        dailyDonationSummary: false
+    });
+    const [userProfile, setUserProfile] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    setIsFetching(false);
+                    return;
+                }
+
+                const userDoc = await getDoc(doc(db, "families", currentUser.uid));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    setUserProfile(data);
+                    if (data.preferences) {
+                        setSettings({
+                            newRequestAlerts: data.preferences.newRequestAlerts ?? true,
+                            dailyDonationSummary: data.preferences.dailyDonationSummary ?? false
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching settings:", error);
+            } finally {
+                setIsFetching(false);
+            }
+        };
+
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            if (user) {
+                fetchSettings();
+            } else {
+                setIsFetching(false);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -31,12 +79,32 @@ export default function AdminSettingsPage() {
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSaveModalOpen(true);
+    };
+
+    const confirmSave = async () => {
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
+        setIsSaveModalOpen(false);
+
+        try {
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                alert("You must be logged in to save settings.");
+                return;
+            }
+
+            await updateDoc(doc(db, "families", currentUser.uid), {
+                preferences: settings,
+                updatedAt: new Date().getTime()
+            });
+
             alert("Settings saved successfully!");
-        }, 1000);
+        } catch (error) {
+            console.error("Error saving settings:", error);
+            alert("Failed to save settings. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -71,16 +139,20 @@ export default function AdminSettingsPage() {
                                 <label className="text-xs font-bold uppercase tracking-widest text-secondary-500 ml-1">Full Name</label>
                                 <input
                                     type="text"
-                                    defaultValue="Admin User"
-                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4"
+                                    defaultValue={userProfile?.name || ""}
+                                    placeholder={isFetching ? "Loading..." : "Admin User"}
+                                    readOnly
+                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 opacity-70 cursor-not-allowed"
                                 />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold uppercase tracking-widest text-secondary-500 ml-1">Email Address</label>
                                 <input
                                     type="email"
-                                    defaultValue="admin@masjidangullia.com"
-                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4"
+                                    defaultValue={userProfile?.email || ""}
+                                    placeholder={isFetching ? "Loading..." : "admin@masjidangullia.com"}
+                                    readOnly
+                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 opacity-70 cursor-not-allowed"
                                 />
                             </div>
                         </CardContent>
@@ -107,7 +179,9 @@ export default function AdminSettingsPage() {
                                 <input
                                     type="password"
                                     placeholder="••••••••"
-                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4"
+                                    disabled
+                                    title="Password change not implemented yet"
+                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 opacity-60 cursor-not-allowed"
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -115,7 +189,9 @@ export default function AdminSettingsPage() {
                                 <input
                                     type="password"
                                     placeholder="Leave blank to keep current"
-                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all placeholder:font-medium placeholder:text-secondary-400"
+                                    disabled
+                                    title="Password change not implemented yet"
+                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all placeholder:font-medium placeholder:text-secondary-400 px-4 opacity-60 cursor-not-allowed"
                                 />
                             </div>
                         </CardContent>
@@ -153,9 +229,9 @@ export default function AdminSettingsPage() {
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold uppercase tracking-widest text-secondary-500 ml-1">Invitation Role</label>
                                     <select className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4">
-                                        <option>Super Admin</option>
-                                        <option>Finance Manager</option>
-                                        <option>Staff Coordinator</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="staff">Staff</option>
+                                        <option value="volunteer">Volunteer</option>
                                     </select>
                                 </div>
                             </div>
@@ -179,8 +255,8 @@ export default function AdminSettingsPage() {
 
                 {/* Notifications */}
                 <motion.div variants={itemVariants} className="lg:col-span-2">
-                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm rounded-2xl overflow-hidden">
-                        <CardHeader className="border-b border-secondary-100 dark:border-secondary-800 pb-4 bg-secondary-50/30 dark:bg-secondary-800/20">
+                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm transition-all hover:shadow-2xl hover:border-primary-200 dark:hover:border-primary-900/50 rounded-2xl overflow-hidden group">
+                        <CardHeader className="border-b border-secondary-100 dark:border-secondary-800 pb-4 bg-secondary-50/30 dark:bg-secondary-800/20 group-hover:bg-secondary-50/80 dark:group-hover:bg-secondary-800/40 transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-yellow-50 text-yellow-600 rounded-xl dark:bg-yellow-900/20 dark:text-yellow-400 ring-1 ring-yellow-100 dark:ring-yellow-800/50">
                                     <Bell className="w-5 h-5" />
@@ -192,26 +268,42 @@ export default function AdminSettingsPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="pt-4 divide-y divide-secondary-50 dark:divide-secondary-800">
-                            <div className="flex items-center justify-between py-4 group">
-                                <div>
-                                    <p className="font-bold text-secondary-900 dark:text-white transition-colors group-hover:text-primary-600">New Request Alerts</p>
-                                    <p className="text-xs font-medium text-secondary-500 italic">Push notifications for every community submission.</p>
-                                </div>
-                                <div className="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" className="sr-only peer" defaultChecked />
-                                    <div className="w-11 h-6 bg-secondary-200 peer-focus:outline-none rounded-full peer dark:bg-secondary-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between py-4 group">
-                                <div>
-                                    <p className="font-bold text-secondary-900 dark:text-white transition-colors group-hover:text-primary-600">Daily Donation Summary</p>
-                                    <p className="text-xs font-medium text-secondary-500 italic">Receive a CSV digest of all transactions at midnight.</p>
-                                </div>
-                                <div className="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" className="sr-only peer" />
-                                    <div className="w-11 h-6 bg-secondary-200 peer-focus:outline-none rounded-full peer dark:bg-secondary-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
-                                </div>
-                            </div>
+                            {isFetching ? (
+                                <div className="py-8 text-center text-sm text-secondary-400 animate-pulse">Loading preferences...</div>
+                            ) : (
+                                <>
+                                    <label className="flex items-center justify-between py-4 group cursor-pointer hover:bg-secondary-50/50 dark:hover:bg-secondary-800/50 px-2 rounded-lg transition-colors">
+                                        <div>
+                                            <p className="font-bold text-secondary-900 dark:text-white transition-colors group-hover:text-primary-600">New Request Alerts</p>
+                                            <p className="text-xs font-medium text-secondary-500 italic">Push notifications for every community submission.</p>
+                                        </div>
+                                        <div className="relative inline-flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={settings.newRequestAlerts}
+                                                onChange={(e) => setSettings({ ...settings, newRequestAlerts: e.target.checked })}
+                                            />
+                                            <div className="w-11 h-6 bg-secondary-200 peer-focus:outline-none rounded-full peer dark:bg-secondary-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600 shadow-inner"></div>
+                                        </div>
+                                    </label>
+                                    <label className="flex items-center justify-between py-4 group cursor-pointer hover:bg-secondary-50/50 dark:hover:bg-secondary-800/50 px-2 rounded-lg transition-colors">
+                                        <div>
+                                            <p className="font-bold text-secondary-900 dark:text-white transition-colors group-hover:text-primary-600">Daily Donation Summary</p>
+                                            <p className="text-xs font-medium text-secondary-500 italic">Receive a CSV digest of all transactions at midnight.</p>
+                                        </div>
+                                        <div className="relative inline-flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={settings.dailyDonationSummary}
+                                                onChange={(e) => setSettings({ ...settings, dailyDonationSummary: e.target.checked })}
+                                            />
+                                            <div className="w-11 h-6 bg-secondary-200 peer-focus:outline-none rounded-full peer dark:bg-secondary-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600 shadow-inner"></div>
+                                        </div>
+                                    </label>
+                                </>
+                            )}
                         </CardContent>
                     </Card>
                 </motion.div>
@@ -221,7 +313,7 @@ export default function AdminSettingsPage() {
                         whileHover={{ scale: 1.02, y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         type="submit"
-                        disabled={isLoading}
+                        disabled={isLoading || isFetching}
                         className="inline-flex items-center justify-center rounded-xl text-sm font-black uppercase tracking-widest bg-emerald-600 dark:bg-emerald-700 text-white hover:bg-emerald-700 dark:hover:bg-emerald-800 h-12 px-10 shadow-xl shadow-emerald-500/20 disabled:opacity-50 transition-all"
                     >
                         {isLoading ? (
@@ -236,6 +328,43 @@ export default function AdminSettingsPage() {
                         )}
                     </motion.button>
                 </motion.div>
+
+                <Modal isOpen={isSaveModalOpen} onClose={() => setIsSaveModalOpen(false)} title="Confirm Preferences">
+                    <div className="space-y-4">
+                        <p className="text-secondary-600 dark:text-secondary-300 text-sm">
+                            Are you sure you want to save these changes to your portal settings?
+                        </p>
+                        <div className="bg-secondary-50 dark:bg-secondary-800 p-4 rounded-lg text-sm border border-secondary-100 dark:border-secondary-700">
+                            <h4 className="font-bold text-secondary-900 dark:text-white mb-2 text-xs uppercase tracking-wider">Review Changes:</h4>
+                            <ul className="space-y-2">
+                                <li className="flex items-center justify-between">
+                                    <span className="text-secondary-500">New Request Alerts:</span>
+                                    <span className={settings.newRequestAlerts ? "text-emerald-600 font-bold" : "text-secondary-400"}>{settings.newRequestAlerts ? "Enabled" : "Disabled"}</span>
+                                </li>
+                                <li className="flex items-center justify-between">
+                                    <span className="text-secondary-500">Daily Summary:</span>
+                                    <span className={settings.dailyDonationSummary ? "text-emerald-600 font-bold" : "text-secondary-400"}>{settings.dailyDonationSummary ? "Enabled" : "Disabled"}</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsSaveModalOpen(false)}
+                                className="px-4 py-2 text-sm font-semibold text-secondary-600 hover:text-secondary-900 dark:text-secondary-400 dark:hover:text-white transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={confirmSave}
+                                className="px-6 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition-all"
+                            >
+                                Confirm Save
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             </form>
         </motion.div>
     );

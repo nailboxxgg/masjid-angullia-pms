@@ -27,7 +27,6 @@ export default function Footer({ onAdminClick, onFeedbackClick }: FooterProps) {
                         <h4 className="text-white font-bold mb-4">Quick Links</h4>
                         <div className="flex flex-col gap-2">
                             <Link href="/donations" className="hover:text-primary-400 transition-colors">Donate</Link>
-                            <Link href="/" className="hover:text-primary-400 transition-colors">Jama&apos;ah Presence</Link>
                             {onFeedbackClick ? (
                                 <button
                                     onClick={onFeedbackClick}
@@ -44,18 +43,13 @@ export default function Footer({ onAdminClick, onFeedbackClick }: FooterProps) {
                         <h4 className="text-white font-bold mb-4">Contact Info</h4>
                         <div className="flex flex-col gap-3 text-secondary-500 text-xs">
                             <p>Brgy. Pogo, Alaminos City, Pangasinan</p>
-                            <p>masjid_angullia@email.com</p>
-                            <p>+63 123 456 7890</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="pt-8 border-t border-secondary-800 text-center">
                     <p>&copy; {new Date().getFullYear()} Masjid Angullia. All rights reserved.</p>
-                    <div className="mt-4 flex justify-center gap-4">
-                        <Link href="/" className="hover:text-white transition-colors">Term of Use</Link>
-                        <Link href="/" className="hover:text-white transition-colors">Privacy Policy</Link>
-                    </div>
+
 
                     {onAdminClick && (
                         <div className="mt-8 flex justify-center">

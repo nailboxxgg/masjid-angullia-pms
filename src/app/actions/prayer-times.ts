@@ -4,7 +4,7 @@ import { PrayerData, PrayerTimes, HijriDate } from "@/lib/prayer-times";
 
 const CITY = "Alaminos";
 const COUNTRY = "Philippines";
-const METHOD = 2; // ISNA
+const METHOD = 3; // Muslim World League
 
 export async function fetchPrayerTimes(): Promise<PrayerData | null> {
     try {
@@ -13,7 +13,7 @@ export async function fetchPrayerTimes(): Promise<PrayerData | null> {
 
         // Hide external API key/endpoint details from client
         const response = await fetch(
-            `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=${CITY}&country=${COUNTRY}&method=${METHOD}&school=1`,
+            `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=${CITY}&country=${COUNTRY}&method=${METHOD}&school=0`,
             { cache: 'no-store' } // Ensure fresh data on server
         );
 
