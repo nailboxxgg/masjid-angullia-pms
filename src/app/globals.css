@@ -1,22 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  /* User Specified Palette: Teal Theme */
-  /* Primary: #005f5b (Deep Teal) */
-  /* New Mint/Green Palette */
-  --color-primary-50: #f0fdf6;
-  --color-primary-100: #D7FBE8;
-  --color-primary-200: #9DF3C4;
-  --color-primary-300: #7ae9b3;
-  --color-primary-400: #62D2A2;
-  --color-primary-500: #1FAB89;
-  --color-primary-600: #188a6e;
-  --color-primary-700: #146b55;
-  --color-primary-800: #104d3e;
-  --color-primary-900: #0d3229;
-  --color-primary-950: #061a16;
+  /* User Specified Palette: Masjid Angullia Brand Theme */
+  /* Primary: Turquoise (Logo Match) */
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-200: #99f6e4;
+  --color-primary-300: #5eead4;
+  --color-primary-400: #2dd4bf;
+  --color-primary-500: #14b8a6;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-primary-900: #134e4a;
+  --color-primary-950: #042f2e;
 
-  /* Secondary: Slate (Cool Grey) to complement Teal */
+  /* Secondary: Slate (Cool Grey) to complement Turquoise */
   --color-secondary-50: #f8fafc;
   --color-secondary-100: #f1f5f9;
   --color-secondary-200: #e2e8f0;
@@ -27,13 +26,13 @@
   --color-secondary-600: #475569;
   --color-secondary-700: #334155;
   --color-secondary-800: #1e293b;
-  --color-secondary-900: #0a2420;
-  --color-secondary-950: #061a16;
+  --color-secondary-900: #0f172a;
+  --color-secondary-950: #020617;
 
-  /* Accent: #CC946C (Terracotta) */
-  --color-accent-500: #cc946c;
+  /* Accent: Golden Amber (Logo Match) */
+  --color-accent-500: #f59e0b;
   /* Base */
-  --color-accent-600: #b37e58;
+  --color-accent-600: #d97706;
 
   /* Fonts */
   --font-heading: var(--font-outfit), sans-serif;

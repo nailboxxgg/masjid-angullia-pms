@@ -61,7 +61,9 @@ export interface AttendanceRecord {
     uid: string;
     displayName: string;
     email: string;
-    type: 'clock_in' | 'clock_out';
+    type: 'clock_in' | 'clock_out' | 'visitor';
+    role?: 'volunteer' | 'staff' | 'admin';
+    phone?: string; // for visitors
     timestamp: number;
     date: string; // YYYY-MM-DD for easier querying
     deviceInfo?: string;
@@ -72,10 +74,13 @@ export interface AttendanceSession {
     uid: string;
     displayName: string;
     email: string;
+    type?: 'staff_session' | 'visitor_log';
+    role?: string;
+    phone?: string;
     date: string;
     clockIn: number;
     clockOut?: number;
     deviceInfo?: string;
-    status: 'active' | 'completed';
+    status: 'active' | 'completed' | 'visitor';
     duration?: string; // e.g. "8h 30m"
 }

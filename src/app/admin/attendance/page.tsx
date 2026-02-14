@@ -27,6 +27,7 @@ export default function AdminAttendancePage() {
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(getTodayDateString());
     const [searchTerm, setSearchTerm] = useState("");
+    const [activeTab, setActiveTab] = useState<'staff' | 'visitor'>('visitor');
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -65,17 +66,71 @@ export default function AdminAttendancePage() {
         }
     };
 
-    const filteredSessions = sessions.filter(session =>
-        session.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        session.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Filter sessions based on search
+    const filteredRawSessions = sessions.filter(session => {
+        return session.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            session.email.toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
+    const visitorSessions = filteredRawSessions.filter(s => s.type === 'visitor_log');
+    const staffSessionsRaw = filteredRawSessions.filter(s => s.type === 'staff_session');
+
+    // Consolidate Staff Sessions
+    const consolidatedStaffSessions = Object.values(staffSessionsRaw.reduce((acc, session) => {
+        if (!acc[session.uid]) {
+            acc[session.uid] = {
+                ...session,
+                totalDurationMs: 0,
+                sessionsCount: 0,
+                latestClockIn: session.clockIn,
+                latestClockOut: session.clockOut,
+                isActive: false
+            };
+        }
+
+        // Aggregate stats
+        const record = acc[session.uid];
+        record.sessionsCount++;
+        if (session.clockIn > record.latestClockIn) record.latestClockIn = session.clockIn;
+        if (session.clockOut && (!record.latestClockOut || session.clockOut > record.latestClockOut)) {
+            record.latestClockOut = session.clockOut;
+        }
+
+        // Status check (if any session is active, user is active)
+        if (session.status === 'active') record.isActive = true;
+
+        // Calculate partial duration
+        if (session.clockOut) {
+            record.totalDurationMs += (session.clockOut - session.clockIn);
+        } else if (session.status === 'active') {
+            // Add time until now for active session? Or just leave it?
+            // Usually we show "On-going" + accumulated past duration
+            record.totalDurationMs += (Date.now() - session.clockIn);
+        }
+
+        return acc;
+    }, {} as Record<string, any>));
+
+    const finalStaffList = consolidatedStaffSessions.map(staff => {
+        const hours = Math.floor(staff.totalDurationMs / (1000 * 60 * 60));
+        const minutes = Math.floor((staff.totalDurationMs % (1000 * 60 * 60)) / (1000 * 60));
+
+        return {
+            ...staff,
+            displayDuration: staff.isActive ? `On-going (${hours}h ${minutes}m)` : `${hours}h ${minutes}m`,
+            status: staff.isActive ? 'active' : 'completed',
+            // For Time column, show First In - Last Out? Or Latest activity?
+            // User asked: "record only the status, time and duration"
+            // Let's show: Latest Activity Time
+            displayTime: staff.isActive
+                ? `In at ${new Date(staff.latestClockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                : `Out at ${new Date(staff.latestClockOut || staff.latestClockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+        };
+    });
+
+
+    const displayData = activeTab === 'visitor' ? visitorSessions : finalStaffList;
     const activeSessionsCount = sessions.filter(s => s.status === 'active').length;
-
-    // Calculate total hours logged today
-    // Parse duration strings roughly "Xh Ym"
-    // This is just a visual stat, approximate is fine or skipped if complex
-    // Let's stick to simple stats for now
 
     return (
         <motion.div
@@ -126,12 +181,12 @@ export default function AdminAttendancePage() {
 
                 <Card className="border-l-4 border-l-emerald-500 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-secondary-500">Total Sessions</CardTitle>
+                        <CardTitle className="text-sm font-medium text-secondary-500">Total Entries</CardTitle>
                         <HistoryIcon className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{sessions.length}</div>
-                        <p className="text-xs text-secondary-400 mt-1">Sessions for {selectedDate}</p>
+                        <p className="text-xs text-secondary-400 mt-1">Records for {selectedDate}</p>
                     </CardContent>
                 </Card>
 
@@ -162,6 +217,32 @@ export default function AdminAttendancePage() {
                 </Card>
             </div>
 
+            {/* Tabs */}
+            <div className="flex space-x-1 bg-secondary-100 dark:bg-secondary-800 p-1 rounded-xl w-fit">
+                <button
+                    onClick={() => setActiveTab('visitor')}
+                    className={cn(
+                        "px-4 py-2 rounded-lg text-sm font-bold transition-all",
+                        activeTab === 'visitor'
+                            ? "bg-white dark:bg-secondary-900 text-primary-600 dark:text-primary-400 shadow-sm"
+                            : "text-secondary-500 hover:text-secondary-900 dark:hover:text-secondary-100"
+                    )}
+                >
+                    Visitor Logs
+                </button>
+                <button
+                    onClick={() => setActiveTab('staff')}
+                    className={cn(
+                        "px-4 py-2 rounded-lg text-sm font-bold transition-all",
+                        activeTab === 'staff'
+                            ? "bg-white dark:bg-secondary-900 text-primary-600 dark:text-primary-400 shadow-sm"
+                            : "text-secondary-500 hover:text-secondary-900 dark:hover:text-secondary-100"
+                    )}
+                >
+                    Staff Attendance
+                </button>
+            </div>
+
             {/* Filters & Search */}
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-4 bg-white dark:bg-secondary-900 p-4 rounded-xl border border-secondary-100 dark:border-secondary-800 shadow-sm">
                 <div className="relative flex-1 w-full">
@@ -174,14 +255,16 @@ export default function AdminAttendancePage() {
                         className="w-full pl-10 pr-4 py-2 bg-secondary-50 dark:bg-secondary-950 border-none rounded-lg text-sm outline-none ring-1 ring-secondary-200 dark:ring-secondary-800 focus:ring-2 focus:ring-primary-500"
                     />
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <button className="p-2 text-secondary-900 dark:text-secondary-100 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-lg transition-colors border border-secondary-200 dark:border-secondary-800">
-                        <Filter className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 text-secondary-500 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-lg transition-colors border border-secondary-200 dark:border-secondary-800">
-                        <ArrowUpDown className="w-4 h-4" />
-                    </button>
-                </div>
+                {activeTab === 'staff' && (
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button className="p-2 text-secondary-900 dark:text-secondary-100 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-lg transition-colors border border-secondary-200 dark:border-secondary-800">
+                            <Filter className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 text-secondary-500 hover:bg-secondary-100 dark:hover:bg-secondary-800 rounded-lg transition-colors border border-secondary-200 dark:border-secondary-800">
+                            <ArrowUpDown className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
             </motion.div>
 
             {/* Table Card */}
@@ -190,12 +273,21 @@ export default function AdminAttendancePage() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-secondary-50 dark:bg-secondary-950 border-b border-secondary-100 dark:border-secondary-800">
-                                <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">User</th>
-                                <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Clock In</th>
-                                <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Clock Out</th>
-                                <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Duration</th>
-                                <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">User / Type</th>
+                                {activeTab === 'staff' ? (
+                                    <>
+                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Role</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Status</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Time</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Duration</th>
+                                    </>
+                                ) : (
+                                    <>
+                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Phone</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Date & Time</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Actions</th>
+                                    </>
+                                )}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-secondary-50 dark:divide-secondary-800">
@@ -206,74 +298,100 @@ export default function AdminAttendancePage() {
                                         <td className="px-6 py-4"><div className="h-4 w-20 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
                                         <td className="px-6 py-4"><div className="h-4 w-24 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
                                         <td className="px-6 py-4"><div className="h-4 w-24 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
-                                        <td className="px-6 py-4"><div className="h-4 w-20 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
-                                        <td className="px-6 py-4 text-right"><div className="h-4 w-8 bg-secondary-100 dark:bg-secondary-800 rounded ml-auto"></div></td>
+                                        {activeTab === 'staff' && (
+                                            <>
+                                                <td className="px-6 py-4"><div className="h-4 w-20 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
+                                                <td className="px-6 py-4 text-right"><div className="h-4 w-8 bg-secondary-100 dark:bg-secondary-800 rounded ml-auto"></div></td>
+                                            </>
+                                        )}
                                     </tr>
                                 ))
-                            ) : filteredSessions.length === 0 ? (
+                            ) : displayData.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-20">
                                         <div className="bg-white dark:bg-secondary-900 rounded-xl border border-secondary-200 dark:border-secondary-800 p-12 text-center">
                                             <Clock className="w-12 h-12 text-secondary-200 dark:text-secondary-800 mx-auto mb-4" />
-                                            <h3 className="text-lg font-semibold text-secondary-900 dark:text-white">No attendance sessions</h3>
+                                            <h3 className="text-lg font-semibold text-secondary-900 dark:text-white">No {activeTab} records found</h3>
                                             <p className="text-secondary-900 dark:text-secondary-200 font-medium mt-1">Try adjusting your search or filters.</p>
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
-                                filteredSessions.map((session) => (
+                                displayData.map((session: any) => (
                                     <tr key={session.id} className="hover:bg-secondary-50 dark:hover:bg-white/5 group transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-full bg-secondary-100 dark:bg-secondary-800 flex items-center justify-center text-secondary-900 dark:text-white font-bold text-xs ring-2 ring-white dark:ring-secondary-700 shadow-sm">
-                                                    {session.displayName[0]}
+                                                    {session.displayName ? session.displayName[0] : '?'}
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-semibold text-secondary-900 dark:text-white">{session.displayName}</p>
-                                                    <div className="text-xs font-medium text-secondary-600 dark:text-secondary-400">{session.email}</div>
+                                                    <div className="text-[10px] font-bold text-secondary-400 uppercase tracking-wider mt-0.5">
+                                                        {activeTab === 'visitor' ? 'Visitor' : 'Staff Member'}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className={cn(
-                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border",
-                                                session.status === 'active'
-                                                    ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50"
-                                                    : "bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700"
-                                            )}>
-                                                {session.status === 'active'
-                                                    ? <><CheckCircle2 className="w-3 h-3" /> Active</>
-                                                    : <><CheckCircle2 className="w-3 h-3" /> Completed</>
-                                                }
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2 text-sm font-semibold text-secondary-900 dark:text-secondary-100">
-                                                <Clock className="w-3.5 h-3.5 text-secondary-400 dark:text-secondary-500" />
-                                                {new Date(session.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {session.clockOut ? (
-                                                <div className="flex items-center gap-2 text-sm font-semibold text-secondary-900 dark:text-secondary-100">
-                                                    <LogOut className="w-3.5 h-3.5 text-secondary-400 dark:text-secondary-500" />
-                                                    {new Date(session.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </div>
-                                            ) : (
-                                                <span className="text-xs font-medium text-secondary-400 italic">-- : --</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2 text-xs font-bold text-secondary-700 dark:text-secondary-300">
-                                                <Timer className="w-3.5 h-3.5" />
-                                                {session.duration || "On-going"}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button className="p-1 hover:bg-secondary-200 dark:hover:bg-secondary-700 rounded-md transition-colors text-secondary-400 hover:text-secondary-900 dark:hover:text-secondary-100">
-                                                <MoreHorizontal className="w-5 h-5" />
-                                            </button>
-                                        </td>
+                                        {activeTab === 'staff' ? (
+                                            <>
+                                                <td className="px-6 py-4">
+                                                    <span className={cn(
+                                                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                                                        session.role === 'admin' ? "bg-red-100 text-red-700" :
+                                                            session.role === 'volunteer' ? "bg-blue-100 text-blue-700" :
+                                                                "bg-slate-100 text-slate-700"
+                                                    )}>
+                                                        {session.role || 'Staff'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={cn(
+                                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border",
+                                                        session.status === 'active'
+                                                            ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50"
+                                                            : "bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700"
+                                                    )}>
+                                                        {session.status === 'active'
+                                                            ? <><CheckCircle2 className="w-3 h-3" /> Active</>
+                                                            : <><CheckCircle2 className="w-3 h-3" /> Completed</>
+                                                        }
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2 text-sm font-semibold text-secondary-900 dark:text-secondary-100">
+                                                        <Clock className="w-3.5 h-3.5 text-secondary-400 dark:text-secondary-500" />
+                                                        {session.displayTime}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2 text-xs font-bold text-secondary-700 dark:text-secondary-300">
+                                                        <Timer className="w-3.5 h-3.5" />
+                                                        {session.displayDuration}
+                                                    </div>
+                                                </td>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm font-medium text-secondary-900 dark:text-white">{session.phone || "No Phone"}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-bold text-secondary-900 dark:text-white">
+                                                            {new Date(session.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                        <span className="text-xs text-secondary-500">
+                                                            {new Date(session.clockIn).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <button className="text-xs font-bold text-primary-600 hover:text-primary-700 hover:underline">
+                                                        View Details
+                                                    </button>
+                                                </td>
+                                            </>
+                                        )}
                                     </tr>
                                 ))
                             )}

@@ -57,7 +57,7 @@ export const getUserAttendanceStatus = async (uid: string): Promise<AttendanceSt
 /**
  * Clock in a user with transaction and registry verification
  */
-export const clockIn = async (uid: string, displayName: string, email: string) => {
+export const clockIn = async (uid: string, displayName: string, email: string, role: 'volunteer' | 'staff' | 'admin') => {
     const today = getTodayDateString();
     const attendanceRef = collection(db, ATTENDANCE_COLLECTION);
     const familiesRef = doc(db, "families", uid);
@@ -92,6 +92,7 @@ export const clockIn = async (uid: string, displayName: string, email: string) =
             displayName,
             email,
             type: 'clock_in',
+            role,
             timestamp: Date.now(),
             date: today,
             deviceInfo: typeof window !== 'undefined' ? window.navigator.userAgent : 'Server'
@@ -100,6 +101,26 @@ export const clockIn = async (uid: string, displayName: string, email: string) =
         const newDocRef = doc(attendanceRef);
         transaction.set(newDocRef, attendanceData);
     });
+};
+
+/**
+ * Record a simple visitor presence
+ */
+export const recordVisitorPresence = async (name: string, phone?: string) => {
+    const today = getTodayDateString();
+    const attendanceData: Omit<AttendanceRecord, 'id'> = {
+        uid: `visitor_${Date.now()}`,
+        displayName: name,
+        email: "visitor@guest.com",
+        phone: phone || "",
+        type: 'visitor',
+        timestamp: Date.now(),
+        date: today,
+        deviceInfo: typeof window !== 'undefined' ? window.navigator.userAgent : 'Server'
+    };
+
+    const docRef = await addDoc(collection(db, ATTENDANCE_COLLECTION), attendanceData);
+    return docRef.id;
 };
 
 /**
@@ -183,7 +204,19 @@ export const getAttendanceSessions = async (dateString?: string): Promise<Attend
         let currentSession: Partial<AttendanceSession> | null = null;
 
         logs.forEach(log => {
-            if (log.type === 'clock_in') {
+            if (log.type === 'visitor') {
+                sessions.push({
+                    id: log.id,
+                    uid: log.uid,
+                    displayName: log.displayName,
+                    email: log.email,
+                    phone: log.phone,
+                    date: log.date,
+                    clockIn: log.timestamp,
+                    status: 'visitor',
+                    type: 'visitor_log'
+                });
+            } else if (log.type === 'clock_in') {
                 // Start a new session
                 // If there was an existing session without clock out, we might want to close it or leave it as error?
                 // For now, let's assume valid flow is In -> Out -> In -> Out
@@ -200,7 +233,9 @@ export const getAttendanceSessions = async (dateString?: string): Promise<Attend
                     date: log.date,
                     clockIn: log.timestamp,
                     deviceInfo: log.deviceInfo,
-                    status: 'active'
+                    status: 'active',
+                    type: 'staff_session',
+                    role: log.role
                 };
             } else if (log.type === 'clock_out') {
                 if (currentSession && currentSession.status === 'active') {

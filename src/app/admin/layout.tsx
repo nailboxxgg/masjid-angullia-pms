@@ -29,10 +29,15 @@ export default function AdminLayout({
             } else {
                 try {
                     const userDoc = await getDoc(doc(db, "families", user.uid));
-                    if (userDoc.exists() && userDoc.data().role === 'admin') {
-                        setLoading(false);
-                        // Start presence tracking when authenticated
-                        stopHeartbeat = startPresenceHeartbeat();
+                    if (userDoc.exists()) {
+                        const role = userDoc.data().role;
+                        if (['admin', 'staff', 'volunteer'].includes(role)) {
+                            setLoading(false);
+                            // Start presence tracking when authenticated
+                            stopHeartbeat = startPresenceHeartbeat();
+                        } else {
+                            router.push("/");
+                        }
                     } else {
                         router.push("/");
                     }

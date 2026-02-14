@@ -54,8 +54,8 @@ export default function AdminSettingsPage() {
             <form onSubmit={handleSave} className="grid text-left gap-6 lg:grid-cols-2">
                 {/* Profile Settings */}
                 <motion.div variants={itemVariants} whileHover="hover">
-                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm transition-shadow hover:shadow-xl rounded-2xl overflow-hidden h-full">
-                        <CardHeader className="border-b border-secondary-100 dark:border-secondary-800 pb-4 bg-secondary-50/30 dark:bg-secondary-800/20">
+                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm transition-all hover:shadow-2xl hover:border-primary-200 dark:hover:border-primary-900/50 rounded-2xl overflow-hidden h-full group">
+                        <CardHeader className="border-b border-secondary-100 dark:border-secondary-800 pb-4 bg-secondary-50/30 dark:bg-secondary-800/20 group-hover:bg-secondary-50/80 dark:group-hover:bg-secondary-800/40 transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-primary-50 text-primary-600 rounded-xl dark:bg-primary-900/20 dark:text-primary-400 ring-1 ring-primary-100 dark:ring-primary-800/50">
                                     <User className="w-5 h-5" />
@@ -72,7 +72,7 @@ export default function AdminSettingsPage() {
                                 <input
                                     type="text"
                                     defaultValue="Admin User"
-                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all"
+                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4"
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -80,7 +80,7 @@ export default function AdminSettingsPage() {
                                 <input
                                     type="email"
                                     defaultValue="admin@masjidangullia.com"
-                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all"
+                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4"
                                 />
                             </div>
                         </CardContent>
@@ -89,8 +89,8 @@ export default function AdminSettingsPage() {
 
                 {/* Security Settings */}
                 <motion.div variants={itemVariants} whileHover="hover">
-                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm transition-shadow hover:shadow-xl rounded-2xl overflow-hidden h-full">
-                        <CardHeader className="border-b border-secondary-100 dark:border-secondary-800 pb-4 bg-secondary-50/30 dark:bg-secondary-800/20">
+                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm transition-all hover:shadow-2xl hover:border-primary-200 dark:hover:border-primary-900/50 rounded-2xl overflow-hidden h-full group">
+                        <CardHeader className="border-b border-secondary-100 dark:border-secondary-800 pb-4 bg-secondary-50/30 dark:bg-secondary-800/20 group-hover:bg-secondary-50/80 dark:group-hover:bg-secondary-800/40 transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl dark:bg-amber-900/20 dark:text-amber-400 ring-1 ring-amber-100 dark:ring-amber-800/50">
                                     <ShieldCheck className="w-5 h-5" />
@@ -107,7 +107,7 @@ export default function AdminSettingsPage() {
                                 <input
                                     type="password"
                                     placeholder="••••••••"
-                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all"
+                                    className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4"
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -124,8 +124,8 @@ export default function AdminSettingsPage() {
 
                 {/* Admin Access Management */}
                 <motion.div variants={itemVariants} className="lg:col-span-2">
-                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm rounded-2xl overflow-hidden">
-                        <CardHeader className="border-b border-secondary-100 dark:border-secondary-800 pb-4 bg-secondary-50/30 dark:bg-secondary-800/20">
+                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm transition-all hover:shadow-2xl hover:border-primary-200 dark:hover:border-primary-900/50 rounded-2xl overflow-hidden group">
+                        <CardHeader className="border-b border-secondary-100 dark:border-secondary-800 pb-4 bg-secondary-50/30 dark:bg-secondary-800/20 group-hover:bg-secondary-50/80 dark:group-hover:bg-secondary-800/40 transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl dark:bg-purple-900/20 dark:text-purple-400 ring-1 ring-purple-100 dark:ring-purple-800/50">
                                     <PlusCircle className="w-5 h-5" />
@@ -147,12 +147,12 @@ export default function AdminSettingsPage() {
                                     <input
                                         type="email"
                                         placeholder="new.admin@masjid.com"
-                                        className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all placeholder:font-medium placeholder:text-secondary-400"
+                                        className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all placeholder:font-medium placeholder:text-secondary-400 px-4"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold uppercase tracking-widest text-secondary-500 ml-1">Invitation Role</label>
-                                    <select className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all">
+                                    <select className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4">
                                         <option>Super Admin</option>
                                         <option>Finance Manager</option>
                                         <option>Staff Coordinator</option>

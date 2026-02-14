@@ -20,7 +20,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
     const [address, setAddress] = useState("");
 
     const [members, setMembers] = useState<FamilyMember[]>([
-        { id: "1", name: "", relation: "Head", isDeceased: false }
+        { id: "1", name: "", relation: "Spouse", isDeceased: false }
     ]);
 
     useEffect(() => {
@@ -42,13 +42,13 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                     newMembers.push({
                         id: Date.now().toString() + i, // simple mock id
                         name: "",
-                        relation: "Member",
+                        relation: "Child",
                         isDeceased: false
                     });
                 }
                 if (newMembers.length === 0) {
                     // Ensure at least one member exists if count was 0
-                    newMembers.push({ id: Date.now().toString(), name: "", relation: "Head", isDeceased: false });
+                    newMembers.push({ id: Date.now().toString(), name: "", relation: "Spouse", isDeceased: false });
                 }
                 setMembers(newMembers);
             }
@@ -59,7 +59,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
         setMembers([...members, {
             id: Date.now().toString(),
             name: "",
-            relation: "Member",
+            relation: "Child",
             isDeceased: false
         }]);
     };
@@ -200,7 +200,6 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
                                         onChange={(e) => updateMember(member.id, 'relation', e.target.value)}
                                         className="flex h-10 w-full rounded-md border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all text-secondary-800 dark:text-secondary-100 text-base"
                                     >
-                                        <option className="text-secondary-800 dark:text-secondary-100">Head</option>
                                         <option className="text-secondary-800 dark:text-secondary-100">Spouse</option>
                                         <option className="text-secondary-800 dark:text-secondary-100">Child</option>
                                         <option className="text-secondary-800 dark:text-secondary-100">Parent</option>

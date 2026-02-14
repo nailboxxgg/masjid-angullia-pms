@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { LockKeyhole } from "lucide-react";
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -42,6 +43,13 @@ export default function Navbar() {
                     </Link>
 
                     <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => window.dispatchEvent(new CustomEvent('open-login-modal'))}
+                            className="p-2 text-primary-600/70 hover:text-primary-600 dark:text-primary-400/70 dark:hover:text-primary-400 transition-colors"
+                            title="Staff Portal"
+                        >
+                            <LockKeyhole className="w-5 h-5" />
+                        </button>
                         <ThemeToggle />
                     </div>
                 </div>

@@ -86,3 +86,18 @@ export const deleteFeedback = async (id: string) => {
         return false;
     }
 };
+
+export const clearAllFeedbacks = async () => {
+    try {
+        const q = query(collection(db, COLLECTION_NAME));
+        const querySnapshot = await getDocs(q);
+
+        const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+
+        return true;
+    } catch (error) {
+        console.error("Error clearing feedback inbox:", error);
+        return false;
+    }
+};

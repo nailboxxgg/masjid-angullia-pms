@@ -26,6 +26,7 @@ import ImageModal from "@/components/ui/ImageModal";
 import AttendancePortal from "@/components/attendance/AttendancePortal";
 import AnnouncementCard from "@/components/feed/AnnouncementCard";
 import FeedbackModal from "@/components/modules/FeedbackModal";
+import { clockIn } from "@/lib/attendance";
 
 const Modal = dynamic(() => import("@/components/ui/modal"), { ssr: false });
 
@@ -61,6 +62,11 @@ export default function Home() {
       setRecentDonations(donationData);
     };
     fetchUpdates();
+
+    // Listen for login modal trigger from Navbar
+    const handleOpenLogin = () => setIsLoginModalOpen(true);
+    window.addEventListener('open-login-modal', handleOpenLogin);
+    return () => window.removeEventListener('open-login-modal', handleOpenLogin);
   }, []);
 
 
@@ -76,16 +82,12 @@ export default function Home() {
     setIsRegistrationOpen(true);
   };
 
+  const [loginRole, setLoginRole] = useState<'staff' | 'volunteer' | 'admin'>('staff');
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setLoginError("");
-
-    console.log("Firebase Config Check:", {
-      apiKey: auth.app.options.apiKey ? "Present" : "Missing",
-      projectId: auth.app.options.projectId ? "Present" : "Missing",
-      authDomain: auth.app.options.authDomain,
-    });
 
     const form = e.target as HTMLFormElement;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
@@ -93,64 +95,49 @@ export default function Home() {
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const uid = userCredential.user.uid;
+      const user = userCredential.user;
+      const uid = user.uid;
 
-      // Check user role
+      // Check user role from DB to confirm privileges
       const userDoc = await getDoc(doc(db, "families", uid));
+      let finalRole = loginRole;
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        console.log("Login Debug:", { uid, role: userData.role, data: userData });
-
         if (userData.role === 'admin') {
-          console.log("Redirecting to admin...");
-          router.push("/admin");
-        } else {
-          // Check if this existing user is the seed admin causing role mismatch
-          if (email === process.env.NEXT_PUBLIC_ADMIN_SEED_EMAIL) {
-            console.log("Seed admin detected (existing user doc), upgrading role...");
-            try {
-              await setDoc(doc(db, "families", uid), { ...userData, role: 'admin' }, { merge: true });
-              console.log("Admin role upgraded. Redirecting...");
-              router.push("/admin");
-              return;
-            } catch (err) {
-              console.error("Error upgrading admin role:", err);
-            }
-          } else {
-            // Regular user: Close login modal and open attendance portal
-            console.log("Redirecting to attendance (role not admin)...");
-            setIsLoginModalOpen(false);
-            setIsAttendanceOpen(true);
-          }
+          finalRole = 'admin';
         }
-      } else {
-        // Fallback for users without a family doc (legacy or error)
-        console.log("Login Debug: No user doc found for uid:", uid);
-
-        // CHECK FOR SEED ADMIN in new user case
-        if (email === process.env.NEXT_PUBLIC_ADMIN_SEED_EMAIL) {
-          console.log("Seed admin detected (new user), creating admin profile...");
-          try {
-            await setDoc(doc(db, "families", uid), {
-              email: email,
-              role: 'admin',
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              name: "Super Admin", // Default name
-              familyMembers: []
-            });
-            console.log("Admin profile created. Redirecting...");
-            router.push("/admin");
-            return;
-          } catch (writeErr) {
-            console.error("Error creating admin profile:", writeErr);
-          }
-        }
-
-        setIsLoginModalOpen(false);
-        setIsAttendanceOpen(true);
       }
+
+      // Check specifically for seed admin to upgrade if needed
+      if (email === process.env.NEXT_PUBLIC_ADMIN_SEED_EMAIL) {
+        finalRole = 'admin';
+        if (!userDoc.exists() || userDoc.data()?.role !== 'admin') {
+          await setDoc(doc(db, "families", uid), {
+            email: email,
+            role: 'admin',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            name: "Super Admin",
+            familyMembers: []
+          }, { merge: true });
+        }
+      }
+
+      // Perform Clock In
+      try {
+        const displayName = user.displayName || user.email?.split('@')[0] || "User";
+        // Convert to compatible role string
+        await clockIn(uid, displayName, email, finalRole as 'volunteer' | 'staff' | 'admin');
+        console.log("Auto clocked in successfully");
+      } catch (clockErr) {
+        // Ignore "already clocked in" errors or others during login, don't block login
+        console.log("Clock in status:", clockErr);
+      }
+
+      // Redirect to Admin Portal for all authorized staff/roles
+      console.log(`Redirecting to portal as ${finalRole}...`);
+      router.push("/admin");
 
     } catch (err: unknown) {
       console.error(err);
@@ -215,7 +202,7 @@ export default function Home() {
           <AnimationWrapper animation="reveal" delay={0.6} duration={0.8}>
             <div className="flex justify-center">
               <button
-                onClick={() => setIsLoginModalOpen(true)}
+                onClick={() => setIsAttendanceOpen(true)}
                 className="flex items-center gap-4 md:gap-5 px-6 py-4 md:px-8 md:py-6 bg-white dark:bg-secondary-900 rounded-[2rem] shadow-2xl shadow-primary-900/5 hover:shadow-3xl hover:shadow-primary-500/20 border border-white/50 dark:border-secondary-800 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden w-full md:w-auto justify-between md:justify-start"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-500/0 via-primary-500/5 to-primary-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -224,7 +211,7 @@ export default function Home() {
                     <Clock className="w-6 h-6 md:w-7 md:h-7" />
                   </div>
                   <div className="text-left relative z-10">
-                    <h3 className="text-lg md:text-xl font-bold text-secondary-900 dark:text-white leading-tight mb-0.5">Jama&apos;ah Presence</h3>
+                    <h3 className="text-lg md:text-xl font-bold text-secondary-900 dark:text-white leading-tight mb-0.5">Record your attendance</h3>
                     <p className="text-xs md:text-sm font-medium text-secondary-500 dark:text-secondary-400">Mark your attendance today</p>
                   </div>
                 </div>
@@ -595,6 +582,28 @@ export default function Home() {
                 )}
               </button>
             </div>
+
+            {/* Role Selection for Non-Admins (Implicit via UI) */}
+            <div>
+              <label className="text-xs font-bold text-secondary-400 uppercase tracking-widest mb-2 block">Login As</label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['staff', 'volunteer', 'admin'] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setLoginRole(r)}
+                    className={cn(
+                      "py-2 px-1 border rounded-lg text-xs font-bold uppercase transition-all",
+                      loginRole === r
+                        ? "bg-primary-600 border-primary-500 text-white"
+                        : "border-secondary-700 text-secondary-400 hover:bg-secondary-800"
+                    )}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {loginError && (
@@ -608,7 +617,7 @@ export default function Home() {
             disabled={isLoading}
             className="group relative flex w-full justify-center rounded-md bg-primary-600 px-3 py-3 text-sm font-semibold text-white hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:opacity-70 transition-all shadow-lg hover:shadow-primary-500/20"
           >
-            {isLoading ? "Signing In..." : "Sign In"}
+            {isLoading ? "Signing In..." : "Sign In & Clock In"}
           </button>
           <div className="mt-4 text-center">
             <button
@@ -621,6 +630,6 @@ export default function Home() {
           </div>
         </form>
       </Modal>
-    </div >
+    </div>
   );
 }

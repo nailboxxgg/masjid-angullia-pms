@@ -1,5 +1,6 @@
 "use client";
 
+import { clockOut } from "@/lib/attendance";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -70,6 +71,15 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
     const confirmSignOut = async () => {
         try {
+            const user = auth.currentUser;
+            if (user) {
+                const displayName = user.displayName || user.email?.split('@')[0] || "User";
+                try {
+                    await clockOut(user.uid, displayName, user.email || "");
+                } catch (err) {
+                    console.error("Auto clock-out failed:", err);
+                }
+            }
             await auth.signOut();
             window.location.href = "/";
         } catch (error) {
