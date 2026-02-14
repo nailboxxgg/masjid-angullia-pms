@@ -495,6 +495,7 @@ export default function Home() {
         onClose={() => setSelectedAnnouncement(null)}
         title=""
         className="max-w-2xl p-0 bg-transparent border-none shadow-none"
+        hideScrollbar={true}
       >
         {selectedAnnouncement && <SocialPost post={selectedAnnouncement} />}
       </Modal>
@@ -504,6 +505,7 @@ export default function Home() {
         onClose={() => setIsLoginModalOpen(false)}
         title=""
         className="max-w-md bg-white/90 dark:bg-secondary-900/90 backdrop-blur-xl border-secondary-200 dark:border-secondary-800 shadow-2xl rounded-[2rem]"
+        hideScrollbar={true}
       >
         <div className="text-center flex flex-col items-center mb-8">
           <div className="bg-primary-500/10 dark:bg-primary-500/20 p-4 rounded-3xl mb-4 text-primary-600 dark:text-primary-400">
