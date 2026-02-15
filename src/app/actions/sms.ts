@@ -5,21 +5,29 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query } from "firebase/firestore";
 import { getSMSProvider } from "@/lib/sms";
 
-export async function broadcastSMSAction(message: string) {
+export async function broadcastSMSAction(message: string, clientPhoneNumbers?: string[]) {
     try {
         if (!message) {
             return { success: false, error: "Message is required" };
         }
 
-        // 1. Fetch Subscribers
-        const subscribersRef = collection(db, "subscribers");
-        const snapshot = await getDocs(query(subscribersRef));
+        let phoneNumbers: string[] = [];
 
-        if (snapshot.empty) {
-            return { success: true, count: 0, message: "No subscribers found." };
+        // 1. Use provided numbers or Fetch Subscribers
+        if (clientPhoneNumbers && clientPhoneNumbers.length > 0) {
+            phoneNumbers = clientPhoneNumbers;
+        } else {
+            // Fallback: Try to fetch (might fail on server without admin SDK if rules are strict)
+            const subscribersRef = collection(db, "subscribers");
+            const snapshot = await getDocs(query(subscribersRef));
+            if (!snapshot.empty) {
+                phoneNumbers = snapshot.docs.map(doc => doc.data().phoneNumber as string);
+            }
         }
 
-        const phoneNumbers = snapshot.docs.map(doc => doc.data().phoneNumber as string);
+        if (phoneNumbers.length === 0) {
+            return { success: true, count: 0, message: "No subscribers found." };
+        }
 
         // 2. Initialize Provider
         const smsProvider = getSMSProvider();

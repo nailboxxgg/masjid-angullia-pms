@@ -289,7 +289,7 @@ export default function AdminAttendancePage() {
                             required
                             value={manualForm.staffId}
                             onChange={(e) => setManualForm({ ...manualForm, staffId: e.target.value })}
-                            className="w-full p-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                            className="w-full p-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
                         >
                             <option value="">Select Staff</option>
                             {staffList.map(staff => (
@@ -307,11 +307,11 @@ export default function AdminAttendancePage() {
                             required
                             value={manualForm.date}
                             onChange={(e) => setManualForm({ ...manualForm, date: e.target.value })}
-                            className="w-full p-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                            className="w-full p-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Clock In Time</label>
                             <input
@@ -319,7 +319,7 @@ export default function AdminAttendancePage() {
                                 required
                                 value={manualForm.clockIn}
                                 onChange={(e) => setManualForm({ ...manualForm, clockIn: e.target.value })}
-                                className="w-full p-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                                className="w-full p-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
                             />
                         </div>
                         <div>
@@ -328,7 +328,7 @@ export default function AdminAttendancePage() {
                                 type="time"
                                 value={manualForm.clockOut}
                                 onChange={(e) => setManualForm({ ...manualForm, clockOut: e.target.value })}
-                                className="w-full p-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                                className="w-full p-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
                             />
                         </div>
                     </div>

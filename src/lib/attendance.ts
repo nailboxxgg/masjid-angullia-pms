@@ -57,18 +57,15 @@ export const getUserAttendanceStatus = async (uid: string): Promise<AttendanceSt
 /**
  * Clock in a user with transaction and registry verification
  */
-export const clockIn = async (uid: string, displayName: string, email: string, role: 'volunteer' | 'staff' | 'admin') => {
+export const clockIn = async (uid: string, displayName: string, email: string, role: 'staff' | 'admin') => {
     const today = getTodayDateString();
     const attendanceRef = collection(db, ATTENDANCE_COLLECTION);
     const staffRef = doc(db, "staff", uid);
-    const familiesRef = doc(db, "families", uid);
 
     await runTransaction(db, async (transaction) => {
         // 1. Verify registry based on role
-        // For admin/staff/volunteer roles, we check the 'staff' collection
-        // For regular family members (if they use this), we check 'families'
-        const isStaffRole = ['admin', 'staff', 'volunteer', 'employee'].includes(role);
-        const checkRef = isStaffRole ? staffRef : familiesRef;
+        // We now only support admin/staff clock-ins here. Families would need a separate flow if implemented.
+        const checkRef = staffRef;
         const registryDoc = await transaction.get(checkRef);
 
         if (!registryDoc.exists()) {

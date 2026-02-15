@@ -102,7 +102,7 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
                         inputMode="tel"
                     />
                     {validationError && (
-                        <p className="absolute -bottom-6 left-0 text-xs font-bold text-red-500">{validationError}</p>
+                        <p className="mt-2 text-xs font-bold text-red-500 animate-pulse">{validationError}</p>
                     )}
                 </div>
             </div>

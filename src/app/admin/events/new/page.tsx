@@ -6,10 +6,13 @@ import { createEvent } from "@/lib/events";
 import { uploadImage } from "@/lib/storage";
 import { ArrowLeft, Save, Upload, Calendar, MapPin, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Modal from "@/components/ui/modal";
+import { AnimatePresence } from "framer-motion";
 
 export default function NewEventPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     // Form State
     const [title, setTitle] = useState("");
@@ -46,18 +49,57 @@ export default function NewEventPage() {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Format Time String
-        const formattedTime = `${startHour}:${startMin} ${startAmPm} - ${endHour}:${endMin} ${endAmPm}`;
-
-        // Format Date String to MM/DD/YY
-        // Input date is YYYY-MM-DD
-        const [year, month, day] = date.split('-');
-        const formattedDate = `${month}/${day}/${year.slice(2)}`;
-
         try {
+            console.log("Starting event creation...");
+
+            // Validate Date
+            if (!date) {
+                setErrorMsg("Please select a date.");
+                setIsSubmitting(false);
+                return;
+            }
+
+            // Format Date String to MM/DD/YY
+            const [year, month, day] = date.split('-');
+            if (!year || !month || !day) {
+                setErrorMsg("Invalid date format.");
+                setIsSubmitting(false);
+                return;
+            }
+
+            // Time Validation
+            const convertToMinutes = (h: string, m: string, ampm: string) => {
+                let hour = parseInt(h);
+                if (ampm === "PM" && hour !== 12) hour += 12;
+                if (ampm === "AM" && hour === 12) hour = 0;
+                return hour * 60 + parseInt(m);
+            };
+
+            const startMinutes = convertToMinutes(startHour, startMin, startAmPm);
+            const endMinutes = convertToMinutes(endHour, endMin, endAmPm);
+
+            if (endMinutes <= startMinutes) {
+                setErrorMsg("End time must be after start time.");
+                setIsSubmitting(false);
+                return;
+            }
+            const formattedDate = `${month}/${day}/${year.slice(2)}`;
+
+            // Format Time String
+            const formattedTime = `${startHour}:${startMin} ${startAmPm} - ${endHour}:${endMin} ${endAmPm}`;
+
             let imageUrl = "";
             if (imageFile) {
-                imageUrl = await uploadImage(imageFile, "events");
+                console.log("Uploading image...");
+                try {
+                    imageUrl = await uploadImage(imageFile, "events");
+                    console.log("Image uploaded:", imageUrl);
+                } catch (imgError) {
+                    console.error("Image upload failed:", imgError);
+                    setErrorMsg("Failed to upload image. Please try again or skip the image.");
+                    setIsSubmitting(false);
+                    return;
+                }
             }
 
             const eventData = {
@@ -70,20 +112,25 @@ export default function NewEventPage() {
                 registrationOpen,
                 capacity: capacity ? parseInt(capacity) : 0,
                 imageUrl,
-                createdAt: Date.now() // client side timestamp, server will overwrite usually but helpful
+                createdAt: Date.now()
             };
 
+            console.log("Submitting event data:", eventData);
             const id = await createEvent(eventData);
+
             if (id) {
+                console.log("Event created with ID:", id);
                 router.push("/admin/events");
             } else {
-                alert("Failed to create event.");
+                console.error("createEvent returned null");
+                setErrorMsg("Failed to create event. Please check your connection.");
             }
         } catch (error) {
             console.error("Error creating event:", error);
-            alert("An error occurred.");
+            setErrorMsg("An error occurred while creating the event.");
+        } finally {
+            setIsSubmitting(false);
         }
-        setIsSubmitting(false);
     };
 
     return (
@@ -109,7 +156,20 @@ export default function NewEventPage() {
                         />
 
                         {imagePreview ? (
-                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                            <div className="relative w-full h-full">
+                                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setImageFile(null);
+                                        setImagePreview(null);
+                                    }}
+                                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-sm"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                                </button>
+                            </div>
                         ) : (
                             <div className="text-center p-6">
                                 <div className="w-12 h-12 bg-secondary-200 dark:bg-secondary-700 rounded-full flex items-center justify-center mx-auto mb-3 text-secondary-500 dark:text-secondary-400">
@@ -151,11 +211,11 @@ export default function NewEventPage() {
                         {/* Start Time */}
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-secondary-900 dark:text-white">Start Time</label>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 <select
                                     value={startHour}
                                     onChange={(e) => setStartHour(e.target.value)}
-                                    className="flex-1 px-3 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                    className="flex-1 min-w-[80px] px-3 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                                 >
                                     {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
                                         <option key={h} value={h.toString().padStart(2, '0')}>{h.toString().padStart(2, '0')}</option>
@@ -165,7 +225,7 @@ export default function NewEventPage() {
                                 <select
                                     value={startMin}
                                     onChange={(e) => setStartMin(e.target.value)}
-                                    className="flex-1 px-3 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                    className="flex-1 min-w-[80px] px-3 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                                 >
                                     {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
                                         <option key={m} value={m}>{m}</option>
@@ -185,11 +245,11 @@ export default function NewEventPage() {
                         {/* End Time */}
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-secondary-900 dark:text-white">End Time</label>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 <select
                                     value={endHour}
                                     onChange={(e) => setEndHour(e.target.value)}
-                                    className="flex-1 px-3 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                    className="flex-1 min-w-[80px] px-3 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                                 >
                                     {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
                                         <option key={h} value={h.toString().padStart(2, '0')}>{h.toString().padStart(2, '0')}</option>
@@ -199,7 +259,7 @@ export default function NewEventPage() {
                                 <select
                                     value={endMin}
                                     onChange={(e) => setEndMin(e.target.value)}
-                                    className="flex-1 px-3 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                                    className="flex-1 min-w-[80px] px-3 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                                 >
                                     {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
                                         <option key={m} value={m}>{m}</option>
@@ -302,6 +362,27 @@ export default function NewEventPage() {
                     </button>
                 </div>
             </form>
+
+            <AnimatePresence>
+                {errorMsg && (
+                    <Modal
+                        isOpen={!!errorMsg}
+                        onClose={() => setErrorMsg(null)}
+                        title="Submission Error"
+                        className="max-w-sm"
+                    >
+                        <div className="p-4 pt-2">
+                            <p className="text-secondary-600 dark:text-secondary-300 mb-6">{errorMsg}</p>
+                            <button
+                                onClick={() => setErrorMsg(null)}
+                                className="w-full py-3 bg-secondary-900 dark:bg-white text-white dark:text-secondary-900 rounded-xl font-bold"
+                            >
+                                Okay
+                            </button>
+                        </div>
+                    </Modal>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

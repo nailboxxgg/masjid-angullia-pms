@@ -74,7 +74,7 @@ export interface Family {
 export interface Staff {
     id: string; // The specific ID used for login (e.g., "S-1234")
     name: string;
-    role: 'Staff' | 'Volunteer' | 'Intern';
+    role: 'admin' | 'staff';
     department?: string;
     contactNumber: string;
     address?: string;
@@ -90,7 +90,7 @@ export interface AttendanceRecord {
     displayName: string;
     email?: string;
     type: 'clock_in' | 'clock_out' | 'visitor';
-    role?: string;
+    role?: 'admin' | 'staff';
     phone?: string;
     timestamp: number;
     date: string; // YYYY-MM-DD
@@ -104,7 +104,7 @@ export interface AttendanceSession {
     displayName: string;
     email?: string;
     type?: 'staff_session' | 'visitor_log';
-    role?: string;
+    role?: 'admin' | 'staff';
     phone?: string;
     date: string;
     clockIn: number;

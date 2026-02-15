@@ -32,9 +32,14 @@ export default function NavigationGuard() {
         window.history.pushState(null, "", window.location.href);
 
         // 3. Detect if page was refreshed
+        // Check if we've already shown the sync modal in this session
+        const hasSeenSyncModal = sessionStorage.getItem("hasSeenSyncModal");
         const navEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
-        if (navEntries.length > 0 && navEntries[0].type === "reload") {
+
+        if (navEntries.length > 0 && navEntries[0].type === "reload" && !hasSeenSyncModal) {
             setModalType("refresh");
+            // Mark as seen for this session immediately
+            sessionStorage.setItem("hasSeenSyncModal", "true");
         }
 
         window.addEventListener("beforeunload", handleBeforeUnload);
@@ -59,6 +64,9 @@ export default function NavigationGuard() {
     const confirmSignOut = async () => {
         setIsLoggingOut(true);
         try {
+            // Clear the session flag so it appears again on next login
+            sessionStorage.removeItem("hasSeenSyncModal");
+
             const user = auth.currentUser;
             if (user) {
                 const displayName = user.displayName || user.email?.split("@")[0] || "User";
@@ -142,7 +150,7 @@ export default function NavigationGuard() {
                                 ) : (
                                     <>
                                         <button
-                                            onClick={() => setModalType(null)}
+                                            onClick={() => window.location.reload()}
                                             className="w-full py-4 bg-amber-500 hover:bg-amber-400 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 group"
                                         >
                                             <RefreshCcw className="w-5 h-5 group-rotate-180 transition-transform duration-500" />

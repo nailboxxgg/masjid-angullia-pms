@@ -9,6 +9,8 @@ import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import { cn } from "@/lib/utils";
 import Modal from "@/components/ui/modal"; // Re-using existing Modal component
 import { broadcastSMSAction } from "@/app/actions/sms";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function AnnouncementsManager() {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -64,23 +66,37 @@ export default function AnnouncementsManager() {
             // 2. Broadcast SMS if enabled
             if (sendSMS) {
                 try {
-                    // Shorten message for SMS to save cost/segments if needed
-                    const smsMessage = `[Masjid Update] ${newTitle}: ${newContent.substring(0, 100)}${newContent.length > 100 ? '...' : ''}`;
+                    // Fetch subscribers on client-side (using authenticated admin SDK)
+                    console.log("Fetching subscribers for broadcast...");
+                    const subscribersSnapshot = await getDocs(collection(db, "subscribers"));
+                    const phoneNumbers = subscribersSnapshot.docs.map(doc => doc.data().phoneNumber as string);
 
-                    const data = await broadcastSMSAction(smsMessage);
-
-                    if (data.success) {
+                    if (phoneNumbers.length === 0) {
                         setStatusData({
                             success: true,
-                            title: "Announcement Posted & Broadcasted!",
-                            message: `Successfully sent SMS to ${data.sent} subscribers.`
+                            title: "Posted, No Broadcast",
+                            message: "Announcement created, but no subscribers found to message."
                         });
                     } else {
-                        setStatusData({
-                            success: true, // Announcement still successful, just SMS failed
-                            title: "Posted with SMS Error",
-                            message: `Announcement created, but SMS failed: ${data.error || 'Unknown error'}`
-                        });
+                        // Shorten message for SMS to save cost/segments if needed
+                        const smsMessage = `[Masjid Update] ${newTitle}: ${newContent.substring(0, 100)}${newContent.length > 100 ? '...' : ''}`;
+
+                        // Pass client-fetched numbers to server action
+                        const data = await broadcastSMSAction(smsMessage, phoneNumbers);
+
+                        if (data.success) {
+                            setStatusData({
+                                success: true,
+                                title: "Announcement Posted & Broadcasted!",
+                                message: `Successfully sent SMS to ${data.sent} subscribers.`
+                            });
+                        } else {
+                            setStatusData({
+                                success: true, // Announcement still successful, just SMS failed
+                                title: "Posted with SMS Error",
+                                message: `Announcement created, but SMS failed: ${data.error || 'Unknown error'}`
+                            });
+                        }
                     }
                 } catch (err) {
                     console.error("SMS Broadcast Error:", err);

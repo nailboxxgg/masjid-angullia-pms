@@ -23,7 +23,10 @@ export class SemaphoreProvider implements SMSProvider {
                 },
                 body: new URLSearchParams({
                     apikey: this.apiKey,
-                    number: to,
+                    // Semaphore typically expects 09xxxxxxxxx or 639xxxxxxxxx. 
+                    // Let's ensure it's in a compatible format.
+                    // If it starts with +63, replace with 0.
+                    number: to.startsWith("+63") ? "0" + to.substring(3) : to,
                     message: message,
                     sendername: this.senderName,
                 }),

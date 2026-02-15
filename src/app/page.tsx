@@ -83,7 +83,7 @@ export default function Home() {
     setIsEventRegistrationOpen(true);
   };
 
-  const [loginRole, setLoginRole] = useState<'staff' | 'volunteer' | 'admin'>('admin');
+  const [loginRole, setLoginRole] = useState<'admin'>('admin');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,14 +126,6 @@ export default function Home() {
           if (dbRole !== 'admin') {
             throw new Error(`Access denied. You are registered as ${dbRole.toUpperCase()}, not ADMINISTRATOR.`);
           }
-        } else if (loginRole === 'staff') {
-          if (dbRole !== 'staff' && dbRole !== 'employee') {
-            throw new Error(`Access denied. You are registered as ${dbRole.toUpperCase()}, not STAFF.`);
-          }
-        } else if (loginRole === 'volunteer') {
-          if (dbRole !== 'volunteer') {
-            throw new Error(`Access denied. You are registered as ${dbRole.toUpperCase()}, not VOLUNTEER.`);
-          }
         }
 
         finalRole = dbRole;
@@ -166,7 +158,9 @@ export default function Home() {
       try {
         const displayName = user.displayName || user.email?.split('@')[0] || "User";
         // Convert to compatible role string
-        await clockIn(uid, displayName, email, finalRole as 'volunteer' | 'staff' | 'admin');
+        // Map legacy roles (inclusive of Volunteer/Employee) to 'staff'
+        const effectiveRole: 'admin' | 'staff' = finalRole === 'admin' ? 'admin' : 'staff';
+        await clockIn(uid, displayName, email, effectiveRole);
         console.log("Auto clocked in successfully");
       } catch (clockErr) {
         // Ignore "already clocked in" errors or others during login, don't block login
