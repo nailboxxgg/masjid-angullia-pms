@@ -223,7 +223,13 @@ export const getAttendanceSessions = async (dateString?: string): Promise<Attend
     // Group by user
     const userLogs: Record<string, AttendanceRecord[]> = {};
     rawLogs.forEach(log => {
-        if (!userLogs[log.uid]) userLogs[log.uid] = [];
+        // 1. Add a check to ensure log.uid exists
+        if (!log.uid) return;
+
+        // Now TypeScript knows log.uid is a string and safe to use
+        if (!userLogs[log.uid]) {
+            userLogs[log.uid] = [];
+        }
         userLogs[log.uid].push(log);
     });
 
