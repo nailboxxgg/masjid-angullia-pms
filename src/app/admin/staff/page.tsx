@@ -21,7 +21,7 @@ export default function AdminStaffPage() {
         name: "",
         contactNumber: "",
         address: "",
-        role: "Staff" as Staff['role'],
+        role: "staff" as Staff['role'],
         department: "",
         email: ""
     });
@@ -74,7 +74,7 @@ export default function AdminStaffPage() {
                 name: "",
                 contactNumber: "",
                 address: "",
-                role: "Staff",
+                role: "staff",
                 department: "",
                 email: ""
             });

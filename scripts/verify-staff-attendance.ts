@@ -40,7 +40,7 @@ async function verifyStaffAttendance() {
     // Create staff without ID (should auto-generate)
     const success = await createStaff({
         name: "Test User 1",
-        role: "Staff",
+        role: "staff",
         contactNumber: "09171234567",
         address: "123 Test St",
         email: "test1@example.com",
