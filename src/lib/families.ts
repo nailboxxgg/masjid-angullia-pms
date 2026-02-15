@@ -26,7 +26,7 @@ export const getFamilies = async (limitCount = 100): Promise<Family[]> => {
         const querySnapshot = await getDocs(q);
 
         return querySnapshot.docs
-            .filter(doc => doc.data().role !== 'admin')
+            .filter(doc => doc.data().role !== 'admin' && doc.data().status !== 'pending')
             .map(doc => {
                 const data = doc.data();
                 return {
@@ -41,6 +41,24 @@ export const getFamilies = async (limitCount = 100): Promise<Family[]> => {
             });
     } catch (error) {
         console.error("Error fetching families:", error);
+        return [];
+    }
+};
+
+export const getPendingFamilies = async (): Promise<Family[]> => {
+    try {
+        const q = query(
+            collection(db, COLLECTION_NAME),
+            where("status", "==", "pending"),
+            orderBy("createdAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as Family));
+    } catch (error) {
+        console.error("Error fetching pending families:", error);
         return [];
     }
 };

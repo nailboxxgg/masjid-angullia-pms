@@ -18,11 +18,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getAttendanceSessions, getTodayDateString } from "@/lib/attendance";
-import { AttendanceSession } from "@/lib/types";
+import { addManualAttendance, getStaffList } from "@/lib/staff";
+import { AttendanceSession, Staff } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import * as XLSX from "xlsx";
 import { useAdmin } from "@/contexts/AdminContext";
+import Modal from "@/components/ui/modal";
+import { Plus } from "lucide-react";
 
 export default function AdminAttendancePage() {
     const { role } = useAdmin();
@@ -31,6 +34,59 @@ export default function AdminAttendancePage() {
     const [selectedDate, setSelectedDate] = useState(getTodayDateString());
     const [searchTerm, setSearchTerm] = useState("");
     const [activeTab, setActiveTab] = useState<'staff' | 'visitor'>('visitor');
+
+    // Manual Entry State
+    const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+    const [staffList, setStaffList] = useState<Staff[]>([]);
+    const [manualForm, setManualForm] = useState({
+        staffId: "",
+        date: getTodayDateString(),
+        clockIn: "08:00",
+        clockOut: ""
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        const fetchStaff = async () => {
+            if (role === 'admin') {
+                const staff = await getStaffList();
+                setStaffList(staff);
+            }
+        };
+        fetchStaff();
+    }, [role]);
+
+    const handleManualSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const result = await addManualAttendance(
+                manualForm.staffId,
+                manualForm.date,
+                manualForm.clockIn,
+                manualForm.clockOut || undefined
+            );
+
+            if (result.success) {
+                setIsManualModalOpen(false);
+                fetchSessions(); // Refresh list
+                setManualForm({
+                    staffId: "",
+                    date: getTodayDateString(),
+                    clockIn: "08:00",
+                    clockOut: ""
+                });
+                alert("Attendance recorded successfully!");
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("An error occurred");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const handleExport = () => {
         const dataToExport = activeTab === 'visitor' ? visitorSessions : finalStaffList;
@@ -110,7 +166,7 @@ export default function AdminAttendancePage() {
     // Filter sessions based on search
     const filteredRawSessions = sessions.filter(session => {
         return session.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            session.email.toLowerCase().includes(searchTerm.toLowerCase());
+            (session.email && session.email.toLowerCase().includes(searchTerm.toLowerCase()));
     });
 
     const visitorSessions = filteredRawSessions.filter(s => s.type === 'visitor_log');
@@ -118,8 +174,9 @@ export default function AdminAttendancePage() {
 
     // Consolidate Staff Sessions
     const consolidatedStaffSessions = Object.values(staffSessionsRaw.reduce((acc, session) => {
-        if (!acc[session.uid]) {
-            acc[session.uid] = {
+        const key = session.staffId || session.uid || session.id;
+        if (!acc[key]) {
+            acc[key] = {
                 ...session,
                 totalDurationMs: 0,
                 sessionsCount: 0,
@@ -130,7 +187,7 @@ export default function AdminAttendancePage() {
         }
 
         // Aggregate stats
-        const record = acc[session.uid];
+        const record = acc[key];
         record.sessionsCount++;
         if (session.clockIn > record.latestClockIn) record.latestClockIn = session.clockIn;
         if (session.clockOut && (!record.latestClockOut || session.clockOut > record.latestClockOut)) {
@@ -197,6 +254,16 @@ export default function AdminAttendancePage() {
                             className="w-full pl-9 pr-4 py-2 bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-900 dark:text-secondary-100 placeholder:text-secondary-500 dark:placeholder:text-secondary-400 shadow-sm"
                         />
                     </div>
+                    {role === 'admin' && (
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setIsManualModalOpen(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 shadow-sm transition-all"
+                        >
+                            <Plus className="w-4 h-4" /> Manual Entry
+                        </motion.button>
+                    )}
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -207,6 +274,83 @@ export default function AdminAttendancePage() {
                     </motion.button>
                 </motion.div>
             </div>
+
+            {/* Manual Entry Modal */}
+            <Modal
+                isOpen={isManualModalOpen}
+                onClose={() => setIsManualModalOpen(false)}
+                title="Manual Attendance Entry"
+                className="max-w-md"
+            >
+                <form onSubmit={handleManualSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Staff Member</label>
+                        <select
+                            required
+                            value={manualForm.staffId}
+                            onChange={(e) => setManualForm({ ...manualForm, staffId: e.target.value })}
+                            className="w-full p-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                        >
+                            <option value="">Select Staff</option>
+                            {staffList.map(staff => (
+                                <option key={staff.id} value={staff.id}>
+                                    {staff.name} ({staff.role})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Date</label>
+                        <input
+                            type="date"
+                            required
+                            value={manualForm.date}
+                            onChange={(e) => setManualForm({ ...manualForm, date: e.target.value })}
+                            className="w-full p-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Clock In Time</label>
+                            <input
+                                type="time"
+                                required
+                                value={manualForm.clockIn}
+                                onChange={(e) => setManualForm({ ...manualForm, clockIn: e.target.value })}
+                                className="w-full p-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Clock Out Time <span className="text-secondary-400 font-normal text-xs">(Optional)</span></label>
+                            <input
+                                type="time"
+                                value={manualForm.clockOut}
+                                onChange={(e) => setManualForm({ ...manualForm, clockOut: e.target.value })}
+                                className="w-full p-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="pt-4 flex justify-end gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsManualModalOpen(false)}
+                            className="px-4 py-2 text-sm font-bold text-secondary-600 hover:bg-secondary-100 rounded-lg"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="px-4 py-2 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-lg disabled:opacity-50"
+                        >
+                            {isSubmitting ? "Saving..." : "Save Record"}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

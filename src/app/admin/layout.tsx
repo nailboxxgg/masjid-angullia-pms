@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import NavigationGuard from "@/components/admin/NavigationGuard";
-import { startPresenceHeartbeat } from "@/lib/presence";
+import { startPresenceHeartbeat, goOffline } from "@/lib/presence";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -20,6 +20,7 @@ function AdminLayoutContent({
     children: React.ReactNode;
 }) {
     const router = useRouter();
+    const pathname = usePathname();
     const { role, loading, user } = useAdmin();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -32,16 +33,14 @@ function AdminLayoutContent({
             } else {
                 // Route Protection for Non-Admin roles
                 if (role !== 'admin') {
-                    const currentPath = window.location.pathname;
-
                     // Volunteers: ONLY Attendance
                     if (role === 'volunteer') {
-                        if (currentPath !== '/admin/attendance') {
-                            console.warn(`Volunteer access redirected to attendance from ${currentPath}`);
+                        if (pathname !== '/admin/attendance') {
+                            console.warn(`Volunteer access redirected to attendance from ${pathname}`);
                             router.push("/admin/attendance");
                         }
                     } else {
-                        // Staff: Limited routes
+                        // Staff / Employees: Limited routes
                         const adminOnlyRoutes = [
                             '/admin/families',
                             '/admin/settings',
@@ -49,9 +48,14 @@ function AdminLayoutContent({
                             '/admin/feed'
                         ];
 
-                        if (adminOnlyRoutes.some(route => currentPath.startsWith(route))) {
-                            console.warn(`Access denied for role ${role} to ${currentPath}`);
-                            router.push("/admin");
+                        if (adminOnlyRoutes.some(route => pathname.startsWith(route)) || pathname === '/admin' || pathname === '/admin/') {
+                            // If they shouldn't see dashboard either, redirect to attendance
+                            if (pathname === '/admin' || pathname === '/admin/') {
+                                router.push("/admin/attendance");
+                            } else {
+                                console.warn(`Access denied for role ${role} to ${pathname}`);
+                                router.push("/admin/attendance"); // Default fallback
+                            }
                         }
                     }
                 }
@@ -68,6 +72,7 @@ function AdminLayoutContent({
         const resetTimer = () => {
             if (timeoutId) clearTimeout(timeoutId);
             timeoutId = setTimeout(async () => {
+                await goOffline(); // Clear presence status
                 await auth.signOut();
                 router.push("/");
             }, INACTIVITY_LIMIT);
@@ -108,6 +113,15 @@ function AdminLayoutContent({
     }
 
     if (!user || !role) return null;
+
+    // Strict Render Guard: Prevent rendering children if user is a volunteer attempting to access dashboard or other routes
+    if (role === 'volunteer' && pathname !== '/admin/attendance') {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-secondary-950">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex min-h-screen bg-slate-50 dark:bg-secondary-950 text-secondary-900 dark:text-secondary-100">

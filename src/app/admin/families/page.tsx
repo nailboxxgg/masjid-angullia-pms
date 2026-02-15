@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search, Edit, Trash2, Users, Users2 } from "lucide-react";
+import { Search, Edit, Trash2, Users, Users2 } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import FamilyForm from "@/components/modules/families/FamilyForm";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -11,7 +11,6 @@ import { Family } from "@/lib/types";
 import { motion } from "framer-motion";
 
 export default function AdminFamiliesPage() {
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
@@ -88,15 +87,6 @@ export default function AdminFamiliesPage() {
                     <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white uppercase tracking-tighter">Family Registry</h1>
                     <p className="text-secondary-900 dark:text-secondary-200 mt-1 font-medium italic text-balance">Centrally manage and organize the masjid community members.</p>
                 </motion.div>
-                <motion.button
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="inline-flex items-center justify-center rounded-xl text-sm font-bold bg-secondary-900 dark:bg-white text-white dark:text-secondary-900 h-10 px-6 shadow-lg hover:bg-black dark:hover:bg-secondary-100 transition-all shrink-0"
-                >
-                    <Plus className="mr-2 h-4 w-4" /> Register Family
-                </motion.button>
             </div>
 
             <motion.div variants={itemVariants}>
@@ -199,20 +189,6 @@ export default function AdminFamiliesPage() {
                     </CardContent>
                 </Card>
 
-                <Modal
-                    isOpen={isAddModalOpen}
-                    onClose={() => setIsAddModalOpen(false)}
-                    title="Register New Family"
-                    className="max-w-2xl"
-                >
-                    <FamilyForm
-                        onSuccess={() => {
-                            setIsAddModalOpen(false);
-                            loadFamilies();
-                        }}
-                        onCancel={() => setIsAddModalOpen(false)}
-                    />
-                </Modal>
 
                 <Modal
                     isOpen={isEditModalOpen}

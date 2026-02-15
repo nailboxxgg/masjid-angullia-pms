@@ -102,8 +102,16 @@ function LoginForm() {
 
             if (staffDoc.exists()) {
                 const role = staffDoc.data().role;
-                if (['admin', 'staff', 'volunteer', 'employee'].includes(role)) {
+
+                // STRICT ACCESS: Only Admins can log in to the portal
+                if (role === 'admin') {
                     router.push("/admin");
+                    return;
+                } else if (['staff', 'volunteer', 'employee'].includes(role)) {
+                    // Block other staff roles
+                    await auth.signOut();
+                    setError("Access restricted. Staff and Volunteers must use the ID-based Attendance Station.");
+                    setLoading(false);
                     return;
                 }
             }

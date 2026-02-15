@@ -184,7 +184,6 @@ export default function AnnouncementsManager() {
                                             className="flex h-11 w-full rounded-md border text-sm outline-none px-3 bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
                                         >
                                             <option value="General">General</option>
-                                            <option value="Event">Event</option>
                                             <option value="Urgent">Urgent</option>
                                             <option value="Fundraising">Fundraising</option>
                                         </select>

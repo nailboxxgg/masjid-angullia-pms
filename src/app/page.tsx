@@ -23,7 +23,7 @@ import { cn, formatTimeAgo } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import SocialPost from "@/components/feed/SocialPost";
 import ImageModal from "@/components/ui/ImageModal";
-import AttendancePortal from "@/components/attendance/AttendancePortal";
+import FamilyRegistrationModal from "@/components/families/FamilyRegistrationModal";
 import AnnouncementCard from "@/components/feed/AnnouncementCard";
 import { clockIn } from "@/lib/attendance";
 
@@ -39,7 +39,8 @@ export default function Home() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+  const [isEventRegistrationOpen, setIsEventRegistrationOpen] = useState(false);
+  const [isFamilyRegistrationOpen, setIsFamilyRegistrationOpen] = useState(false);
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
 
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
@@ -65,16 +66,24 @@ export default function Home() {
     // Listen for login modal trigger from Navbar
     const handleOpenLogin = () => setIsLoginModalOpen(true);
     window.addEventListener('open-login-modal', handleOpenLogin);
-    return () => window.removeEventListener('open-login-modal', handleOpenLogin);
+
+    // Listen for family registration modal
+    const handleOpenRegistration = () => setIsFamilyRegistrationOpen(true);
+    window.addEventListener('open-family-registration-modal', handleOpenRegistration);
+
+    return () => {
+      window.removeEventListener('open-login-modal', handleOpenLogin);
+      window.removeEventListener('open-family-registration-modal', handleOpenRegistration);
+    };
   }, []);
 
 
   const handleRegister = (event: Event) => {
     setSelectedEvent(event);
-    setIsRegistrationOpen(true);
+    setIsEventRegistrationOpen(true);
   };
 
-  const [loginRole, setLoginRole] = useState<'staff' | 'volunteer' | 'admin'>('staff');
+  const [loginRole, setLoginRole] = useState<'staff' | 'volunteer' | 'admin'>('admin');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,14 +186,7 @@ export default function Home() {
   };
 
 
-  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
 
-  const handleAttendanceSuccess = () => {
-    // Keep modal open briefly to show success state from component
-    setTimeout(() => {
-      setIsAttendanceOpen(false);
-    }, 3000);
-  };
 
   if (!mounted) {
     return <div className="min-h-screen bg-secondary-50 dark:bg-secondary-950 opacity-0" />;
@@ -224,26 +226,7 @@ export default function Home() {
           </AnimationWrapper>
 
           {/* Attendance Quick Access Button */}
-          <AnimationWrapper animation="reveal" delay={0.6} duration={0.8} withScroll={false} className="w-full max-w-lg flex justify-center mt-6">
-            <button
-              onClick={() => setIsAttendanceOpen(true)}
-              className="flex items-center gap-4 md:gap-5 px-6 py-4 md:px-8 md:py-6 bg-white dark:bg-secondary-900 rounded-[2rem] shadow-2xl shadow-primary-900/5 hover:shadow-3xl hover:shadow-primary-500/20 border border-white/50 dark:border-secondary-800 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden w-full md:w-auto justify-between md:justify-start"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary-500/0 via-primary-500/5 to-primary-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 group-hover:scale-110 transition-transform duration-300 shrink-0">
-                  <Clock className="w-6 h-6 md:w-7 md:h-7" />
-                </div>
-                <div className="text-left relative z-10">
-                  <h3 className="text-lg md:text-xl font-bold text-secondary-900 dark:text-white leading-tight mb-0.5">Record your attendance</h3>
-                  <p className="text-xs md:text-sm font-medium text-secondary-500 dark:text-secondary-400">Mark your attendance today</p>
-                </div>
-              </div>
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-secondary-50 dark:bg-secondary-800 flex items-center justify-center ml-2 group-hover:bg-primary-600 group-hover:text-white transition-colors duration-300 shrink-0">
-                <ArrowRight className="w-4 h-4 md:w-5 md:h-5 transition-transform" />
-              </div>
-            </button>
-          </AnimationWrapper>
+
         </div>
       </section>
 
@@ -508,8 +491,8 @@ export default function Home() {
       />
 
       <EventRegistrationModal
-        isOpen={isRegistrationOpen}
-        onClose={() => setIsRegistrationOpen(false)}
+        isOpen={isEventRegistrationOpen}
+        onClose={() => setIsEventRegistrationOpen(false)}
         event={selectedEvent}
       />
 
@@ -518,19 +501,12 @@ export default function Home() {
         onClose={() => setIsSubscriptionOpen(false)}
       />
 
-      <Modal
-        isOpen={isAttendanceOpen}
-        onClose={() => setIsAttendanceOpen(false)}
-        title=""
-        className="max-w-md p-0 bg-transparent border-none shadow-none"
-        hideScrollbar={true}
-        showCloseButton={false}
-      >
-        <AttendancePortal
-          onSuccess={handleAttendanceSuccess}
-          onClose={() => setIsAttendanceOpen(false)}
-        />
-      </Modal>
+      <FamilyRegistrationModal
+        isOpen={isFamilyRegistrationOpen}
+        onClose={() => setIsFamilyRegistrationOpen(false)}
+      />
+
+
 
       <Modal
         isOpen={!!selectedAnnouncement}
@@ -576,9 +552,7 @@ export default function Home() {
 
               <div className="grid grid-cols-1 gap-4">
                 {[
-                  { r: 'admin', label: 'Administrator', desc: 'Full system management' },
-                  { r: 'staff', label: 'Staff Member', desc: 'Monitor attendance & updates' },
-                  { r: 'volunteer', label: 'Volunteer', desc: 'Financial monitoring & support' }
+                  { r: 'admin', label: 'Administrator', desc: 'Full system management' }
                 ].map(({ r, label, desc }) => (
                   <button
                     key={r}
@@ -599,13 +573,6 @@ export default function Home() {
               </div>
 
               <div className="mt-8 text-center">
-                <button
-                  type="button"
-                  onClick={() => window.dispatchEvent(new CustomEvent('open-feedback-modal'))}
-                  className="text-xs font-bold text-secondary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors uppercase tracking-widest"
-                >
-                  Need Access? Request Here
-                </button>
               </div>
             </motion.div>
           ) : (

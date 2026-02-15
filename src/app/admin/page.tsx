@@ -84,7 +84,7 @@ export default function AdminDashboard() {
                         <Link href="/admin/families" className="flex-1 lg:flex-none inline-flex items-center justify-center rounded-2xl text-[10px] font-black uppercase tracking-widest bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-50 dark:hover:bg-secondary-800 h-12 px-6 shadow-sm transition-all hover:shadow-md">
                             <Users className="mr-2 h-4 w-4 text-primary-500" /> Register Family
                         </Link>
-                        <Link href="/admin/feed" className="flex-1 lg:flex-none inline-flex items-center justify-center rounded-2xl text-[10px] font-black uppercase tracking-widest bg-primary-600 dark:bg-primary-700 text-white hover:bg-primary-700 dark:hover:bg-primary-800 h-12 px-6 shadow-xl shadow-primary-500/20 transition-all hover:scale-105 active:scale-95">
+                        <Link href="/admin/events/new" className="flex-1 lg:flex-none inline-flex items-center justify-center rounded-2xl text-[10px] font-black uppercase tracking-widest bg-primary-600 dark:bg-primary-700 text-white hover:bg-primary-700 dark:hover:bg-primary-800 h-12 px-6 shadow-xl shadow-primary-500/20 transition-all hover:scale-105 active:scale-95">
                             <Calendar className="mr-2 h-4 w-4" /> Create Event
                         </Link>
                     </motion.div>

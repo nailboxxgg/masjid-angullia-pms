@@ -1,5 +1,5 @@
 import { db } from "../lib/firebase";
-import { setDoc, doc, serverTimestamp } from "firebase/firestore";
+import { setDoc, doc, serverTimestamp, deleteDoc } from "firebase/firestore";
 
 /**
  * Utility to restore admin role to a user UID
@@ -8,19 +8,29 @@ export const promoteToAdmin = async (uid: string, email: string, name: string) =
     console.log(`Promoting UID: ${uid} to Admin...`);
 
     try {
-        await setDoc(doc(db, "families", uid), {
-            id: uid,
-            email: email,
+        // 1. Ensure record exists in the 'staff' collection
+        await setDoc(doc(db, "staff", uid), {
+            uid: uid,
+            email: email.toLowerCase(),
             name: name,
-            head: name,
             role: "admin",
-            phone: "",
-            address: "Administrator Account",
-            createdAt: serverTimestamp(),
-            members: []
+            status: "active",
+            invitedAt: serverTimestamp(),
+            joinedAt: serverTimestamp(),
+            lastLogin: serverTimestamp()
         }, { merge: true });
 
-        console.log("Successfully restored admin record in Firestore.");
+        console.log("Successfully restored admin record in 'staff' collection.");
+
+        // 2. Cleanup: Remove from 'families' collection if it exists there
+        try {
+            await deleteDoc(doc(db, "families", uid));
+            console.log("Cleanup: Removed legacy admin record from 'families' collection.");
+        } catch (cleanupErr) {
+            // Non-critical if it doesn't exist
+            console.log("Cleanup: No legacy record found in 'families' or already removed.");
+        }
+
     } catch (err) {
         console.error("Error restoring admin record:", err);
     }

@@ -10,6 +10,7 @@ import {
     query,
     where,
     deleteDoc,
+    updateDoc,
     serverTimestamp,
     orderBy
 } from "firebase/firestore";
@@ -188,5 +189,304 @@ export const createStaffAccountDirectly = async (email: string, password: string
         if (secondaryApp) await deleteApp(secondaryApp);
         console.error("Error creating staff account directly:", error);
         throw error;
+    }
+};
+
+// ==========================================
+// NEW: ID-BASED ATTENDANCE SYSTEM
+// ==========================================
+
+import { Staff, AttendanceRecord, AttendanceSession } from "./types";
+import { format } from "date-fns";
+
+const ATTENDANCE_COLLECTION = "attendance_logs";
+const SESSIONS_COLLECTION = "attendance_sessions";
+
+// Staff Management (ID Based)
+export const createStaff = async (staffData: Omit<Staff, "id" | "createdAt" | "status">): Promise<boolean> => {
+    try {
+        // Generate a 6-digit ID for simplicity and ease of typing
+        let unique = false;
+        let staffId = "";
+
+        // Simple retry loop to ensure uniqueness (though collision prob is low for 6 digits)
+        while (!unique) {
+            const randomId = Math.floor(100000 + Math.random() * 900000).toString();
+            staffId = `S-${randomId}`;
+            const check = await getDoc(doc(db, STAFF_COLLECTION, staffId));
+            if (!check.exists()) unique = true;
+        }
+
+        const newStaff: Staff = {
+            ...staffData,
+            id: staffId,
+            createdAt: Date.now(),
+            status: 'active'
+        };
+
+        // Store using the ID as the document key
+        await setDoc(doc(db, STAFF_COLLECTION, staffId), newStaff);
+        return true;
+    } catch (error) {
+        console.error("Error creating staff:", error);
+        return false;
+    }
+};
+
+export const getStaffList = async (): Promise<Staff[]> => {
+    try {
+        const q = query(collection(db, STAFF_COLLECTION), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+
+        // Filter for documents that match the Staff interface (have 'id' and 'contactNumber')
+        const staffList = snapshot.docs
+            .map(doc => doc.data() as any)
+            .filter(data => data.id && data.id.startsWith('S-')) as Staff[];
+
+        return staffList;
+    } catch (error) {
+        console.error("Error fetching staff:", error);
+        return [];
+    }
+};
+
+export const getStaffById = async (staffId: string): Promise<Staff | null> => {
+    try {
+        const docRef = doc(db, STAFF_COLLECTION, staffId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.id && data.id.startsWith('S-')) {
+                return data as Staff;
+            }
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching staff by ID:", error);
+        return null;
+    }
+};
+
+export const updateStaff = async (staffId: string, updates: Partial<Staff>): Promise<boolean> => {
+    try {
+        await setDoc(doc(db, STAFF_COLLECTION, staffId), updates, { merge: true });
+        return true;
+    } catch (error) {
+        console.error("Error updating staff:", error);
+        return false;
+    }
+};
+
+export const deleteStaff = async (staffId: string): Promise<boolean> => {
+    try {
+        await deleteDoc(doc(db, STAFF_COLLECTION, staffId));
+        return true;
+    } catch (error) {
+        console.error("Error deleting staff:", error);
+        return false;
+    }
+}
+
+
+// Attendance Logic
+export const clockInStaff = async (staffId: string): Promise<{ success: boolean; message: string; staff?: Staff }> => {
+    try {
+        const staff = await getStaffById(staffId);
+        if (!staff) {
+            return { success: false, message: "Invalid Staff ID" };
+        }
+        if (staff.status !== 'active') {
+            return { success: false, message: "Staff member is inactive" };
+        }
+
+        const today = format(new Date(), "yyyy-MM-dd");
+        const sessionsRef = collection(db, SESSIONS_COLLECTION);
+        const q = query(
+            sessionsRef,
+            where("staffId", "==", staffId),
+            where("date", "==", today),
+            where("status", "==", "active")
+        );
+        const snapshot = await getDocs(q);
+
+        if (!snapshot.empty) {
+            return { success: false, message: `Welcome back ${staff.name}! You are already clocked in.`, staff };
+        }
+
+        const timestamp = Date.now();
+
+        // 1. Create Log Entry
+        const logId = `${staffId}_in_${timestamp}`;
+        const logEntry: AttendanceRecord = {
+            id: logId,
+            staffId: staff.id,
+            displayName: staff.name,
+            type: 'clock_in',
+            role: staff.role,
+            timestamp: timestamp,
+            date: today
+        };
+        await setDoc(doc(db, ATTENDANCE_COLLECTION, logId), logEntry);
+
+        // 2. Create Session
+        const sessionId = `${staffId}_${today}_${timestamp}`;
+        const sessionEntry: AttendanceSession = {
+            id: sessionId,
+            staffId: staff.id,
+            displayName: staff.name,
+            type: 'staff_session',
+            role: staff.role,
+            date: today,
+            clockIn: timestamp,
+            status: 'active'
+        };
+        await setDoc(doc(db, SESSIONS_COLLECTION, sessionId), sessionEntry);
+
+        return { success: true, message: `Time In Recorded: ${format(timestamp, 'hh:mm a')}`, staff };
+    } catch (error) {
+        console.error("Error clocking in:", error);
+        return { success: false, message: "System error during clock in" };
+    }
+};
+
+export const clockOutStaff = async (staffId: string): Promise<{ success: boolean; message: string; staff?: Staff }> => {
+    try {
+        const staff = await getStaffById(staffId);
+        if (!staff) {
+            return { success: false, message: "Invalid Staff ID" };
+        }
+
+        const today = format(new Date(), "yyyy-MM-dd");
+        const sessionsRef = collection(db, SESSIONS_COLLECTION);
+        const q = query(
+            sessionsRef,
+            where("staffId", "==", staffId),
+            where("status", "==", "active")
+        );
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            return { success: false, message: "No active Time In found for today." };
+        }
+
+        const sessionDoc = snapshot.docs[0];
+        const sessionData = sessionDoc.data() as AttendanceSession;
+        const timestamp = Date.now();
+
+        // Calculate Duration
+        const durationMs = timestamp - sessionData.clockIn;
+        const hours = Math.floor(durationMs / (1000 * 60 * 60));
+        const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+        const durationString = `${hours}h ${minutes}m`;
+
+        // 1. Create Log Entry
+        const logId = `${staffId}_out_${timestamp}`;
+        const logEntry: AttendanceRecord = {
+            id: logId,
+            staffId: staff.id,
+            displayName: staff.name,
+            type: 'clock_out',
+            role: staff.role,
+            timestamp: timestamp,
+            date: today
+        };
+        await setDoc(doc(db, ATTENDANCE_COLLECTION, logId), logEntry);
+
+        // 2. Update Session
+        await updateDoc(doc(db, SESSIONS_COLLECTION, sessionDoc.id), {
+            clockOut: timestamp,
+            status: 'completed',
+            duration: durationString
+        });
+
+        return { success: true, message: `Time Out Recorded. Worked: ${durationString}`, staff };
+
+    } catch (error) {
+        console.error("Error clocking out:", error);
+        return { success: false, message: "System error during clock out" };
+    }
+};
+
+export const addManualAttendance = async (
+    staffId: string,
+    date: string,
+    clockInTime: string, // "HH:mm" 
+    clockOutTime?: string // "HH:mm" optional
+): Promise<{ success: boolean; message: string }> => {
+    try {
+        const staff = await getStaffById(staffId);
+        if (!staff) return { success: false, message: "Staff not found" };
+
+        // Construct timestamps
+        const [inHours, inMinutes] = clockInTime.split(':').map(Number);
+        const inDate = new Date(date);
+        inDate.setHours(inHours, inMinutes, 0, 0);
+        const inTimestamp = inDate.getTime();
+
+        // 1. Create Lock Entry for Clock In
+        const inLogId = `${staffId}_manual_in_${inTimestamp}`;
+        const inLogEntry: AttendanceRecord = {
+            id: inLogId,
+            staffId: staff.id,
+            displayName: staff.name,
+            type: 'clock_in',
+            role: staff.role,
+            timestamp: inTimestamp,
+            date: date
+        };
+        await setDoc(doc(db, ATTENDANCE_COLLECTION, inLogId), inLogEntry);
+
+        // 2. Create Session
+        const sessionId = `${staffId}_${date}_${inTimestamp}`;
+        const sessionEntry: AttendanceSession = {
+            id: sessionId,
+            staffId: staff.id,
+            displayName: staff.name,
+            type: 'staff_session',
+            role: staff.role,
+            date: date,
+            clockIn: inTimestamp,
+            status: 'active'
+        };
+
+        if (clockOutTime) {
+            const [outHours, outMinutes] = clockOutTime.split(':').map(Number);
+            const outDate = new Date(date);
+            outDate.setHours(outHours, outMinutes, 0, 0);
+            const outTimestamp = outDate.getTime();
+
+            // Validate times
+            if (outTimestamp <= inTimestamp) {
+                return { success: false, message: "Clock Out time must be after Clock In time." };
+            }
+
+            const durationMs = outTimestamp - inTimestamp;
+            const hours = Math.floor(durationMs / (1000 * 60 * 60));
+            const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+
+            sessionEntry.clockOut = outTimestamp;
+            sessionEntry.status = 'completed';
+            sessionEntry.duration = `${hours}h ${minutes}m`;
+
+            // Create Log Entry for Clock Out
+            const outLogId = `${staffId}_manual_out_${outTimestamp}`;
+            const outLogEntry: AttendanceRecord = {
+                id: outLogId,
+                staffId: staff.id,
+                displayName: staff.name,
+                type: 'clock_out',
+                role: staff.role,
+                timestamp: outTimestamp,
+                date: date
+            };
+            await setDoc(doc(db, ATTENDANCE_COLLECTION, outLogId), outLogEntry);
+        }
+
+        await setDoc(doc(db, SESSIONS_COLLECTION, sessionId), sessionEntry);
+        return { success: true, message: "Attendance record added manually." };
+
+    } catch (error) {
+        console.error("Error adding manual attendance:", error);
+        return { success: false, message: "Failed to add record." };
     }
 };

@@ -45,6 +45,7 @@ export interface Event {
     registrantsCount: number;
     imageUrl?: string;
     capacity?: number;
+    category?: string;
 }
 
 export interface FamilyMember {
@@ -67,26 +68,41 @@ export interface Family {
         newRequestAlerts?: boolean;
         dailyDonationSummary?: boolean;
     };
+    status?: 'active' | 'pending';
+}
+
+export interface Staff {
+    id: string; // The specific ID used for login (e.g., "S-1234")
+    name: string;
+    role: 'Staff' | 'Volunteer' | 'Intern';
+    department?: string;
+    contactNumber: string;
+    address?: string;
+    email?: string;
+    createdAt: number;
+    status: 'active' | 'inactive';
 }
 
 export interface AttendanceRecord {
     id: string;
-    uid: string;
+    staffId?: string; // Link to Staff ID
+    uid?: string; // Keep for backward compatibility
     displayName: string;
-    email: string;
+    email?: string;
     type: 'clock_in' | 'clock_out' | 'visitor';
-    role?: 'volunteer' | 'staff' | 'admin';
-    phone?: string; // for visitors
+    role?: string;
+    phone?: string;
     timestamp: number;
-    date: string; // YYYY-MM-DD for easier querying
+    date: string; // YYYY-MM-DD
     deviceInfo?: string;
 }
 
 export interface AttendanceSession {
-    id: string; // composite id: uid_timestamp
-    uid: string;
+    id: string;
+    staffId?: string;
+    uid?: string;
     displayName: string;
-    email: string;
+    email?: string;
     type?: 'staff_session' | 'visitor_log';
     role?: string;
     phone?: string;
@@ -95,5 +111,15 @@ export interface AttendanceSession {
     clockOut?: number;
     deviceInfo?: string;
     status: 'active' | 'completed' | 'visitor';
-    duration?: string; // e.g. "8h 30m"
+    duration?: string;
+}
+
+export interface EventAttendance {
+    id: string;
+    eventId: string;
+    uid?: string; // Optional if manual entry without account
+    name: string;
+    status: 'present';
+    timestamp: number;
+    recordedBy: string; // Admin UID
 }

@@ -46,6 +46,22 @@ export const updatePresence = async () => {
     }
 };
 
+// Explicitly set user as offline (used for logout)
+export const goOffline = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const presenceRef = doc(db, PRESENCE_COLLECTION, user.uid);
+    try {
+        await setDoc(presenceRef, {
+            lastSeen: 0, // Setting to 0 effectively makes them 'offline' based on thresholds
+            status: 'offline'
+        }, { merge: true });
+    } catch (error) {
+        console.error("Error setting offline status:", error);
+    }
+};
+
 // Subscribe to active admins
 export const subscribeToActiveAdmins = (callback: (admins: AdminPresence[]) => void) => {
     // Query admins active in the last 20 minutes (to show somewhat recent history)

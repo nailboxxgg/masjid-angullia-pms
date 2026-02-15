@@ -14,8 +14,18 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
     const [message, setMessage] = useState("");
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
+    const [validationError, setValidationError] = useState("");
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setValidationError("");
+
+        // Phone Validation
+        if (!contact.startsWith("09") && !contact.startsWith("+63")) {
+            setValidationError("Phone number must start with 09 or +63");
+            return;
+        }
+
         setStatus('submitting');
 
         const result = await submitFeedback({
@@ -77,13 +87,26 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
                     <input
                         required
                         value={contact}
-                        onChange={(e) => setContact(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                        className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-secondary-200 dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50 focus:bg-white dark:focus:bg-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-secondary-900 dark:text-white transition-all placeholder:text-secondary-400 text-base"
-                        placeholder="Enter your mobile number"
-                        inputMode="numeric"
+                        onChange={(e) => {
+                            const val = e.target.value.replace(/[^\d+]/g, '');
+                            setContact(val);
+                            setValidationError("");
+                        }}
+                        className={cn(
+                            "w-full pl-11 pr-4 py-3.5 rounded-2xl border bg-secondary-50/50 dark:bg-secondary-950/50 focus:bg-white dark:focus:bg-secondary-900 focus:outline-none focus:ring-2 transition-all placeholder:text-secondary-400 text-base",
+                            validationError
+                                ? "border-red-300 focus:border-red-500 focus:ring-red-200 text-red-900 placeholder:text-red-300"
+                                : "border-secondary-200 dark:border-secondary-800 focus:border-primary-500 focus:ring-primary-500/20 text-secondary-900 dark:text-white"
+                        )}
+                        placeholder="Mobile Number (e.g. 09...)"
+                        inputMode="tel"
                     />
+                    {validationError && (
+                        <p className="absolute -bottom-6 left-0 text-xs font-bold text-red-500">{validationError}</p>
+                    )}
                 </div>
             </div>
+
 
             {/* Email field */}
             <div className="relative group">
@@ -103,7 +126,7 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
             <div className="space-y-3">
                 <label className="text-xs font-bold uppercase tracking-widest text-secondary-400 ml-1">Reason for reaching out</label>
                 <div className="flex flex-wrap gap-2">
-                    {(['Concern', 'Feedback', 'Request', 'Inquiries', 'Registration'] as const).map((t) => (
+                    {(['Concern', 'Feedback', 'Request', 'Inquiries'] as const).map((t) => (
                         <button
                             key={t}
                             type="button"
@@ -163,6 +186,6 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
                     </>
                 )}
             </button>
-        </form>
+        </form >
     );
 }

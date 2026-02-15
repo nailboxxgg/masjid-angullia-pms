@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import Modal from "@/components/ui/modal";
 import {
     LayoutDashboard,
+    User,
     Users,
     Calendar,
     FileText,
@@ -20,15 +21,19 @@ import {
     X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { useNotifications } from "@/hooks/useNotifications";
+import { goOffline } from "@/lib/presence";
 
 const adminRoutes = [
     { name: "Overview", href: "/admin", icon: LayoutDashboard },
+    { name: "Events", href: "/admin/events", icon: Calendar },
     { name: "Announcements", href: "/admin/feed", icon: Megaphone },
     { name: "Inbox", href: "/admin/feedback", icon: MessageSquare },
     { name: "Families", href: "/admin/families", icon: Users },
+    { name: "Staff", href: "/admin/staff", icon: User },
+    { name: "Requests", href: "/admin/requests", icon: MessageSquare },
     { name: "Finances", href: "/admin/finances", icon: DollarSign },
     { name: "Attendance", href: "/admin/attendance", icon: Clock },
     { name: "Settings", href: "/admin/settings", icon: Settings },
@@ -53,8 +58,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         if (role === 'admin') return true;
         // Volunteers ONLY see Attendance
         if (role === 'volunteer') return route.name === 'Attendance';
-        // Staff only see Overview, Attendance, and Finances
-        return ['Overview', 'Attendance', 'Finances'].includes(route.name);
+        // Staff only see Overview, Attendance, Finances, and Events
+        return ['Overview', 'Attendance', 'Finances', 'Events'].includes(route.name);
     });
 
     // Auto-redirect if trying to access blocked route in sidebar logic? 
@@ -71,9 +76,10 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             if (user) {
                 const displayName = user.displayName || user.email?.split('@')[0] || "User";
                 try {
+                    await goOffline(); // Clear presence status
                     await clockOut(user.uid, displayName, user.email || "");
                 } catch (err) {
-                    console.error("Auto clock-out failed:", err);
+                    console.error("Logout cleanup failed:", err);
                 }
             }
             await auth.signOut();
@@ -174,6 +180,17 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                     transition={{ delay: 0.6 }}
                     className="p-4 border-t border-secondary-100 dark:border-secondary-900"
                 >
+                    <Link
+                        href="/"
+                        target="_blank"
+                        className="flex items-center gap-3 px-4 py-3.5 mb-2 w-full rounded-2xl text-[10px] font-black uppercase tracking-widest text-secondary-500 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all group border border-transparent hover:border-primary-100 dark:hover:border-primary-900/30"
+                    >
+                        <div className="p-2 rounded-xl bg-secondary-50 dark:bg-secondary-900 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/50 transition-colors">
+                            <span className="w-4.5 h-4.5 flex items-center justify-center text-lg">🌐</span>
+                        </div>
+                        View Live Site
+                    </Link>
+
                     <button
                         onClick={handleSignOutClick}
                         className="flex items-center gap-3 px-4 py-3.5 w-full rounded-2xl text-[10px] font-black uppercase tracking-widest text-secondary-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all group border border-transparent hover:border-rose-100 dark:hover:border-rose-900/30"
