@@ -281,112 +281,160 @@ export default function AdminSettingsPage() {
                             </div>
 
                             {/* Enrollment Form */}
-                            <div className="bg-secondary-50/50 dark:bg-secondary-800/20 p-5 rounded-2xl border border-secondary-100 dark:border-secondary-800 space-y-4">
-                                <h4 className="text-xs font-bold text-secondary-900 dark:text-white uppercase tracking-widest">Enroll New Authority</h4>
-                                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Enrollment Form */}
+                            <div className="bg-secondary-50/50 dark:bg-secondary-800/20 p-4 md:p-6 rounded-2xl border border-secondary-100 dark:border-secondary-800 space-y-4 shadow-inner">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></div>
+                                    <h4 className="text-[10px] font-black text-secondary-900 dark:text-white uppercase tracking-[0.2em]">Enroll New Authority</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-500 ml-1">Full Name</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Staff Name"
-                                            value={inviteName}
-                                            onChange={(e) => setInviteName(e.target.value)}
-                                            className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 shadow-sm"
-                                        />
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-secondary-500 ml-1">Full Name</label>
+                                        <div className="relative">
+                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400" />
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. Abdullah bin Ahmad"
+                                                value={inviteName}
+                                                onChange={(e) => setInviteName(e.target.value)}
+                                                className="flex h-12 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all pl-10 pr-4 shadow-sm"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-500 ml-1">Email Address</label>
-                                        <input
-                                            type="email"
-                                            placeholder="staff@masjid.com"
-                                            value={inviteEmail}
-                                            onChange={(e) => setInviteEmail(e.target.value)}
-                                            className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 shadow-sm"
-                                        />
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-secondary-500 ml-1">Email Address</label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400" />
+                                            <input
+                                                type="email"
+                                                placeholder="staff@masjid.com"
+                                                value={inviteEmail}
+                                                onChange={(e) => setInviteEmail(e.target.value)}
+                                                className="flex h-12 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all pl-10 pr-4 shadow-sm"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-500 ml-1">Assign Password</label>
-                                        <input
-                                            type="password"
-                                            placeholder="Min. 8 chars"
-                                            value={invitePassword}
-                                            onChange={(e) => setInvitePassword(e.target.value)}
-                                            className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 shadow-sm"
-                                        />
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-secondary-500 ml-1">Assign Password</label>
+                                        <div className="relative">
+                                            <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400" />
+                                            <input
+                                                type="password"
+                                                placeholder="Min. 8 chars"
+                                                value={invitePassword}
+                                                onChange={(e) => setInvitePassword(e.target.value)}
+                                                className="flex h-12 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all pl-10 pr-4 shadow-sm"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-500 ml-1">Assigned Role</label>
-                                        <select
-                                            value={inviteRole}
-                                            onChange={(e) => setInviteRole(e.target.value as any)}
-                                            className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 shadow-sm"
-                                        >
-                                            <option value="staff">Staff</option>
-                                            <option value="volunteer">Volunteer</option>
-                                            <option value="admin">Admin</option>
-                                            <option value="employee">Employee</option>
-                                        </select>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-secondary-500 ml-1">Assigned Role</label>
+                                        <div className="relative">
+                                            <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400 pointer-events-none" />
+                                            <select
+                                                value={inviteRole}
+                                                onChange={(e) => setInviteRole(e.target.value as any)}
+                                                className="flex h-12 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all pl-10 pr-4 shadow-sm appearance-none"
+                                            >
+                                                <option value="staff">Staff Member</option>
+                                                <option value="volunteer">Volunteer</option>
+                                                <option value="admin">Administrator</option>
+                                                <option value="employee">Employee</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex justify-end pt-2">
                                     <motion.button
-                                        whileHover={{ scale: 1.02 }}
+                                        whileHover={{ scale: 1.02, y: -2 }}
                                         whileTap={{ scale: 0.98 }}
                                         type="button"
                                         disabled={isInviting}
                                         onClick={handleEnroll}
-                                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 disabled:opacity-50"
+                                        className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary-600 text-white text-[10px] font-black uppercase tracking-[0.15em] rounded-xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-500/20 disabled:opacity-50"
                                     >
-                                        {isInviting ? "Creating Account..." : <><PlusCircle className="w-4 h-4" /> Create Authority</>}
+                                        {isInviting ? (
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                Provisioning...
+                                            </div>
+                                        ) : (
+                                            <><PlusCircle className="w-4 h-4" /> Create Authority</>
+                                        )}
                                     </motion.button>
                                 </div>
                             </div>
 
                             {/* Active/Pending Staff List */}
-                            <div className="space-y-3">
-                                <h4 className="text-xs font-bold text-secondary-900 dark:text-white uppercase tracking-widest ml-1">Authorized Personnel</h4>
-                                <div className="grid gap-3">
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between px-1">
+                                    <h4 className="text-[10px] font-black text-secondary-900 dark:text-white uppercase tracking-[0.2em]">Authorized Personnel</h4>
+                                    <span className="text-[9px] font-bold text-secondary-400 uppercase">Live Database</span>
+                                </div>
+                                <div className="grid grid-cols-1 gap-3">
                                     {staffList.length === 0 ? (
-                                        <div className="py-10 text-center border-2 border-dashed border-secondary-100 dark:border-secondary-800 rounded-2xl text-secondary-400">
-                                            No authorized personnel found.
+                                        <div className="py-12 text-center border-2 border-dashed border-secondary-100 dark:border-secondary-800 rounded-2xl">
+                                            <User className="w-8 h-8 text-secondary-200 dark:text-secondary-800 mx-auto mb-3" />
+                                            <p className="text-secondary-400 font-bold uppercase tracking-widest text-[10px]">No authorized personnel found</p>
                                         </div>
                                     ) : (
                                         staffList.map((staff) => (
-                                            <div key={staff.email} className="flex items-center justify-between p-4 bg-white dark:bg-secondary-800/50 rounded-2xl border border-secondary-100 dark:border-secondary-800 hover:shadow-md transition-all group">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-full bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center ring-1 ring-secondary-100 dark:ring-secondary-800">
-                                                        <Shield className={cn("w-5 h-5", staff.status === 'active' ? "text-emerald-500" : "text-amber-500")} />
+                                            <motion.div
+                                                key={staff.email}
+                                                variants={itemVariants}
+                                                className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-5 bg-white dark:bg-secondary-800/30 rounded-2xl border border-secondary-100 dark:border-secondary-800 hover:shadow-xl hover:border-primary-100 dark:hover:border-primary-900/30 transition-all group relative overflow-hidden"
+                                            >
+                                                <div className="absolute top-0 left-0 w-1 h-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                                                    <div className="relative group/avatar">
+                                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-secondary-50 to-secondary-100 dark:from-secondary-900 dark:to-secondary-950 flex items-center justify-center ring-1 ring-secondary-200 dark:ring-secondary-800 group-hover/avatar:scale-105 transition-transform shadow-sm">
+                                                            <Shield className={cn("w-6 h-6 transition-colors", staff.status === 'active' ? "text-emerald-500" : "text-amber-500")} />
+                                                        </div>
+                                                        <div className={cn(
+                                                            "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-secondary-900",
+                                                            staff.status === 'active' ? "bg-emerald-500" : "bg-amber-500"
+                                                        )}></div>
                                                     </div>
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="font-bold text-secondary-900 dark:text-white">{staff.name}</p>
+                                                    <div className="text-center sm:text-left space-y-1">
+                                                        <div className="flex flex-col sm:flex-row items-center gap-2">
+                                                            <p className="font-black text-secondary-900 dark:text-white uppercase tracking-tight text-base">{staff.name}</p>
                                                             <span className={cn(
-                                                                "text-[8px] font-black uppercase px-2 py-0.5 rounded-full tracking-tighter",
-                                                                staff.status === 'active' ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400" : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                                                                "text-[8px] font-black uppercase px-2 py-0.5 rounded-full tracking-tighter border",
+                                                                staff.status === 'active'
+                                                                    ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50"
+                                                                    : "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/50"
                                                             )}>
                                                                 {staff.status}
                                                             </span>
                                                         </div>
-                                                        <div className="flex items-center gap-3 text-[10px] font-medium text-secondary-500 mt-0.5">
-                                                            <span className="flex items-center gap-1 uppercase tracking-widest font-bold text-primary-600 dark:text-primary-400">{staff.role}</span>
-                                                            <span className="w-1 h-1 rounded-full bg-secondary-300"></span>
-                                                            <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {staff.email}</span>
+                                                        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+                                                            <span className="text-[10px] font-black uppercase tracking-[0.1em] text-primary-600 dark:text-primary-400 flex items-center gap-1.5">
+                                                                <ShieldCheck className="w-3 h-3" />
+                                                                {staff.role}
+                                                            </span>
+                                                            <span className="hidden sm:block w-1 h-1 rounded-full bg-secondary-300 dark:bg-secondary-700"></span>
+                                                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-secondary-500 italic">
+                                                                <Mail className="w-3 h-3 text-secondary-400" />
+                                                                {staff.email}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2 pr-2">
+                                                <div className="flex items-center gap-2 pt-4 sm:pt-0 w-full sm:w-auto justify-end">
                                                     {staff.email !== userProfile?.email && (
-                                                        <button
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.05, x: 2 }}
+                                                            whileTap={{ scale: 0.95 }}
                                                             onClick={() => handleRevoke(staff.email)}
-                                                            className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-secondary-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all border border-transparent hover:border-red-100 dark:hover:border-red-800/50 group/delete"
-                                                            title="Delete Personnel"
+                                                            className="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-secondary-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all border border-transparent hover:border-rose-100 dark:hover:border-rose-800/50 group/delete shadow-sm hover:shadow-md"
+                                                            title="Revoke Portal Access"
                                                         >
-                                                            <Trash2 className="w-3.5 h-3.5 transition-transform group-hover/delete:scale-110" />
-                                                            <span>Remove Access</span>
-                                                        </button>
+                                                            <Trash2 className="w-4 h-4 transition-transform group-hover/delete:rotate-12" />
+                                                            <span>Revoke Access</span>
+                                                        </motion.button>
                                                     )}
                                                 </div>
-                                            </div>
+                                            </motion.div>
                                         ))
                                     )}
                                 </div>

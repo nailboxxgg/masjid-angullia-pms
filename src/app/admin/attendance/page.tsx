@@ -318,131 +318,232 @@ export default function AdminAttendancePage() {
             </motion.div>
 
             {/* Table Card */}
-            <Card className="border-none shadow-xl overflow-hidden bg-white dark:bg-secondary-900">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-secondary-50 dark:bg-secondary-950 border-b border-secondary-100 dark:border-secondary-800">
-                                <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">User / Type</th>
-                                {activeTab === 'staff' ? (
-                                    <>
-                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Role</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Time</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Duration</th>
-                                    </>
-                                ) : (
-                                    <>
-                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Phone</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-secondary-500 uppercase tracking-wider">Date & Time</th>
-                                    </>
-                                )}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-secondary-50 dark:divide-secondary-800">
-                            {loading ? (
-                                Array(5).fill(0).map((_, i) => (
-                                    <tr key={i} className="animate-pulse">
-                                        <td className="px-6 py-4"><div className="h-4 w-32 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
-                                        <td className="px-6 py-4"><div className="h-4 w-20 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
-                                        <td className="px-6 py-4"><div className="h-4 w-24 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
-                                        <td className="px-6 py-4"><div className="h-4 w-24 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
-                                        {activeTab === 'staff' && (
-                                            <>
-                                                <td className="px-6 py-4"><div className="h-4 w-20 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
-                                                <td className="px-6 py-4 text-right"><div className="h-4 w-8 bg-secondary-100 dark:bg-secondary-800 rounded ml-auto"></div></td>
-                                            </>
-                                        )}
-                                    </tr>
-                                ))
-                            ) : displayData.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-20">
-                                        <div className="bg-white dark:bg-secondary-900 rounded-xl border border-secondary-200 dark:border-secondary-800 p-12 text-center">
-                                            <Clock className="w-12 h-12 text-secondary-200 dark:text-secondary-800 mx-auto mb-4" />
-                                            <h3 className="text-lg font-semibold text-secondary-900 dark:text-white">No {activeTab} records found</h3>
-                                            <p className="text-secondary-900 dark:text-secondary-200 font-medium mt-1">Try adjusting your search or filters.</p>
+            {/* Data Display - Responsive Card/Table Wrapper */}
+            <div className="space-y-4">
+                {/* Mobile View: Cards */}
+                <div className="grid grid-cols-1 gap-4 md:hidden">
+                    {loading ? (
+                        Array(3).fill(0).map((_, i) => (
+                            <div key={i} className="bg-white dark:bg-secondary-900 rounded-2xl p-5 border border-secondary-100 dark:border-secondary-800 animate-pulse space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-secondary-100 dark:bg-secondary-800"></div>
+                                    <div className="flex-1 space-y-2">
+                                        <div className="h-4 w-24 bg-secondary-100 dark:bg-secondary-800 rounded"></div>
+                                        <div className="h-3 w-16 bg-secondary-100 dark:bg-secondary-800 rounded"></div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 pt-2">
+                                    <div className="h-8 bg-secondary-100 dark:bg-secondary-800 rounded-lg"></div>
+                                    <div className="h-8 bg-secondary-100 dark:bg-secondary-800 rounded-lg"></div>
+                                </div>
+                            </div>
+                        ))
+                    ) : displayData.length === 0 ? (
+                        <div className="bg-white dark:bg-secondary-900 rounded-2xl border border-secondary-200 dark:border-secondary-800 p-10 text-center">
+                            <Clock className="w-12 h-12 text-secondary-200 dark:text-secondary-800 mx-auto mb-4" />
+                            <h3 className="text-lg font-semibold text-secondary-900 dark:text-white uppercase tracking-tight">No records</h3>
+                            <p className="text-secondary-500 text-sm mt-1 font-medium italic">Try adjusting filters</p>
+                        </div>
+                    ) : (
+                        displayData.map((session: any) => (
+                            <motion.div
+                                key={session.id}
+                                variants={itemVariants}
+                                whileHover={{ y: -2 }}
+                                className="bg-white dark:bg-secondary-900 rounded-2xl p-5 border border-secondary-100 dark:border-secondary-800 shadow-sm relative overflow-hidden group"
+                            >
+                                <div className="absolute top-0 left-0 w-1 h-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-11 h-11 rounded-full bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 font-bold text-base ring-2 ring-white dark:ring-secondary-800 shadow-sm">
+                                            {session.displayName ? session.displayName[0] : '?'}
                                         </div>
-                                    </td>
-                                </tr>
-                            ) : (
-                                displayData.map((session: any) => (
-                                    <tr key={session.id} className="hover:bg-secondary-50 dark:hover:bg-white/5 group transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-secondary-100 dark:bg-secondary-800 flex items-center justify-center text-secondary-900 dark:text-white font-bold text-xs ring-2 ring-white dark:ring-secondary-700 shadow-sm">
-                                                    {session.displayName ? session.displayName[0] : '?'}
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-secondary-900 dark:text-white">{session.displayName}</p>
-                                                    <div className="text-[10px] font-bold text-secondary-400 uppercase tracking-wider mt-0.5">
-                                                        {activeTab === 'visitor' ? 'Visitor' : 'Staff Member'}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        {activeTab === 'staff' ? (
-                                            <>
-                                                <td className="px-6 py-4">
+                                        <div>
+                                            <p className="text-base font-bold text-secondary-900 dark:text-white leading-tight">{session.displayName}</p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="text-[10px] font-black text-secondary-400 uppercase tracking-widest">
+                                                    {activeTab === 'visitor' ? 'Visitor' : 'Staff Member'}
+                                                </span>
+                                                {activeTab === 'staff' && (
                                                     <span className={cn(
-                                                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                                                        session.role === 'admin' ? "bg-red-100 text-red-700" :
-                                                            session.role === 'volunteer' ? "bg-blue-100 text-blue-700" :
-                                                                "bg-slate-100 text-slate-700"
+                                                        "px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-tighter",
+                                                        session.role === 'admin' ? "bg-red-50 text-red-600 dark:bg-red-900/20" :
+                                                            session.role === 'volunteer' ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20" :
+                                                                "bg-slate-50 text-slate-600 dark:bg-slate-900/20"
                                                     )}>
                                                         {session.role || 'Staff'}
                                                     </span>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={cn(
-                                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border",
-                                                        session.status === 'active'
-                                                            ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50"
-                                                            : "bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 border-secondary-200 dark:border-secondary-700"
-                                                    )}>
-                                                        {session.status === 'active'
-                                                            ? <><CheckCircle2 className="w-3 h-3" /> Active</>
-                                                            : <><CheckCircle2 className="w-3 h-3" /> Completed</>
-                                                        }
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2 text-sm font-semibold text-secondary-900 dark:text-secondary-100">
-                                                        <Clock className="w-3.5 h-3.5 text-secondary-400 dark:text-secondary-500" />
-                                                        {session.displayTime}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2 text-xs font-bold text-secondary-700 dark:text-secondary-300">
-                                                        <Timer className="w-3.5 h-3.5" />
-                                                        {session.displayDuration}
-                                                    </div>
-                                                </td>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <td className="px-6 py-4">
-                                                    <div className="text-sm font-medium text-secondary-900 dark:text-white">{session.phone || "No Phone"}</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-secondary-900 dark:text-white">
-                                                            {new Date(session.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                        </span>
-                                                        <span className="text-xs text-secondary-500">
-                                                            {new Date(session.clockIn).toLocaleDateString()}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                            </>
-                                        )}
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span className={cn(
+                                        "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                                        session.status === 'active'
+                                            ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50"
+                                            : "bg-secondary-50 dark:bg-secondary-800/50 text-secondary-500 dark:text-secondary-400 border-secondary-100 dark:border-secondary-700"
+                                    )}>
+                                        <div className={cn("w-1.5 h-1.5 rounded-full", session.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-secondary-400")} />
+                                        {session.status}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black text-secondary-400 uppercase tracking-widest">Time Info</p>
+                                        <div className="flex items-center gap-2 text-sm font-bold text-secondary-700 dark:text-secondary-200">
+                                            <Clock className="w-3.5 h-3.5 text-primary-500" />
+                                            {activeTab === 'visitor'
+                                                ? new Date(session.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                : session.displayTime
+                                            }
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black text-secondary-400 uppercase tracking-widest">
+                                            {activeTab === 'visitor' ? 'Contact' : 'Duration'}
+                                        </p>
+                                        <div className="flex items-center gap-2 text-sm font-bold text-secondary-700 dark:text-secondary-200">
+                                            {activeTab === 'visitor' ? (
+                                                <Monitor className="w-3.5 h-3.5 text-blue-500" />
+                                            ) : (
+                                                <Timer className="w-3.5 h-3.5 text-amber-500" />
+                                            )}
+                                            <span className="truncate">
+                                                {activeTab === 'visitor' ? (session.phone || "No Phone") : session.displayDuration}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))
+                    )}
                 </div>
-            </Card>
+
+                {/* PC View: Table */}
+                <Card className="hidden md:block border-none shadow-xl overflow-hidden bg-white dark:bg-secondary-900 rounded-2xl">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-secondary-50/50 dark:bg-secondary-950 border-b border-secondary-100 dark:border-secondary-800 font-bold uppercase tracking-widest text-[10px] text-secondary-500">
+                                    <th className="px-6 py-4">User / Type</th>
+                                    {activeTab === 'staff' ? (
+                                        <>
+                                            <th className="px-6 py-4">Role</th>
+                                            <th className="px-6 py-4">Status</th>
+                                            <th className="px-6 py-4">Time</th>
+                                            <th className="px-6 py-4">Duration</th>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <th className="px-6 py-4">Phone</th>
+                                            <th className="px-6 py-4">Date & Time</th>
+                                        </>
+                                    )}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-secondary-50 dark:divide-secondary-800">
+                                {loading ? (
+                                    Array(5).fill(0).map((_, i) => (
+                                        <tr key={i} className="animate-pulse">
+                                            <td className="px-6 py-4"><div className="h-4 w-32 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 w-20 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 w-24 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 w-24 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
+                                            {activeTab === 'staff' && (
+                                                <>
+                                                    <td className="px-6 py-4"><div className="h-4 w-20 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
+                                                </>
+                                            )}
+                                        </tr>
+                                    ))
+                                ) : displayData.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-24 text-center">
+                                            <div className="max-w-xs mx-auto opacity-40">
+                                                <Clock className="w-12 h-12 mx-auto mb-4" />
+                                                <p className="font-bold uppercase tracking-widest text-xs">No records found</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    displayData.map((session: any) => (
+                                        <tr key={session.id} className="hover:bg-secondary-50/50 dark:hover:bg-white/5 group transition-all cursor-default">
+                                            <td className="px-6 py-4 relative">
+                                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-9 h-9 rounded-full bg-secondary-100 dark:bg-secondary-800 flex items-center justify-center text-secondary-900 dark:text-white font-black text-xs ring-2 ring-white dark:ring-secondary-700 shadow-sm group-hover:scale-110 transition-transform">
+                                                        {session.displayName ? session.displayName[0] : '?'}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors uppercase tracking-tight">{session.displayName}</p>
+                                                        <div className="text-[9px] font-black text-secondary-400 uppercase tracking-widest mt-0.5">
+                                                            {activeTab === 'visitor' ? 'Visitor' : 'Staff Member'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            {activeTab === 'staff' ? (
+                                                <>
+                                                    <td className="px-6 py-4">
+                                                        <span className={cn(
+                                                            "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest",
+                                                            session.role === 'admin' ? "bg-red-50 text-red-600 border border-red-100 dark:bg-red-900/20 dark:border-red-900/30" :
+                                                                session.role === 'volunteer' ? "bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30" :
+                                                                    "bg-slate-50 text-slate-600 border border-slate-100 dark:bg-slate-900/20 dark:border-slate-800"
+                                                        )}>
+                                                            {session.role || 'Staff'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={cn(
+                                                            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm border whitespace-nowrap",
+                                                            session.status === 'active'
+                                                                ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50"
+                                                                : "bg-secondary-50 dark:bg-secondary-800/50 text-secondary-500 dark:text-secondary-400 border-secondary-100 dark:border-secondary-700"
+                                                        )}>
+                                                            <div className={cn("w-1.5 h-1.5 rounded-full", session.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-secondary-400")} />
+                                                            {session.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-2 text-sm font-bold text-secondary-700 dark:text-secondary-100">
+                                                            <Clock className="w-3.5 h-3.5 text-primary-500" />
+                                                            {session.displayTime}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-2 text-xs font-black text-secondary-600 dark:text-secondary-400 uppercase tracking-tighter">
+                                                            <Timer className="w-3.5 h-3.5 text-amber-500" />
+                                                            {session.displayDuration}
+                                                        </div>
+                                                    </td>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <td className="px-6 py-4 font-bold text-secondary-900 dark:text-white">
+                                                        {session.phone || "No Phone"}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-black text-secondary-900 dark:text-white uppercase tracking-tight">
+                                                                {new Date(session.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold text-secondary-500 uppercase tracking-widest">
+                                                                {new Date(session.clockIn).toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                </>
+                                            )}
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </Card>
+            </div>
         </motion.div>
     );
 }

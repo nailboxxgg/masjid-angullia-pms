@@ -6,7 +6,8 @@ import { Donation } from "@/lib/types";
 import { deleteDonation, getDonations, getDonationStats, DonationStats } from "@/lib/donations";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Modal from "@/components/ui/modal";
-import { DollarSign, Download, Search, Filter, TrendingUp, PieChart, Calendar, Trash2 } from "lucide-react";
+import { DollarSign, Download, Search, Filter, TrendingUp, PieChart, Calendar, Trash2, Mail } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import ImportModal from "./ImportModal";
 import { Upload } from "lucide-react";
@@ -116,26 +117,26 @@ export default function FinancesPage() {
             animate="visible"
             className="space-y-6"
         >
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <motion.div variants={itemVariants}>
-                    <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white">Donations & Finances</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white uppercase tracking-tighter">Donations & Finances</h1>
                     <p className="text-secondary-900 dark:text-secondary-200 mt-1 font-medium italic text-balance">Comprehensive tracking of masjid funds and community contributions.</p>
                 </motion.div>
-                <motion.div variants={itemVariants} className="flex gap-2">
+                <motion.div variants={itemVariants} className="flex flex-wrap gap-2 w-full lg:w-auto">
                     {role === 'admin' && (
                         <motion.button
-                            whileHover={{ scale: 1.02 }}
+                            whileHover={{ scale: 1.02, y: -2 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setIsImportOpen(true)}
-                            className="flex items-center gap-2 px-6 py-2 bg-primary-600 dark:bg-primary-700 text-white rounded-xl text-sm font-bold hover:bg-primary-700 dark:hover:bg-primary-800 shadow-lg shadow-primary-500/20 transition-all shrink-0"
+                            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-primary-600 dark:bg-primary-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-700 dark:hover:bg-primary-800 shadow-xl shadow-primary-500/20 transition-all shrink-0"
                         >
-                            <Upload className="w-4 h-4" /> Import File
+                            <Upload className="w-4 h-4" /> Import Data
                         </motion.button>
                     )}
                     <motion.button
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-white dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 rounded-xl text-sm font-black uppercase tracking-widest text-secondary-900 dark:text-secondary-100 hover:bg-secondary-50 dark:hover:bg-secondary-700 shadow-sm transition-all"
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-secondary-900 dark:text-secondary-100 hover:bg-secondary-50 dark:hover:bg-secondary-800 shadow-sm transition-all"
                     >
                         <Download className="w-4 h-4" /> Export CSV
                     </motion.button>
@@ -143,194 +144,317 @@ export default function FinancesPage() {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 <motion.div variants={itemVariants} whileHover="hover">
-                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm hover:shadow-xl transition-all rounded-2xl overflow-hidden border-l-4 border-l-primary-500 h-full">
+                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm hover:shadow-2xl transition-all rounded-2xl overflow-hidden border-l-4 border-l-primary-500 h-full group">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-bold text-secondary-900 dark:text-secondary-200 uppercase tracking-wider">Total Collections</CardTitle>
-                            <div className="p-2 bg-primary-50 dark:bg-primary-900/30 rounded-lg">
+                            <CardTitle className="text-[10px] font-black text-secondary-500 dark:text-secondary-400 uppercase tracking-widest">Total Collections</CardTitle>
+                            <div className="p-2 bg-primary-50 dark:bg-primary-900/30 rounded-xl ring-1 ring-primary-100 dark:ring-primary-800/50 group-hover:rotate-12 transition-transform">
                                 <DollarSign className="w-4 h-4 text-primary-500" />
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold text-secondary-900 dark:text-secondary-100">₱{stats.totalCollected.toLocaleString()}</div>
-                            <p className="text-xs font-bold text-secondary-900 dark:text-secondary-200 mt-1 opacity-60 uppercase tracking-widest">Lifetime contributions</p>
+                            <div className="text-3xl font-black text-secondary-900 dark:text-secondary-100 tabular-nums">₱{stats.totalCollected.toLocaleString()}</div>
+                            <p className="text-[10px] font-black text-secondary-400 mt-1 uppercase tracking-widest">Lifetime contributions</p>
                         </CardContent>
                     </Card>
                 </motion.div>
 
                 <motion.div variants={itemVariants} whileHover="hover">
-                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm hover:shadow-xl transition-all rounded-2xl overflow-hidden border-l-4 border-l-green-500 h-full">
-                        <CardHeader className="flex flex-row items-center justify-between pb-2 ">
-                            <CardTitle className="text-sm font-bold text-secondary-900 dark:text-secondary-200 uppercase tracking-wider">This Month</CardTitle>
-                            <div className="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg">
-                                <TrendingUp className="w-4 h-4 text-green-500" />
+                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm hover:shadow-2xl transition-all rounded-2xl overflow-hidden border-l-4 border-l-emerald-500 h-full group">
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-[10px] font-black text-secondary-500 dark:text-secondary-400 uppercase tracking-widest">Maison Monthly</CardTitle>
+                            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl ring-1 ring-emerald-100 dark:ring-emerald-800/50 group-hover:rotate-12 transition-transform">
+                                <TrendingUp className="w-4 h-4 text-emerald-500" />
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold text-secondary-900 dark:text-secondary-100">₱{stats.monthlyCollected.toLocaleString()}</div>
-                            <p className="text-xs font-bold text-green-600 dark:text-green-400 mt-1 uppercase tracking-widest">
+                            <div className="text-3xl font-black text-secondary-900 dark:text-secondary-100 tabular-nums">₱{stats.monthlyCollected.toLocaleString()}</div>
+                            <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 mt-1 uppercase tracking-widest font-bold">
                                 {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
                             </p>
                         </CardContent>
                     </Card>
                 </motion.div>
 
-                <motion.div variants={itemVariants} whileHover="hover">
-                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm hover:shadow-xl transition-all rounded-2xl overflow-hidden border-l-4 border-l-amber-500 h-full">
+                <motion.div variants={itemVariants} whileHover="hover" className="sm:col-span-2 md:col-span-1">
+                    <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm hover:shadow-2xl transition-all rounded-2xl overflow-hidden border-l-4 border-l-amber-500 h-full group">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-bold text-secondary-900 dark:text-secondary-200 uppercase tracking-wider">Top Category</CardTitle>
-                            <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
+                            <CardTitle className="text-[10px] font-black text-secondary-500 dark:text-secondary-400 uppercase tracking-widest">Top Category</CardTitle>
+                            <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-xl ring-1 ring-amber-100 dark:ring-amber-800/50 group-hover:rotate-12 transition-transform">
                                 <PieChart className="w-4 h-4 text-amber-500" />
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-xl font-bold truncate text-secondary-900 dark:text-secondary-100">
+                            <div className="text-xl font-black truncate text-secondary-900 dark:text-secondary-100 uppercase tracking-tight">
                                 {Object.entries(stats.breakdown).sort((a, b) => b[1] - a[1])[0]?.[0] || "None"}
                             </div>
-                            <p className="text-xs font-bold text-secondary-900 dark:text-secondary-200 mt-1 opacity-60 uppercase tracking-widest">Most supported fund</p>
+                            <p className="text-[10px] font-black text-secondary-400 mt-1 uppercase tracking-widest">Most supported fund</p>
                         </CardContent>
                     </Card>
                 </motion.div>
             </div>
 
-            {/* Recent Transactions Table */}
-            <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm">
-                <CardHeader>
-                    <CardTitle className="text-lg text-secondary-900 dark:text-secondary-100">Recent Donations</CardTitle>
-                    <CardDescription className="text-secondary-900 dark:text-secondary-200 font-medium">Latest contributions from the community.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {/* Filters */}
-                    <div className="flex gap-2 mb-4 relative z-20">
-                        <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-secondary-900 dark:text-secondary-200" />
+            {/* Financial Ledger Section */}
+            <div className="space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-secondary-900 p-4 rounded-2xl border border-secondary-200 dark:border-secondary-800 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                            <Calendar className="w-4 h-4 text-primary-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-black text-secondary-900 dark:text-white uppercase tracking-tight">Financial Ledger</h3>
+                            <p className="text-[10px] font-bold text-secondary-500 uppercase tracking-widest">Live Transaction History</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="relative flex-1 min-w-[200px]">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-400" />
                             <input
                                 type="search"
-                                placeholder="Search donor..."
+                                placeholder="Search donors..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-9 h-9 rounded-md border text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50 border-secondary-200 text-secondary-900 placeholder:text-secondary-500 dark:bg-secondary-800 dark:border-secondary-700 dark:text-secondary-100 dark:placeholder:text-secondary-400"
+                                className="w-full pl-10 h-10 rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all shadow-inner"
                             />
                         </div>
                         <div className="relative">
                             <button
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                className={`flex items-center gap-2 px-3 h-9 border rounded-md text-sm ${typeFilter !== 'All'
-                                    ? 'bg-primary-900/50 border-primary-800 text-primary-400 dark:bg-primary-50 dark:border-primary-200 dark:text-primary-700'
-                                    : 'border-secondary-700 text-secondary-900 font-semibold hover:bg-white/5 dark:border-secondary-200 dark:text-secondary-100 dark:hover:bg-secondary-50'
-                                    }`}
+                                className={cn(
+                                    "flex items-center gap-2 px-4 h-10 border rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                                    typeFilter !== 'All'
+                                        ? "bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-500/20"
+                                        : "bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-50 dark:hover:bg-secondary-800"
+                                )}
                             >
-                                <Filter className="w-3 h-3" /> Filter
+                                <Filter className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Filter</span>
                             </button>
 
                             {isFilterOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-secondary-900 rounded-lg shadow-lg border border-secondary-200 dark:border-secondary-800 p-4 space-y-4 z-50">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-secondary-900 dark:text-secondary-200 uppercase">Donation Type</label>
-                                        <select
-                                            value={typeFilter}
-                                            onChange={(e) => setTypeFilter(e.target.value)}
-                                            className="w-full text-xs bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 rounded-md p-2 text-secondary-900 dark:text-secondary-100 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                                        >
-                                            <option value="All">All Types</option>
-                                            <option value="Zakat">Zakat</option>
-                                            <option value="Sadaqah">Sadaqah</option>
-                                            <option value="Waqf">Waqf</option>
-                                            <option value="General">General</option>
-                                        </select>
+                                <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-secondary-900 rounded-2xl shadow-2xl border border-secondary-200 dark:border-secondary-800 p-5 space-y-4 z-50">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">Donation Type</label>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {['All', 'Zakat', 'Sadaqah', 'Waqf', 'General'].map((type) => (
+                                                <button
+                                                    key={type}
+                                                    onClick={() => {
+                                                        setTypeFilter(type);
+                                                        setIsFilterOpen(false);
+                                                    }}
+                                                    className={cn(
+                                                        "w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all",
+                                                        typeFilter === type
+                                                            ? "bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400"
+                                                            : "text-secondary-600 dark:text-secondary-400 hover:bg-secondary-50 dark:hover:bg-secondary-800"
+                                                    )}
+                                                >
+                                                    {type}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                     {typeFilter !== 'All' && (
                                         <button
-                                            onClick={() => setTypeFilter('All')}
-                                            className="w-full text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-center mt-2 underline"
+                                            onClick={() => {
+                                                setTypeFilter('All');
+                                                setIsFilterOpen(false);
+                                            }}
+                                            className="w-full py-2 text-[10px] font-black text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg uppercase tracking-widest border border-rose-100 dark:border-rose-900/30 transition-all"
                                         >
-                                            Clear Filters
+                                            Reset Filter
                                         </button>
                                     )}
                                 </div>
                             )}
                         </div>
                     </div>
+                </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-secondary-50 dark:bg-secondary-800 text-secondary-900 dark:text-secondary-200 border-y border-secondary-200 dark:border-secondary-700">
-                                <tr>
-                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-200 font-semibold">Date</th>
-                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-200 font-semibold">Donor</th>
-                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-200 font-semibold">Type</th>
-                                    <th className="px-4 py-3 text-secondary-900 dark:text-secondary-200 font-semibold text-right">Amount</th>
-                                    <th className="px-4 py-3 text-left font-medium">Status</th>
-                                    {role === 'admin' && <th className="px-4 py-3 text-right font-medium">Actions</th>}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-secondary-100 dark:divide-secondary-800 text-secondary-900 dark:text-secondary-100">
-                                {isLoading ? (
-                                    <tr>
-                                        <td colSpan={5} className="px-4 py-8 text-center text-secondary-900 dark:text-secondary-200 font-medium">No donations found matching your filters.</td>
-                                    </tr>
-                                ) : (
-                                    filteredDonations.map((donation, index) => (
-                                        <motion.tr
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: index * 0.05 }}
-                                            key={donation.id}
-                                            className="hover:bg-secondary-50 dark:hover:bg-white/5 transition-all group relative cursor-default"
-                                        >
-                                            <td className="px-4 py-4 text-secondary-900 dark:text-secondary-200 whitespace-nowrap font-bold relative">
-                                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                {formatDate(donation.date)}
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <div className="font-bold text-secondary-900 dark:text-secondary-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                                                    {donation.isAnonymous ? "Anonymous" : donation.donorName}
-                                                </div>
-                                                <div className="text-xs font-medium text-secondary-900 dark:text-secondary-200">
-                                                    {donation.email || (donation.isAnonymous ? "Hidden" : "No email")}
-                                                </div>
-                                                {donation.message && (
-                                                    <div className="text-[10px] text-primary-600 dark:text-primary-400 mt-1 italic line-clamp-1 border-l-2 border-primary-100 dark:border-primary-900/30 pl-2">
-                                                        "{donation.message}"
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800 shadow-sm">
-                                                    {donation.type}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-4 font-black text-secondary-900 dark:text-secondary-100 text-right">
-                                                ₱{donation.amount.toLocaleString()}
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/50 shadow-sm">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                                                    Verified
-                                                </span>
-                                            </td>
-                                            {role === 'admin' && (
-                                                <td className="px-4 py-4 text-right">
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.1, color: "#e11d48" }}
-                                                        whileTap={{ scale: 0.9 }}
-                                                        onClick={() => handleDelete(donation.id)}
-                                                        className="font-medium text-secondary-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2 rounded-xl transition-all"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 className="w-5 h-5" />
-                                                    </motion.button>
-                                                </td>
-                                            )}
-                                        </motion.tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                {/* Data Display - Responsive Card/Table Wrapper */}
+                <div className="space-y-4">
+                    {/* Mobile/Tablet View: Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:hidden">
+                        {isLoading ? (
+                            Array(4).fill(0).map((_, i) => (
+                                <div key={i} className="bg-white dark:bg-secondary-900 rounded-2xl p-5 border border-secondary-100 dark:border-secondary-800 animate-pulse space-y-4">
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-2">
+                                            <div className="h-4 w-32 bg-secondary-100 dark:bg-secondary-800 rounded"></div>
+                                            <div className="h-3 w-24 bg-secondary-100 dark:bg-secondary-800 rounded"></div>
+                                        </div>
+                                        <div className="h-4 w-16 bg-secondary-100 dark:bg-secondary-800 rounded-full"></div>
+                                    </div>
+                                    <div className="pt-2 border-t border-secondary-50 dark:border-secondary-800 flex justify-between">
+                                        <div className="h-4 w-20 bg-secondary-100 dark:bg-secondary-800 rounded mt-2"></div>
+                                        <div className="h-6 w-24 bg-secondary-100 dark:bg-secondary-800 rounded mt-1"></div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : filteredDonations.length === 0 ? (
+                            <div className="sm:col-span-2 bg-white dark:bg-secondary-900 rounded-3xl border border-secondary-200 dark:border-secondary-800 p-16 text-center">
+                                <Search className="w-12 h-12 text-secondary-200 dark:text-secondary-800 mx-auto mb-4" />
+                                <h3 className="text-lg font-black text-secondary-900 dark:text-white uppercase tracking-tight">No donations found</h3>
+                                <p className="text-secondary-500 text-sm mt-1 font-medium italic">Try adjusting your filters</p>
+                            </div>
+                        ) : (
+                            filteredDonations.map((donation, index) => (
+                                <motion.div
+                                    key={donation.id}
+                                    variants={itemVariants}
+                                    whileHover={{ y: -4 }}
+                                    className="bg-white dark:bg-secondary-900 rounded-2xl p-5 border border-secondary-100 dark:border-secondary-800 shadow-sm relative overflow-hidden group"
+                                >
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="space-y-1">
+                                            <p className="text-base font-black text-secondary-900 dark:text-white uppercase tracking-tight leading-tight">
+                                                {donation.isAnonymous ? "Anonymous Donor" : donation.donorName}
+                                            </p>
+                                            <p className="text-[10px] font-bold text-secondary-400 italic flex items-center gap-1.5">
+                                                <Mail className="w-3 h-3" />
+                                                {donation.email || (donation.isAnonymous ? "Identity Hidden" : "No contact info")}
+                                            </p>
+                                        </div>
+                                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50">
+                                            Verified
+                                        </span>
+                                    </div>
+
+                                    {donation.message && (
+                                        <div className="mb-4 p-3 bg-secondary-50/50 dark:bg-secondary-950/50 rounded-xl text-[11px] text-secondary-600 dark:text-secondary-400 italic border-l-2 border-primary-500">
+                                            "{donation.message}"
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center justify-between pt-4 border-t border-secondary-50 dark:border-secondary-800">
+                                        <div className="space-y-0.5">
+                                            <p className="text-[9px] font-black text-secondary-400 uppercase tracking-widest">Transaction Date</p>
+                                            <p className="text-xs font-bold text-secondary-700 dark:text-secondary-300">{formatDate(donation.date)}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="block text-[9px] font-black text-primary-500 uppercase tracking-widest mb-0.5">{donation.type}</span>
+                                            <span className="text-xl font-black text-secondary-900 dark:text-white tabular-nums">₱{donation.amount.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+
+                                    {role === 'admin' && (
+                                        <div className="mt-4 flex justify-end">
+                                            <button
+                                                onClick={() => handleDelete(donation.id)}
+                                                className="flex items-center gap-1.5 text-rose-600 font-black uppercase tracking-widest text-[10px] hover:bg-rose-50 dark:hover:bg-rose-900/20 px-3 py-1.5 rounded-lg transition-all"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                                Remove Record
+                                            </button>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            ))
+                        )}
                     </div>
-                </CardContent>
-            </Card>
+
+                    {/* PC View: Table */}
+                    <Card className="hidden lg:block border-none shadow-xl overflow-hidden bg-white dark:bg-secondary-900 rounded-2xl">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-secondary-50/50 dark:bg-secondary-950 border-b border-secondary-100 dark:border-secondary-800 font-bold uppercase tracking-widest text-[10px] text-secondary-500">
+                                        <th className="px-6 py-4">Transaction / Date</th>
+                                        <th className="px-6 py-4">Donor Information</th>
+                                        <th className="px-6 py-4">Allocation</th>
+                                        <th className="px-6 py-4 text-right">Amount</th>
+                                        <th className="px-6 py-4 text-center">Status</th>
+                                        {role === 'admin' && <th className="px-6 py-4 text-right">Settings</th>}
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-secondary-50 dark:divide-secondary-800">
+                                    {isLoading ? (
+                                        Array(5).fill(0).map((_, i) => (
+                                            <tr key={i} className="animate-pulse">
+                                                <td className="px-6 py-4"><div className="h-4 w-32 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
+                                                <td className="px-6 py-4"><div className="h-4 w-48 bg-secondary-100 dark:bg-secondary-800 rounded"></div></td>
+                                                <td className="px-6 py-4"><div className="h-4 w-20 bg-secondary-100 dark:bg-secondary-800 rounded-full"></div></td>
+                                                <td className="px-6 py-4"><div className="h-4 w-24 bg-secondary-100 dark:bg-secondary-800 rounded ml-auto"></div></td>
+                                                <td className="px-6 py-4"><div className="h-4 w-20 bg-secondary-100 dark:bg-secondary-800 rounded-full mx-auto"></div></td>
+                                            </tr>
+                                        ))
+                                    ) : filteredDonations.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="px-6 py-24 text-center">
+                                                <div className="max-w-xs mx-auto opacity-30">
+                                                    <DollarSign className="w-12 h-12 mx-auto mb-4" />
+                                                    <p className="font-black uppercase tracking-widest text-xs">No records matching search</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredDonations.map((donation, index) => (
+                                            <tr key={donation.id} className="hover:bg-secondary-50/50 dark:hover:bg-white/5 transition-all group cursor-default">
+                                                <td className="px-6 py-5 relative whitespace-nowrap">
+                                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <div className="space-y-1">
+                                                        <p className="text-sm font-bold text-secondary-900 dark:text-white uppercase tracking-tight">{formatDate(donation.date)}</p>
+                                                        <p className="text-[10px] font-black text-secondary-400 uppercase tracking-widest">ID: {donation.id?.slice(0, 8)}</p>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <div className="space-y-1">
+                                                        <p className="text-sm font-black text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors uppercase tracking-tight">
+                                                            {donation.isAnonymous ? "Anonymous Contributor" : donation.donorName}
+                                                        </p>
+                                                        <div className="flex items-center gap-2 text-[10px] font-bold text-secondary-500">
+                                                            <Mail className="w-3 h-3 text-secondary-400" />
+                                                            {donation.email || "No contact info"}
+                                                        </div>
+                                                        {donation.message && (
+                                                            <div className="text-[10px] text-primary-600 dark:text-primary-400 italic line-clamp-1 border-l-2 border-primary-100 dark:border-primary-900/30 pl-2 mt-1.5 bg-primary-50/20 dark:bg-primary-900/10 py-0.5 rounded-r">
+                                                                "{donation.message}"
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30 shadow-sm">
+                                                        {donation.type}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-5 text-right font-black text-secondary-900 dark:text-white text-base tabular-nums">
+                                                    ₱{donation.amount.toLocaleString()}
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <div className="flex justify-center">
+                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                                            Verified
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                {role === 'admin' && (
+                                                    <td className="px-6 py-5 text-right">
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.1, y: -2 }}
+                                                            whileTap={{ scale: 0.9 }}
+                                                            onClick={() => handleDelete(donation.id)}
+                                                            className="text-secondary-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2.5 rounded-xl transition-all border border-transparent hover:border-rose-100 dark:hover:border-rose-900/30"
+                                                            title="Delete Entry"
+                                                        >
+                                                            <Trash2 className="w-4.5 h-4.5" />
+                                                        </motion.button>
+                                                    </td>
+                                                )}
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
+                </div>
+            </div>
 
             <ImportModal
                 isOpen={isImportOpen}
