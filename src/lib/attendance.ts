@@ -60,13 +60,19 @@ export const getUserAttendanceStatus = async (uid: string): Promise<AttendanceSt
 export const clockIn = async (uid: string, displayName: string, email: string, role: 'volunteer' | 'staff' | 'admin') => {
     const today = getTodayDateString();
     const attendanceRef = collection(db, ATTENDANCE_COLLECTION);
+    const staffRef = doc(db, "staff", uid);
     const familiesRef = doc(db, "families", uid);
 
     await runTransaction(db, async (transaction) => {
-        // 1. Verify family registry
-        const familyDoc = await transaction.get(familiesRef);
-        if (!familyDoc.exists()) {
-            throw new Error("You are not registered in the Family Registry. Please contact the administrator.");
+        // 1. Verify registry based on role
+        // For admin/staff/volunteer roles, we check the 'staff' collection
+        // For regular family members (if they use this), we check 'families'
+        const isStaffRole = ['admin', 'staff', 'volunteer', 'employee'].includes(role);
+        const checkRef = isStaffRole ? staffRef : familiesRef;
+        const registryDoc = await transaction.get(checkRef);
+
+        if (!registryDoc.exists()) {
+            throw new Error(`You are not registered as ${role.toUpperCase()} in the system. Please contact the administrator.`);
         }
 
         // 2. Check current status within transaction
@@ -83,7 +89,7 @@ export const clockIn = async (uid: string, displayName: string, email: string, r
             (querySnapshot.docs[0].data() as AttendanceRecord).type === 'clock_in';
 
         if (isClockedIn) {
-            throw new Error("You are already clocked in.");
+            throw new Error("You already have an active clock-in session for today.");
         }
 
         // 3. Create new record

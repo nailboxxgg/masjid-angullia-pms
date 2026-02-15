@@ -7,46 +7,59 @@ import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
+import NavigationGuard from "@/components/admin/NavigationGuard";
 import { startPresenceHeartbeat } from "@/lib/presence";
 
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function AdminLayout({
+import { AdminProvider, useAdmin } from "@/contexts/AdminContext";
+
+function AdminLayoutContent({
     children,
 }: {
     children: React.ReactNode;
 }) {
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
+    const { role, loading, user } = useAdmin();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         let stopHeartbeat: (() => void) | undefined;
 
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (!user) {
+        if (!loading) {
+            if (!user || !role || !['admin', 'staff', 'volunteer', 'employee'].includes(role)) {
                 router.push("/");
             } else {
-                try {
-                    const userDoc = await getDoc(doc(db, "families", user.uid));
-                    if (userDoc.exists()) {
-                        const role = userDoc.data().role;
-                        if (['admin', 'staff', 'volunteer'].includes(role)) {
-                            setLoading(false);
-                            // Start presence tracking when authenticated
-                            stopHeartbeat = startPresenceHeartbeat();
-                        } else {
-                            router.push("/");
+                // Route Protection for Non-Admin roles
+                if (role !== 'admin') {
+                    const currentPath = window.location.pathname;
+
+                    // Volunteers: ONLY Attendance
+                    if (role === 'volunteer') {
+                        if (currentPath !== '/admin/attendance') {
+                            console.warn(`Volunteer access redirected to attendance from ${currentPath}`);
+                            router.push("/admin/attendance");
                         }
                     } else {
-                        router.push("/");
+                        // Staff: Limited routes
+                        const adminOnlyRoutes = [
+                            '/admin/families',
+                            '/admin/settings',
+                            '/admin/feedback',
+                            '/admin/feed'
+                        ];
+
+                        if (adminOnlyRoutes.some(route => currentPath.startsWith(route))) {
+                            console.warn(`Access denied for role ${role} to ${currentPath}`);
+                            router.push("/admin");
+                        }
                     }
-                } catch (error) {
-                    console.error("Error verifying admin role:", error);
-                    router.push("/");
                 }
+
+                // User is authorized
+                stopHeartbeat = startPresenceHeartbeat();
             }
-        });
+        }
 
         // Inactivity Timer Implementation (1 hour)
         const INACTIVITY_LIMIT = 60 * 60 * 1000; // 1 hour
@@ -78,14 +91,13 @@ export default function AdminLayout({
         });
 
         return () => {
-            unsubscribe();
             if (stopHeartbeat) stopHeartbeat();
             if (timeoutId) clearTimeout(timeoutId);
             activityEvents.forEach((event) => {
                 window.removeEventListener(event, resetTimer);
             });
         };
-    }, [router]);
+    }, [router, user, role, loading]);
 
     if (loading) {
         return (
@@ -95,8 +107,13 @@ export default function AdminLayout({
         );
     }
 
+    if (!user || !role) return null;
+
     return (
         <div className="flex min-h-screen bg-slate-50 dark:bg-secondary-950 text-secondary-900 dark:text-secondary-100">
+            {/* Navigation Guards */}
+            <NavigationGuard />
+
             {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
                 <div
@@ -121,5 +138,15 @@ export default function AdminLayout({
                 </main>
             </div>
         </div>
+    );
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <AdminProvider>
+            <AdminLayoutContent>
+                {children}
+            </AdminLayoutContent>
+        </AdminProvider>
     );
 }

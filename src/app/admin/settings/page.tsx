@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Bell, ShieldCheck, PlusCircle, Save } from "lucide-react";
+import { User, Bell, ShieldCheck, PlusCircle, Save, Trash2, Mail, Shield, Clock as ClockIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import Modal from "@/components/ui/modal";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { createStaffAccountDirectly, getStaffMembers, revokeStaffAccess, StaffMember } from "@/lib/staff";
+import { cn } from "@/lib/utils";
 
 export default function AdminSettingsPage() {
     const [isLoading, setIsLoading] = useState(false);
@@ -18,8 +20,17 @@ export default function AdminSettingsPage() {
     });
     const [userProfile, setUserProfile] = useState<any>(null);
 
+    // Staff Management State
+    const [staffList, setStaffList] = useState<StaffMember[]>([]);
+    const [inviteEmail, setInviteEmail] = useState("");
+    const [inviteName, setInviteName] = useState("");
+    const [invitePassword, setInvitePassword] = useState("");
+    const [inviteRole, setInviteRole] = useState<StaffMember['role']>("staff");
+    const [isInviting, setIsInviting] = useState(false);
+
     useEffect(() => {
-        const fetchSettings = async () => {
+        const fetchData = async () => {
+            setIsFetching(true);
             try {
                 const currentUser = auth.currentUser;
                 if (!currentUser) {
@@ -27,6 +38,7 @@ export default function AdminSettingsPage() {
                     return;
                 }
 
+                // Fetch Profile & Settings
                 const userDoc = await getDoc(doc(db, "families", currentUser.uid));
                 if (userDoc.exists()) {
                     const data = userDoc.data();
@@ -38,8 +50,12 @@ export default function AdminSettingsPage() {
                         });
                     }
                 }
+
+                // Fetch Staff Members
+                const staffData = await getStaffMembers();
+                setStaffList(staffData);
             } catch (error) {
-                console.error("Error fetching settings:", error);
+                console.error("Error fetching data:", error);
             } finally {
                 setIsFetching(false);
             }
@@ -47,7 +63,7 @@ export default function AdminSettingsPage() {
 
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (user) {
-                fetchSettings();
+                fetchData();
             } else {
                 setIsFetching(false);
             }
@@ -55,6 +71,47 @@ export default function AdminSettingsPage() {
 
         return () => unsubscribe();
     }, []);
+
+    const handleEnroll = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!inviteEmail || !inviteName || !invitePassword) {
+            alert("Please provide name, email, and password.");
+            return;
+        }
+
+        if (invitePassword.length < 8) {
+            alert("Password must be at least 8 characters.");
+            return;
+        }
+
+        setIsInviting(true);
+        try {
+            await createStaffAccountDirectly(inviteEmail, invitePassword, inviteName, inviteRole);
+            setInviteEmail("");
+            setInviteName("");
+            setInvitePassword("");
+            alert("Staff account created successfully! They can now log in with the email and password you provided.");
+
+            // Refresh list
+            const staffData = await getStaffMembers();
+            setStaffList(staffData);
+        } catch (error: any) {
+            alert(error.message || "Failed to create staff account.");
+        } finally {
+            setIsInviting(false);
+        }
+    };
+
+    const handleRevoke = async (email: string) => {
+        if (!confirm(`Are you sure you want to revoke access for ${email}?`)) return;
+
+        try {
+            await revokeStaffAccess(email);
+            setStaffList(staffList.filter(s => s.email !== email));
+        } catch (error) {
+            alert("Failed to revoke access.");
+        }
+    };
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -206,48 +263,133 @@ export default function AdminSettingsPage() {
                                 <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl dark:bg-purple-900/20 dark:text-purple-400 ring-1 ring-purple-100 dark:ring-purple-800/50">
                                     <PlusCircle className="w-5 h-5" />
                                 </div>
-                                <div>
-                                    <CardTitle className="text-lg font-bold text-secondary-900 dark:text-white uppercase tracking-tight">Admin Management</CardTitle>
-                                    <CardDescription className="text-secondary-500 font-medium text-xs mt-0.5">Invite and authorize new portal administrators.</CardDescription>
+                                <div className="flex-1 flex items-center justify-between gap-4">
+                                    <div>
+                                        <CardTitle className="text-lg font-bold text-secondary-900 dark:text-white uppercase tracking-tight">Admin Management</CardTitle>
+                                        <CardDescription className="text-secondary-500 font-medium text-xs mt-0.5">Invite and authorize new portal administrators.</CardDescription>
+                                    </div>
+                                    <div className="bg-primary-50 dark:bg-primary-900/20 px-3 py-1 rounded-full border border-primary-100 dark:border-primary-800/50">
+                                        <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400 uppercase tracking-widest">{staffList.length} AUTHORIZED</span>
+                                    </div>
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-6">
                             <div className="p-4 rounded-xl text-sm bg-blue-50/50 text-blue-700 border border-blue-100 dark:bg-blue-900/10 dark:text-blue-400 dark:border-blue-900/30 flex items-start gap-3">
                                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
-                                <p className="font-semibold italic"><strong>Security Note:</strong> Adding a new administrator grants them full access to manage families, finances, and portal configurations. Ensure proper vetting before authorization.</p>
+                                <p className="font-semibold italic"><strong>Security Note:</strong> Adding a new administrator grants them full access. Ensure proper vetting before authorization.</p>
                             </div>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-secondary-500 ml-1">New Admin Email</label>
-                                    <input
-                                        type="email"
-                                        placeholder="new.admin@masjid.com"
-                                        className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all placeholder:font-medium placeholder:text-secondary-400 px-4"
-                                    />
+
+                            {/* Enrollment Form */}
+                            <div className="bg-secondary-50/50 dark:bg-secondary-800/20 p-5 rounded-2xl border border-secondary-100 dark:border-secondary-800 space-y-4">
+                                <h4 className="text-xs font-bold text-secondary-900 dark:text-white uppercase tracking-widest">Enroll New Authority</h4>
+                                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-500 ml-1">Full Name</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Staff Name"
+                                            value={inviteName}
+                                            onChange={(e) => setInviteName(e.target.value)}
+                                            className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 shadow-sm"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-500 ml-1">Email Address</label>
+                                        <input
+                                            type="email"
+                                            placeholder="staff@masjid.com"
+                                            value={inviteEmail}
+                                            onChange={(e) => setInviteEmail(e.target.value)}
+                                            className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 shadow-sm"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-500 ml-1">Assign Password</label>
+                                        <input
+                                            type="password"
+                                            placeholder="Min. 8 chars"
+                                            value={invitePassword}
+                                            onChange={(e) => setInvitePassword(e.target.value)}
+                                            className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 shadow-sm"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-secondary-500 ml-1">Assigned Role</label>
+                                        <select
+                                            value={inviteRole}
+                                            onChange={(e) => setInviteRole(e.target.value as any)}
+                                            className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 shadow-sm"
+                                        >
+                                            <option value="staff">Staff</option>
+                                            <option value="volunteer">Volunteer</option>
+                                            <option value="admin">Admin</option>
+                                            <option value="employee">Employee</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold uppercase tracking-widest text-secondary-500 ml-1">Invitation Role</label>
-                                    <select className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4">
-                                        <option value="admin">Admin</option>
-                                        <option value="staff">Staff</option>
-                                        <option value="volunteer">Volunteer</option>
-                                    </select>
+                                <div className="flex justify-end pt-2">
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        type="button"
+                                        disabled={isInviting}
+                                        onClick={handleEnroll}
+                                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20 disabled:opacity-50"
+                                    >
+                                        {isInviting ? "Creating Account..." : <><PlusCircle className="w-4 h-4" /> Create Authority</>}
+                                    </motion.button>
                                 </div>
                             </div>
-                            <div className="flex justify-end">
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    type="button"
-                                    className="px-6 py-2.5 bg-secondary-900 dark:bg-white text-white dark:text-secondary-900 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-black dark:hover:bg-secondary-100 transition-all shadow-lg"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        alert("In a real implementation, this would trigger a secure invitation workflow.");
-                                    }}
-                                >
-                                    Generate Invitation
-                                </motion.button>
+
+                            {/* Active/Pending Staff List */}
+                            <div className="space-y-3">
+                                <h4 className="text-xs font-bold text-secondary-900 dark:text-white uppercase tracking-widest ml-1">Authorized Personnel</h4>
+                                <div className="grid gap-3">
+                                    {staffList.length === 0 ? (
+                                        <div className="py-10 text-center border-2 border-dashed border-secondary-100 dark:border-secondary-800 rounded-2xl text-secondary-400">
+                                            No authorized personnel found.
+                                        </div>
+                                    ) : (
+                                        staffList.map((staff) => (
+                                            <div key={staff.email} className="flex items-center justify-between p-4 bg-white dark:bg-secondary-800/50 rounded-2xl border border-secondary-100 dark:border-secondary-800 hover:shadow-md transition-all group">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-full bg-secondary-50 dark:bg-secondary-900 flex items-center justify-center ring-1 ring-secondary-100 dark:ring-secondary-800">
+                                                        <Shield className={cn("w-5 h-5", staff.status === 'active' ? "text-emerald-500" : "text-amber-500")} />
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="font-bold text-secondary-900 dark:text-white">{staff.name}</p>
+                                                            <span className={cn(
+                                                                "text-[8px] font-black uppercase px-2 py-0.5 rounded-full tracking-tighter",
+                                                                staff.status === 'active' ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400" : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                                                            )}>
+                                                                {staff.status}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-3 text-[10px] font-medium text-secondary-500 mt-0.5">
+                                                            <span className="flex items-center gap-1 uppercase tracking-widest font-bold text-primary-600 dark:text-primary-400">{staff.role}</span>
+                                                            <span className="w-1 h-1 rounded-full bg-secondary-300"></span>
+                                                            <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {staff.email}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 pr-2">
+                                                    {staff.email !== userProfile?.email && (
+                                                        <button
+                                                            onClick={() => handleRevoke(staff.email)}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-secondary-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all border border-transparent hover:border-red-100 dark:hover:border-red-800/50 group/delete"
+                                                            title="Delete Personnel"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5 transition-transform group-hover/delete:scale-110" />
+                                                            <span>Remove Access</span>
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

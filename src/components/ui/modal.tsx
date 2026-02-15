@@ -12,9 +12,10 @@ interface ModalProps {
     children: React.ReactNode;
     className?: string;
     hideScrollbar?: boolean;
+    showCloseButton?: boolean;
 }
 
-export default function Modal({ isOpen, onClose, title, children, className, hideScrollbar }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, className, hideScrollbar, showCloseButton = true }: ModalProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -50,16 +51,20 @@ export default function Modal({ isOpen, onClose, title, children, className, hid
                     className
                 )}
             >
-                <div className="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-6 mb-3 sm:mb-5 pb-0">
-                    {title && <h3 className="text-lg font-heading font-semibold text-secondary-900 dark:text-secondary-100">{title}</h3>}
-                    <button
-                        onClick={onClose}
-                        className="rounded-full p-1.5 bg-secondary-50 dark:bg-secondary-800 text-secondary-400 dark:text-secondary-500 hover:bg-secondary-100 hover:text-secondary-600 dark:hover:bg-secondary-700 dark:hover:text-secondary-300 transition-colors"
-                    >
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Close</span>
-                    </button>
-                </div>
+                {(title || showCloseButton) && (
+                    <div className="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-6 mb-3 sm:mb-5 pb-0">
+                        {title && <h3 className="text-lg font-heading font-semibold text-secondary-900 dark:text-secondary-100">{title}</h3>}
+                        {showCloseButton && (
+                            <button
+                                onClick={onClose}
+                                className="rounded-full p-1.5 bg-secondary-50 dark:bg-secondary-800 text-secondary-400 dark:text-secondary-500 hover:bg-secondary-100 hover:text-secondary-600 dark:hover:bg-secondary-700 dark:hover:text-secondary-300 transition-colors"
+                            >
+                                <X className="h-4 w-4" />
+                                <span className="sr-only">Close</span>
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 <div className={cn(
                     "max-h-[80vh] overflow-y-auto pr-1",

@@ -12,8 +12,10 @@ import ImportModal from "./ImportModal";
 import { Upload } from "lucide-react";
 
 import { motion } from "framer-motion";
+import { useAdmin } from "@/contexts/AdminContext";
 
 export default function FinancesPage() {
+    const { role } = useAdmin();
     const [donations, setDonations] = useState<Donation[]>([]);
     const [stats, setStats] = useState<DonationStats>({
         totalCollected: 0,
@@ -53,12 +55,13 @@ export default function FinancesPage() {
     };
 
     const handleDelete = (id: string) => {
+        if (role !== 'admin') return;
         setDonationToDelete(id);
         setIsDeleteModalOpen(true);
     };
 
     const confirmDelete = async () => {
-        if (donationToDelete) {
+        if (donationToDelete && role === 'admin') {
             const success = await deleteDonation(donationToDelete);
             if (success) {
                 loadData();
@@ -119,14 +122,16 @@ export default function FinancesPage() {
                     <p className="text-secondary-900 dark:text-secondary-200 mt-1 font-medium italic text-balance">Comprehensive tracking of masjid funds and community contributions.</p>
                 </motion.div>
                 <motion.div variants={itemVariants} className="flex gap-2">
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setIsImportOpen(true)}
-                        className="flex items-center gap-2 px-6 py-2 bg-primary-600 dark:bg-primary-700 text-white rounded-xl text-sm font-bold hover:bg-primary-700 dark:hover:bg-primary-800 shadow-lg shadow-primary-500/20 transition-all shrink-0"
-                    >
-                        <Upload className="w-4 h-4" /> Import File
-                    </motion.button>
+                    {role === 'admin' && (
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setIsImportOpen(true)}
+                            className="flex items-center gap-2 px-6 py-2 bg-primary-600 dark:bg-primary-700 text-white rounded-xl text-sm font-bold hover:bg-primary-700 dark:hover:bg-primary-800 shadow-lg shadow-primary-500/20 transition-all shrink-0"
+                        >
+                            <Upload className="w-4 h-4" /> Import File
+                        </motion.button>
+                    )}
                     <motion.button
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
@@ -257,7 +262,7 @@ export default function FinancesPage() {
                                     <th className="px-4 py-3 text-secondary-900 dark:text-secondary-200 font-semibold">Type</th>
                                     <th className="px-4 py-3 text-secondary-900 dark:text-secondary-200 font-semibold text-right">Amount</th>
                                     <th className="px-4 py-3 text-left font-medium">Status</th>
-                                    <th className="px-4 py-3 text-right font-medium">Actions</th>
+                                    {role === 'admin' && <th className="px-4 py-3 text-right font-medium">Actions</th>}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-secondary-100 dark:divide-secondary-800 text-secondary-900 dark:text-secondary-100">
@@ -305,17 +310,19 @@ export default function FinancesPage() {
                                                     Verified
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-4 text-right">
-                                                <motion.button
-                                                    whileHover={{ scale: 1.1, color: "#e11d48" }}
-                                                    whileTap={{ scale: 0.9 }}
-                                                    onClick={() => handleDelete(donation.id)}
-                                                    className="font-medium text-secondary-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2 rounded-xl transition-all"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </motion.button>
-                                            </td>
+                                            {role === 'admin' && (
+                                                <td className="px-4 py-4 text-right">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.1, color: "#e11d48" }}
+                                                        whileTap={{ scale: 0.9 }}
+                                                        onClick={() => handleDelete(donation.id)}
+                                                        className="font-medium text-secondary-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 p-2 rounded-xl transition-all"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 className="w-5 h-5" />
+                                                    </motion.button>
+                                                </td>
+                                            )}
                                         </motion.tr>
                                     ))
                                 )}

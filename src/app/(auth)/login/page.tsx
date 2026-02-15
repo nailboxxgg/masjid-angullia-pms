@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { collection, query, where, getDocs, limit, getDoc, doc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Footer from "@/components/layout/Footer";
@@ -54,17 +54,26 @@ function LoginForm() {
         // If it's a phone number (+63...), resolve to email
         if (identifier.startsWith("+63")) {
             try {
-                const familiesRef = collection(db, "families");
-                const q = query(familiesRef, where("phoneNumber", "==", identifier), limit(1));
-                const querySnapshot = await getDocs(q);
+                // Check staff collection first
+                const staffRef = collection(db, "staff");
+                const qStaff = query(staffRef, where("phoneNumber", "==", identifier), limit(1));
+                const staffSnapshot = await getDocs(qStaff);
 
-                if (querySnapshot.empty) {
-                    setError("No account found with this phone number.");
-                    setLoading(false);
-                    return;
+                if (!staffSnapshot.empty) {
+                    loginEmail = staffSnapshot.docs[0].data().email;
+                } else {
+                    // Check families collection
+                    const familiesRef = collection(db, "families");
+                    const qFam = query(familiesRef, where("phoneNumber", "==", identifier), limit(1));
+                    const famSnapshot = await getDocs(qFam);
+
+                    if (famSnapshot.empty) {
+                        setError("No account found with this phone number.");
+                        setLoading(false);
+                        return;
+                    }
+                    loginEmail = famSnapshot.docs[0].data().email;
                 }
-
-                loginEmail = querySnapshot.docs[0].data().email;
             } catch (err) {
                 console.error("Phone resolution error:", err);
                 setError("Failed to resolve phone number. Please try using your email.");
@@ -74,12 +83,36 @@ function LoginForm() {
         }
 
         try {
-            await signInWithEmailAndPassword(auth, loginEmail, password);
+            const userCredential = await signInWithEmailAndPassword(auth, loginEmail, password);
+            const user = userCredential.user;
             clearProgress(); // Success: clear persistence
+
+            // Check if user is staff/admin/volunteer
+            let staffDoc = await getDoc(doc(db, "staff", user.uid));
+
+            // Resiliency: If not found by UID, try looking up by email (legacy ID)
+            if (!staffDoc.exists()) {
+                const staffRef = collection(db, "staff");
+                const qEmail = query(staffRef, where("email", "==", loginEmail.toLowerCase()), limit(1));
+                const emailSnapshot = await getDocs(qEmail);
+                if (!emailSnapshot.empty) {
+                    staffDoc = emailSnapshot.docs[0] as any;
+                }
+            }
+
+            if (staffDoc.exists()) {
+                const role = staffDoc.data().role;
+                if (['admin', 'staff', 'volunteer', 'employee'].includes(role)) {
+                    router.push("/admin");
+                    return;
+                }
+            }
+
+            // Default redirect for families
             router.push("/");
         } catch (err: unknown) {
             console.error(err);
-            setError("Invalid credentials. For demo, try signing up first.");
+            setError("Invalid credentials. Please check your email and password.");
         } finally {
             setLoading(false);
         }

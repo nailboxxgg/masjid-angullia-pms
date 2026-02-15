@@ -39,35 +39,31 @@ interface AdminSidebarProps {
     onClose: () => void;
 }
 
+import { AdminProvider, useAdmin } from "@/contexts/AdminContext";
+
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
+    const { role } = useAdmin();
     const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
     const { unreadCount } = useNotifications();
+
+    // Differentiate routes based on role
+    const filteredRoutes = adminRoutes.filter(route => {
+        if (role === 'admin') return true;
+        // Volunteers ONLY see Attendance
+        if (role === 'volunteer') return route.name === 'Attendance';
+        // Staff only see Overview, Attendance, and Finances
+        return ['Overview', 'Attendance', 'Finances'].includes(route.name);
+    });
+
+    // Auto-redirect if trying to access blocked route in sidebar logic? 
+    // Handled by layout.tsx already.
 
     // Handle Sign Out Link Click
     const handleSignOutClick = () => {
         setIsSignOutModalOpen(true);
     };
-
-    // Handle Back Button Intercept
-    useEffect(() => {
-        const handlePopState = (event: PopStateEvent) => {
-            // Basic basic interception: if user tries to go back, we stop them and show modal
-            event.preventDefault();
-            // Since we can't fully block "back", we push the current state again to "stay" on the page
-            window.history.pushState(null, "", window.location.href);
-            setIsSignOutModalOpen(true);
-        };
-
-        // Push a dummy state so there's something to pop
-        window.history.pushState(null, "", window.location.href);
-        window.addEventListener("popstate", handlePopState);
-
-        return () => {
-            window.removeEventListener("popstate", handlePopState);
-        };
-    }, []);
 
     const confirmSignOut = async () => {
         try {
@@ -116,7 +112,9 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 }}
                         >
-                            <h1 className="font-heading font-black text-xl tracking-tight text-secondary-900 dark:text-white">Admin Portal</h1>
+                            <h1 className="font-heading font-black text-xl tracking-tight text-secondary-900 dark:text-white capitalize">
+                                {role || 'Staff'} Portal
+                            </h1>
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-600 dark:text-primary-400">Masjid Angullia</p>
                         </motion.div>
                     </div>
@@ -131,7 +129,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                    {adminRoutes.map((route, index) => {
+                    {filteredRoutes.map((route, index) => {
                         const Icon = route.icon;
                         const isActive = pathname === route.href;
                         return (

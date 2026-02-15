@@ -21,13 +21,54 @@ import { getAttendanceSessions, getTodayDateString } from "@/lib/attendance";
 import { AttendanceSession } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import * as XLSX from "xlsx";
+import { useAdmin } from "@/contexts/AdminContext";
 
 export default function AdminAttendancePage() {
+    const { role } = useAdmin();
     const [sessions, setSessions] = useState<AttendanceSession[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(getTodayDateString());
     const [searchTerm, setSearchTerm] = useState("");
     const [activeTab, setActiveTab] = useState<'staff' | 'visitor'>('visitor');
+
+    const handleExport = () => {
+        const dataToExport = activeTab === 'visitor' ? visitorSessions : finalStaffList;
+
+        let exportData: any[] = [];
+
+        if (activeTab === 'visitor') {
+            exportData = dataToExport.map(session => ({
+                'Name': session.displayName,
+                'Phone': session.phone || 'N/A',
+                'Time': new Date(session.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                'Date': new Date(session.clockIn).toLocaleDateString(),
+                'Device': session.deviceInfo || 'Unknown'
+            }));
+        } else {
+            exportData = dataToExport.map(staff => ({
+                'Name': staff.displayName,
+                'Email': staff.email,
+                'Role': staff.role || 'Staff',
+                'Status': staff.status === 'active' ? 'Active' : 'Completed',
+                'Time Info': staff.displayTime,
+                'Total Duration': staff.displayDuration,
+                'Latest Activity': new Date(staff.latestClockOut || staff.latestClockIn).toLocaleString()
+            }));
+        }
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, activeTab === 'visitor' ? "Visitor Logs" : "Staff Attendance");
+
+        // Set column widths
+        const wscols = activeTab === 'visitor'
+            ? [{ wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 30 }]
+            : [{ wch: 25 }, { wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 20 }, { wch: 25 }];
+        worksheet['!cols'] = wscols;
+
+        XLSX.writeFile(workbook, `MASJID_${activeTab}_LOGS_${selectedDate}.xlsx`);
+    };
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -159,25 +200,28 @@ export default function AdminAttendancePage() {
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
+                        onClick={handleExport}
                         className="inline-flex items-center gap-2 px-6 py-2 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 rounded-xl text-sm font-bold hover:bg-secondary-50 dark:hover:bg-secondary-800 shadow-sm transition-all"
                     >
-                        <Download className="w-4 h-4" /> Export CSV
+                        <Download className="w-4 h-4" /> Export Excel
                     </motion.button>
                 </motion.div>
             </div>
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border-l-4 border-l-primary-500 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-secondary-500">Active Now</CardTitle>
-                        <User className="h-4 w-4 text-primary-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{activeSessionsCount}</div>
-                        <p className="text-xs text-secondary-400 mt-1">Staff currently clocked in</p>
-                    </CardContent>
-                </Card>
+                {role === 'admin' && (
+                    <Card className="border-l-4 border-l-primary-500 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium text-secondary-500">Active Now</CardTitle>
+                            <User className="h-4 w-4 text-primary-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{activeSessionsCount}</div>
+                            <p className="text-xs text-secondary-400 mt-1">Staff currently clocked in</p>
+                        </CardContent>
+                    </Card>
+                )}
 
                 <Card className="border-l-4 border-l-emerald-500 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -185,25 +229,29 @@ export default function AdminAttendancePage() {
                         <HistoryIcon className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{sessions.length}</div>
+                        <div className="text-2xl font-bold">
+                            {role === 'admin' ? sessions.length : visitorSessions.length}
+                        </div>
                         <p className="text-xs text-secondary-400 mt-1">Records for {selectedDate}</p>
                     </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-amber-500 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-secondary-500">Completion Rate</CardTitle>
-                        <Clock className="h-4 w-4 text-amber-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {sessions.length > 0
-                                ? Math.round((sessions.filter(s => s.status === 'completed').length / sessions.length) * 100)
-                                : 0}%
-                        </div>
-                        <p className="text-xs text-secondary-400 mt-1">Completed sessions</p>
-                    </CardContent>
-                </Card>
+                {role === 'admin' && (
+                    <Card className="border-l-4 border-l-amber-500 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium text-secondary-500">Completion Rate</CardTitle>
+                            <Clock className="h-4 w-4 text-amber-500" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">
+                                {sessions.length > 0
+                                    ? Math.round((sessions.filter(s => s.status === 'completed').length / sessions.length) * 100)
+                                    : 0}%
+                            </div>
+                            <p className="text-xs text-secondary-400 mt-1">Completed sessions</p>
+                        </CardContent>
+                    </Card>
+                )}
 
                 <Card className="border-l-4 border-l-slate-400 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -230,17 +278,19 @@ export default function AdminAttendancePage() {
                 >
                     Visitor Logs
                 </button>
-                <button
-                    onClick={() => setActiveTab('staff')}
-                    className={cn(
-                        "px-4 py-2 rounded-lg text-sm font-bold transition-all",
-                        activeTab === 'staff'
-                            ? "bg-white dark:bg-secondary-900 text-primary-600 dark:text-primary-400 shadow-sm"
-                            : "text-secondary-500 hover:text-secondary-900 dark:hover:text-secondary-100"
-                    )}
-                >
-                    Staff Attendance
-                </button>
+                {role === 'admin' && (
+                    <button
+                        onClick={() => setActiveTab('staff')}
+                        className={cn(
+                            "px-4 py-2 rounded-lg text-sm font-bold transition-all",
+                            activeTab === 'staff'
+                                ? "bg-white dark:bg-secondary-900 text-primary-600 dark:text-primary-400 shadow-sm"
+                                : "text-secondary-500 hover:text-secondary-900 dark:hover:text-secondary-100"
+                        )}
+                    >
+                        Staff Attendance
+                    </button>
+                )}
             </div>
 
             {/* Filters & Search */}
