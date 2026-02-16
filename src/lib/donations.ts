@@ -11,7 +11,8 @@ import {
     Timestamp,
     DocumentData,
     deleteDoc,
-    doc
+    doc,
+    setDoc
 } from "firebase/firestore";
 import { Donation } from "./types";
 
@@ -66,6 +67,16 @@ export const deleteDonation = async (id: string) => {
         return true;
     } catch (error) {
         console.error("Error deleting donation:", error);
+        return false;
+    }
+};
+
+export const updateDonationStatus = async (id: string, status: Donation['status']) => {
+    try {
+        await setDoc(doc(db, COLLECTION_NAME, id), { status }, { merge: true });
+        return true;
+    } catch (error) {
+        console.error("Error updating donation status:", error);
         return false;
     }
 };

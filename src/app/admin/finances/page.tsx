@@ -3,10 +3,10 @@
 
 import { useState, useEffect } from "react";
 import { Donation } from "@/lib/types";
-import { deleteDonation, getDonations, getDonationStats, DonationStats } from "@/lib/donations";
+import { deleteDonation, updateDonationStatus, getDonations, getDonationStats, DonationStats } from "@/lib/donations";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Modal from "@/components/ui/modal";
-import { DollarSign, Download, Search, Filter, TrendingUp, PieChart, Calendar, Trash2, Mail } from "lucide-react";
+import { DollarSign, Download, Search, Filter, TrendingUp, PieChart, Calendar, Trash2, Mail, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import ImportModal from "./ImportModal";
@@ -52,6 +52,18 @@ export default function FinancesPage() {
             y: -8,
             scale: 1.02,
             transition: { duration: 0.3 }
+        }
+    };
+
+    const handleStatusUpdate = async (id: string, status: Donation['status']) => {
+        if (role !== 'admin') return;
+        const success = await updateDonationStatus(id, status);
+        if (success) {
+            // Optimistic update or reload
+            setDonations(prev => prev.map(d => d.id === id ? { ...d, status } : d));
+            loadData();
+        } else {
+            alert("Failed to update status.");
         }
     };
 
@@ -319,9 +331,30 @@ export default function FinancesPage() {
                                                 {donation.email || (donation.isAnonymous ? "Identity Hidden" : "No contact info")}
                                             </p>
                                         </div>
-                                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50">
-                                            Verified
-                                        </span>
+                                        {donation.status === 'completed' ? (
+                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50 flex items-center gap-1">
+                                                <CheckCircle2 className="w-3 h-3" /> Verified
+                                            </span>
+                                        ) : donation.status === 'failed' ? (
+                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800/50 flex items-center gap-1">
+                                                <XCircle className="w-3 h-3" /> Failed
+                                            </span>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50 flex items-center gap-1">
+                                                    <AlertCircle className="w-3 h-3" /> Pending
+                                                </span>
+                                                {role === 'admin' && (
+                                                    <button
+                                                        onClick={() => handleStatusUpdate(donation.id, 'completed')}
+                                                        className="p-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition-colors shadow-sm"
+                                                        title="Approve Donation"
+                                                    >
+                                                        <CheckCircle2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {donation.message && (
@@ -427,10 +460,33 @@ export default function FinancesPage() {
                                                 </td>
                                                 <td className="px-6 py-5">
                                                     <div className="flex justify-center">
-                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                                            Verified
-                                                        </span>
+                                                        {donation.status === 'completed' ? (
+                                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                                                Verified
+                                                            </span>
+                                                        ) : donation.status === 'failed' ? (
+                                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-800/50 shadow-sm">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                                                                Failed
+                                                            </span>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50 shadow-sm">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                                                                    Pending
+                                                                </span>
+                                                                {role === 'admin' && (
+                                                                    <button
+                                                                        onClick={() => handleStatusUpdate(donation.id, 'completed')}
+                                                                        className="p-1.5 bg-emerald-100 dark:bg-emerald-900/50 hover:bg-emerald-200 dark:hover:bg-emerald-800 text-emerald-700 dark:text-emerald-400 rounded-lg transition-colors"
+                                                                        title="Verify Donation"
+                                                                    >
+                                                                        <CheckCircle2 className="w-4 h-4" />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 {role === 'admin' && (
