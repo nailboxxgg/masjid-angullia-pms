@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Calendar, Clock, MapPin, Users, ArrowLeft, Heart, Sparkles } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Heart, Sparkles } from "lucide-react";
 import { getEvents } from "@/lib/events";
 import { Event } from "@/lib/types";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
@@ -10,6 +10,7 @@ import Footer from "@/components/layout/Footer";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import EventRegistrationModal from "@/components/events/EventRegistrationModal";
+import Navbar from "@/components/layout/Navbar";
 
 export default function EventsPage() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -34,23 +35,10 @@ export default function EventsPage() {
 
     return (
         <div className="min-h-screen bg-secondary-50 dark:bg-secondary-950 flex flex-col transition-colors duration-300">
-            {/* Header Area */}
-            <div className="bg-white dark:bg-secondary-900 border-b border-secondary-100 dark:border-secondary-800 sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <Link
-                        href="/"
-                        className="flex items-center gap-2 text-secondary-600 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-bold text-sm"
-                    >
-                        <ArrowLeft className="w-5 h-5 md:w-4 md:h-4" />
-                        <span className="hidden xs:inline">Back</span>
-                    </Link>
-                    <h1 className="text-base md:text-xl font-bold font-heading text-secondary-900 dark:text-white truncate px-2">Upcoming Events</h1>
-                    <div className="w-10 md:w-12 shrink-0" />
-                </div>
-            </div>
+            <Navbar />
 
             {/* Main Content */}
-            <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-12">
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-12 pt-24">
                 <div className="mb-12">
                     <AnimationWrapper animation="reveal" duration={0.8}>
                         <div className="max-w-2xl">

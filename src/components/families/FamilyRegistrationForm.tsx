@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, Trash2, Send, CheckCircle, AlertCircle, User, MapPin, Phone, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { addFamily } from "@/lib/families";
+import { submitFeedback } from "@/lib/feedback";
 import { FamilyMember } from "@/lib/types";
 import { cn, normalizePhoneNumber } from "@/lib/utils";
 
@@ -65,6 +66,15 @@ export default function FamilyRegistrationForm({ onSuccess }: { onSuccess?: () =
             const result = await addFamily(familyData);
 
             if (result) {
+                // Trigger Admin Notification
+                await submitFeedback({
+                    name: headName,
+                    email: "N/A", // Email not currently collected in this form
+                    contactNumber: normalizePhoneNumber(phone),
+                    type: 'Registration',
+                    message: `New Family Registration: ${headName} with ${members.length + 1} total members. Address: ${address}`
+                });
+
                 setStatus('success');
                 if (onSuccess) setTimeout(onSuccess, 3000);
             } else {

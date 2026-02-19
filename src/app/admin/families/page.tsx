@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Search, Edit, Trash2, Users, Users2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import Modal from "@/components/ui/modal";
 import FamilyForm from "@/components/modules/families/FamilyForm";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -11,11 +12,12 @@ import { Family } from "@/lib/types";
 import { motion } from "framer-motion";
 
 export default function AdminFamiliesPage() {
+    const searchParams = useSearchParams();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
     const [familyToDelete, setFamilyToDelete] = useState<{ id: string, name: string } | null>(null);
-    const [searchTerm, setSearchTerm] = useState("");
+    const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || "");
     const [families, setFamilies] = useState<Family[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 

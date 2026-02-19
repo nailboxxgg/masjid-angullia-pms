@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, X, Clock, MapPin, Phone, Users, User, AlertCircle } from "lucide-react";
+import { Check, X, Clock, MapPin, Phone, Users, User, AlertCircle, Search } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { getPendingFamilies, updateFamily, deleteFamily } from "@/lib/families";
 import { Family } from "@/lib/types";
@@ -9,8 +10,10 @@ import { formatTimeAgo } from "@/lib/utils";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 
 export default function AdminRequestsPage() {
+    const searchParams = useSearchParams();
     const [requests, setRequests] = useState<Family[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || "");
     const [processingId, setProcessingId] = useState<string | null>(null);
     const [confirmAction, setConfirmAction] = useState<{ type: 'approve' | 'reject', family: Family } | null>(null);
 
@@ -24,6 +27,11 @@ export default function AdminRequestsPage() {
         setRequests(data);
         setIsLoading(false);
     };
+
+    const filteredRequests = requests.filter(request =>
+        (request.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (request.head || "").toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     const executeAction = async () => {
         if (!confirmAction) return;
@@ -58,9 +66,21 @@ export default function AdminRequestsPage() {
                         Manage pending family approvals.
                     </p>
                 </div>
-                <div className="flex items-center gap-2 text-sm font-bold bg-white/50 dark:bg-secondary-800/50 backdrop-blur-md px-6 py-3 rounded-2xl text-secondary-600 dark:text-secondary-300 border border-secondary-100 dark:border-secondary-700 shadow-sm">
-                    <Clock className="w-5 h-5" />
-                    <span>{requests.length} Pending Requests</span>
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <div className="relative w-full sm:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary-400" />
+                        <input
+                            type="text"
+                            placeholder="Search requests..."
+                            className="w-full pl-10 pr-4 py-3 rounded-2xl border-none font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white/50 dark:bg-secondary-800/50 backdrop-blur-md text-secondary-900 placeholder:text-secondary-400 dark:text-secondary-100 shadow-sm ring-1 ring-secondary-200 dark:ring-secondary-700 text-sm transition-all"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex items-center gap-2 text-sm font-bold bg-white/50 dark:bg-secondary-800/50 backdrop-blur-md px-6 py-3 rounded-2xl text-secondary-600 dark:text-secondary-300 border border-secondary-100 dark:border-secondary-700 shadow-sm">
+                        <Clock className="w-5 h-5" />
+                        <span>{filteredRequests.length} Pending</span>
+                    </div>
                 </div>
             </div>
 
@@ -70,17 +90,21 @@ export default function AdminRequestsPage() {
                         <div key={i} className="h-[400px] bg-white/20 dark:bg-secondary-900/20 rounded-[2rem] animate-pulse" />
                     ))}
                 </div>
-            ) : requests.length === 0 ? (
+            ) : filteredRequests.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 bg-white/40 dark:bg-secondary-900/40 backdrop-blur-xl rounded-[2.5rem] border border-dashed border-secondary-200 dark:border-secondary-800">
                     <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-green-500/10">
                         <Check className="w-12 h-12" />
                     </div>
-                    <h3 className="text-2xl font-black text-secondary-900 dark:text-white mb-2 font-heading">All Caught Up!</h3>
-                    <p className="text-secondary-500 dark:text-secondary-400 font-medium">No pending registration requests at the moment.</p>
+                    <h3 className="text-2xl font-black text-secondary-900 dark:text-white mb-2 font-heading">
+                        {searchTerm ? "No Matches Found" : "All Caught Up!"}
+                    </h3>
+                    <p className="text-secondary-500 dark:text-secondary-400 font-medium">
+                        {searchTerm ? "Try adjusting your search terms." : "No pending registration requests at the moment."}
+                    </p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {requests.map((request, idx) => (
+                    {filteredRequests.map((request, idx) => (
                         <AnimationWrapper key={request.id} animation="scaleIn" delay={idx * 0.05}>
                             <div className="h-full flex flex-col bg-white/60 dark:bg-secondary-900/60 backdrop-blur-xl rounded-[2rem] p-6 border border-white/50 dark:border-secondary-800 shadow-xl shadow-secondary-200/20 dark:shadow-none hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-6 opacity-[0.03] dark:opacity-[0.05] group-hover:opacity-10 transition-opacity duration-500">

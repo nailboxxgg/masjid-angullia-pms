@@ -21,8 +21,21 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
         setValidationError("");
 
         // Phone Validation
-        if (!contact.startsWith("09") && !contact.startsWith("+63")) {
-            setValidationError("Phone number must start with 09 or +63");
+        const isPlus63 = contact.startsWith("+63");
+        const is09 = contact.startsWith("09");
+
+        if (!isPlus63 && !is09) {
+            setValidationError("Mobile number must start with 09 or +63");
+            return;
+        }
+
+        if (isPlus63 && contact.length !== 13) {
+            setValidationError("Invalid format: +63 followed by 10 digits required (e.g. +639123456789)");
+            return;
+        }
+
+        if (is09 && contact.length !== 11) {
+            setValidationError("Invalid format: 11 digits required (e.g. 09123456789)");
             return;
         }
 
@@ -88,7 +101,22 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
                         required
                         value={contact}
                         onChange={(e) => {
-                            const val = e.target.value.replace(/[^\d+]/g, '');
+                            let val = e.target.value.replace(/[^\d+]/g, '');
+                            // Ensure + is only at the beginning
+                            if (val.includes('+') && val.indexOf('+') !== 0) {
+                                val = val.replace(/\+/g, '');
+                            }
+
+                            // Enforce Length Limits
+                            if (val.startsWith("+63")) {
+                                if (val.length > 13) return; // +63 + 10 digits = 13 chars
+                            } else if (val.startsWith("09")) {
+                                if (val.length > 11) return; // 09 + 9 digits = 11 chars
+                            } else {
+                                // Prevent infinite input if prefix isn't matched yet or invalid
+                                if (val.length > 13) return;
+                            }
+
                             setContact(val);
                             setValidationError("");
                         }}
@@ -98,7 +126,7 @@ export default function FeedbackForm({ onSuccess }: { onSuccess?: () => void }) 
                                 ? "border-red-300 focus:border-red-500 focus:ring-red-200 text-red-900 placeholder:text-red-300"
                                 : "border-secondary-200 dark:border-secondary-800 focus:border-primary-500 focus:ring-primary-500/20 text-secondary-900 dark:text-white"
                         )}
-                        placeholder="Mobile Number (e.g. 09...)"
+                        placeholder="Mobile Number (e.g. 09... or +63...)"
                         inputMode="tel"
                     />
                     {validationError && (

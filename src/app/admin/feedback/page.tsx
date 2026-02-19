@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { getFeedbacks, FeedbackData, updateFeedbackStatus, deleteFeedback, clearAllFeedbacks } from "@/lib/feedback";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Modal from "@/components/ui/modal";
-import { MessageSquare, Mail, Phone, Clock, Search, Filter, Trash2, Check, AlertCircle } from "lucide-react";
+import { MessageSquare, Mail, Phone, Clock, Search, Filter, Trash2, Check, AlertCircle, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -395,18 +396,32 @@ export default function AdminFeedbackPage() {
                             >
                                 Dismiss
                             </button>
-                            {selectedFeedback.status !== 'Resolved' && (
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
+                            {selectedFeedback.type === 'Registration' ? (
+                                <Link
+                                    href={`/admin/requests?search=${encodeURIComponent(selectedFeedback.name)}`}
                                     onClick={() => {
-                                        handleUpdateStatus(selectedFeedback.id!, 'Resolved');
+                                        // Optional: Mark as Read automatically when navigating? 
+                                        // For now, let's just navigate. The user can resolve it later or we can add auto-resolve logic.
                                         setIsViewModalOpen(false);
                                     }}
-                                    className="w-full sm:w-auto px-6 py-3.5 bg-emerald-600 dark:bg-emerald-700 rounded-2xl text-white hover:bg-emerald-700 dark:hover:bg-emerald-800 text-xs font-black uppercase tracking-widest shadow-xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-2"
+                                    className="w-full sm:w-auto px-6 py-3.5 bg-blue-600 dark:bg-blue-700 rounded-2xl text-white hover:bg-blue-700 dark:hover:bg-blue-800 text-xs font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 transition-all flex items-center justify-center gap-2"
                                 >
-                                    <Check className="w-4 h-4" /> Finalize & Resolve
-                                </motion.button>
+                                    <Users className="w-4 h-4" /> Approve Request
+                                </Link>
+                            ) : (
+                                selectedFeedback.status !== 'Resolved' && (
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => {
+                                            handleUpdateStatus(selectedFeedback.id!, 'Resolved');
+                                            setIsViewModalOpen(false);
+                                        }}
+                                        className="w-full sm:w-auto px-6 py-3.5 bg-emerald-600 dark:bg-emerald-700 rounded-2xl text-white hover:bg-emerald-700 dark:hover:bg-emerald-800 text-xs font-black uppercase tracking-widest shadow-xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Check className="w-4 h-4" /> Finalize & Resolve
+                                    </motion.button>
+                                )
                             )}
                         </div>
                     </div>
