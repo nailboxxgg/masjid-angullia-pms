@@ -1,6 +1,6 @@
 
 import { db } from "./firebase";
-import { collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, serverTimestamp, orderBy } from "firebase/firestore";
 
 export interface Subscriber {
     id: string;
@@ -46,6 +46,28 @@ export const subscribeToNotifications = async (phoneNumber: string): Promise<{ s
     } catch (error) {
         console.error("Subscription error:", error);
         return { success: false, message: "Failed to subscribe. Please try again later." };
+    }
+};
+
+export const getSubscribers = async (): Promise<Subscriber[]> => {
+    try {
+        const q = query(
+            collection(db, "subscribers"),
+            orderBy("createdAt", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data() as any;
+            return {
+                id: doc.id,
+                phoneNumber: data.phoneNumber,
+                // Handle Firestore Timestamp or number or missing
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : (typeof data.createdAt === 'number' ? data.createdAt : Date.now())
+            } as Subscriber;
+        });
+    } catch (error) {
+        console.error("Error fetching subscribers:", error);
+        return [];
     }
 };
 

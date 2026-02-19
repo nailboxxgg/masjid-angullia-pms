@@ -7,39 +7,34 @@ import { formatTimeAgo, cn } from "@/lib/utils";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import FacebookEmbed from "@/components/ui/FacebookEmbed";
 import { toggleLikeAnnouncement, addCommentToAnnouncement } from "@/lib/announcements";
-import { auth } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
 import { motion, AnimatePresence } from "framer-motion";
+
+import { User } from "firebase/auth";
 
 interface SocialPostProps {
     post: Announcement;
     delay?: number;
+    currentUser?: User | null;
 }
 
-export default function SocialPost({ post, delay = 0 }: SocialPostProps) {
+export default function SocialPost({ post, delay = 0, currentUser = null }: SocialPostProps) {
     const [likes, setLikes] = useState<string[]>(post.likes || []);
     const [comments, setComments] = useState<Comment[]>(post.comments || []);
     const [isLiked, setIsLiked] = useState(false);
-    const [userId, setUserId] = useState<string | null>(null);
-    const [userName, setUserName] = useState<string | null>(null);
     const [showComments, setShowComments] = useState(false);
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const userId = currentUser?.uid;
+    const userName = currentUser?.displayName || currentUser?.email?.split('@')[0] || "User";
+
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                setUserId(user.uid);
-                setUserName(user.displayName || user.email?.split('@')[0] || "User");
-                setIsLiked(likes.includes(user.uid));
-            } else {
-                setUserId(null);
-                setUserName(null);
-                setIsLiked(false);
-            }
-        });
-        return () => unsubscribe();
-    }, [likes]);
+        if (userId) {
+            setIsLiked(likes.includes(userId));
+        } else {
+            setIsLiked(false);
+        }
+    }, [likes, userId]);
 
     const handleLike = async () => {
         if (!userId) {

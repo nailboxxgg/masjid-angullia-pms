@@ -47,16 +47,29 @@ export const getFamilies = async (limitCount = 100): Promise<Family[]> => {
 
 export const getPendingFamilies = async (): Promise<Family[]> => {
     try {
+        // Query only by status to avoid needing a composite index
         const q = query(
             collection(db, COLLECTION_NAME),
-            where("status", "==", "pending"),
-            orderBy("createdAt", "desc")
+            where("status", "==", "pending")
         );
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        } as Family));
+
+        const families = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                // Ensure createdAt is compatible with Family interface (number)
+                createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : (data.createdAt || Date.now())
+            } as Family;
+        });
+
+        // Sort client-side
+        return families.sort((a, b) => {
+            const timeA = typeof a.createdAt === 'number' ? a.createdAt : 0;
+            const timeB = typeof b.createdAt === 'number' ? b.createdAt : 0;
+            return timeB - timeA;
+        });
     } catch (error) {
         console.error("Error fetching pending families:", error);
         return [];

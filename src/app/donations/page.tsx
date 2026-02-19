@@ -33,16 +33,16 @@ const funds = [
         image: "/images/mosque2.png" // Placeholder
     },
     {
-        id: "ramadan",
-        name: "Iftar & Ramadan",
-        description: "Provide Iftar meals for the community during the holy month.",
+        id: "meals",
+        name: "Community Meals",
+        description: "Provide meals for the community during gatherings and special occasions.",
         icon: Utensils,
         color: "bg-orange-500",
         image: "/images/prayer.png" // Placeholder
     },
     {
-        id: "general",
-        name: "General Zakat/Sadaqah",
+        id: "welfare",
+        name: "Community Welfare",
         description: "General funds to be used where most needed for the community.",
         icon: Heart,
         color: "bg-pink-500",
@@ -69,9 +69,17 @@ export default function DonationsPage() {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            router.push("/admin");
-        } catch (err: unknown) {
+            try {
+                router.push("/admin");
+            } catch (navError) {
+                window.location.href = "/admin";
+            }
+        } catch (err: any) {
             console.error(err);
+            if (err.message && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
+                window.location.href = "/admin";
+                return;
+            }
             setLoginError("Invalid admin credentials.");
         } finally {
             setIsLoading(false);

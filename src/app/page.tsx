@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { ArrowRight, MapPin, Heart, Clock, Lock, Smartphone, Eye, EyeOff, ZoomIn } from "lucide-react";
+import { ArrowRight, MapPin, Heart, Clock, Lock, Smartphone, Eye, EyeOff, ZoomIn, Zap } from "lucide-react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc, setDoc, collection, query, where, limit, getDocs } from "firebase/firestore";
 import { getAnnouncements } from "@/lib/announcements";
@@ -19,6 +19,7 @@ import { Event, Donation } from "@/lib/types";
 import { getDonations } from "@/lib/donations";
 import EventRegistrationModal from "@/components/events/EventRegistrationModal";
 import SubscriptionModal from "@/components/ui/SubscriptionModal";
+import DonationModal from "@/components/ui/DonationModal";
 import { cn, formatTimeAgo } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import SocialPost from "@/components/feed/SocialPost";
@@ -42,12 +43,14 @@ export default function Home() {
   const [isEventRegistrationOpen, setIsEventRegistrationOpen] = useState(false);
   const [isFamilyRegistrationOpen, setIsFamilyRegistrationOpen] = useState(false);
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
 
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [selectedFullImage, setSelectedFullImage] = useState<{ src: string, alt: string } | null>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [mounted, setMounted] = useState(false);
   const [loginStage, setLoginStage] = useState<'role' | 'login'>('role');
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -71,9 +74,15 @@ export default function Home() {
     const handleOpenRegistration = () => setIsFamilyRegistrationOpen(true);
     window.addEventListener('open-family-registration-modal', handleOpenRegistration);
 
+    // Auth Listener
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setCurrentUser(user);
+    });
+
     return () => {
       window.removeEventListener('open-login-modal', handleOpenLogin);
       window.removeEventListener('open-family-registration-modal', handleOpenRegistration);
+      unsubscribe();
     };
   }, []);
 
@@ -249,66 +258,77 @@ export default function Home() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
             {/* Left Column: Announcements & Events (Span 2) */}
-            <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.5} className="lg:col-span-2">
-              <div className="space-y-6 md:space-y-8">
-                {mounted && announcements.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                    {announcements.slice(0, 2).map((post: Announcement, idx: number) => (
-                      <AnnouncementCard
-                        key={post.id}
-                        post={post}
-                        delay={0.5 + (idx * 0.1)}
-                        onClick={() => setSelectedAnnouncement(post)}
-                      />
-                    ))}
-                  </div>
-                ) : mounted ? (
-                  <div
-                    className="text-center py-20 bg-white dark:bg-secondary-900/50 rounded-3xl border border-dashed border-secondary-200 dark:border-secondary-800 transition-colors duration-300"
-                  >
-                    <p className="text-secondary-500 dark:text-secondary-400 font-medium">No updates at the moment.</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {[1, 2].map((i) => (
-                      <div key={i} className="h-64 bg-secondary-100 dark:bg-secondary-800 animate-pulse rounded-3xl" />
-                    ))}
-                  </div>
-                )}
+            <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.5} className="lg:col-span-2 flex flex-col h-full">
+              <div className={cn(
+                "rounded-3xl p-6 md:p-8 relative overflow-hidden transition-all duration-500 border border-white/50 dark:border-white/5 shadow-2xl backdrop-blur-sm flex-1 flex flex-col",
+                "bg-white/90", // Standard (Light Mode)
+                "dark:bg-secondary-900/90", // Standard (Dark Mode)
+              )}>
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-secondary-500/5 dark:bg-secondary-500/10 rounded-full blur-3xl"></div>
 
-                {mounted && announcements.length > 0 && (
-                  <div className="flex justify-center pt-2 md:pt-4">
-                    <Link
-                      href="/updates"
-                      className="group flex items-center gap-2 px-8 py-4 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-900 dark:text-white font-bold rounded-2xl hover:bg-secondary-50 dark:hover:bg-secondary-800 transition-all shadow-lg shadow-secondary-200/20 dark:shadow-none w-full md:w-auto justify-center"
-                    >
-                      View All Updates
-                      <div className="w-6 h-6 rounded-full bg-secondary-100 dark:bg-secondary-800 flex items-center justify-center group-hover:bg-primary-500 group-hover:text-white transition-colors ml-2">
-                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                      </div>
+                <div className="relative z-10 flex flex-col flex-1">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold font-heading flex items-center gap-2">
+                      <Zap className="w-6 h-6 text-accent-500 fill-accent-500" />
+                      Latest Updates
+                    </h3>
+                    <Link href="/updates" className="text-sm font-bold text-primary-600 hover:text-primary-700 dark:text-primary-400 flex items-center gap-1">
+                      View All <ArrowRight className="w-4 h-4" />
                     </Link>
                   </div>
-                )}
+
+                  {mounted && announcements.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                      {announcements.slice(0, 2).map((post: Announcement, idx: number) => (
+                        <AnnouncementCard
+                          key={post.id}
+                          post={post}
+                          delay={0.5 + (idx * 0.1)}
+                          onClick={() => setSelectedAnnouncement(post)}
+                        />
+                      ))}
+                    </div>
+                  ) : mounted ? (
+                    <div
+                      className="text-center py-20 bg-secondary-50 dark:bg-white/5 rounded-3xl border border-dashed border-secondary-200 dark:border-secondary-800 transition-colors duration-300 flex-1 flex items-center justify-center"
+                    >
+                      <p className="text-secondary-500 dark:text-secondary-400 font-medium">No updates at the moment.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {[1, 2].map((i) => (
+                        <div key={i} className="h-64 bg-secondary-100 dark:bg-white/5 animate-pulse rounded-3xl" />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Footer Action used to be separate, now integrated or removed if Header link is enough */}
+                </div>
               </div>
             </AnimationWrapper>
 
             {/* Right Column: Recent Donations & Quick Stats (Span 1) */}
-            <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.7}>
-              <div className="space-y-8">
+            <AnimationWrapper withScroll animation="reveal" duration={0.8} delay={0.7} className="flex flex-col h-full">
+              <div className="space-y-8 flex-1 flex flex-col">
+
+
                 {/* Donations Card */}
                 <div
                   className={cn(
-                    "rounded-3xl p-6 md:p-8 relative overflow-hidden transition-all duration-500 border border-white/50 dark:border-white/5 shadow-2xl backdrop-blur-sm",
+                    "rounded-3xl p-6 md:p-8 relative overflow-hidden transition-all duration-500 border border-white/50 dark:border-white/5 shadow-2xl backdrop-blur-sm flex-1 flex flex-col",
                     "bg-white/90", // Standard (Light Mode)
                     "dark:bg-secondary-900/90", // Standard (Dark Mode)
                     (!mounted || recentDonations.length === 0) ? "min-h-[200px]" : "min-h-[240px]"
                   )}>
                   <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-3xl"></div>
                   <div className="relative z-10">
-                    <h3 className="text-2xl font-bold font-heading mb-6 flex items-center gap-2">
-                      <Heart className="w-6 h-6 text-pink-500 fill-pink-500 animate-pulse" />
-                      Recent Donations
-                    </h3>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-2xl font-bold font-heading flex items-center gap-2">
+                        <Heart className="w-6 h-6 text-pink-500 fill-pink-500 animate-pulse" />
+                        Recent Donations
+                      </h3>
+
+                    </div>
 
                     <div className="relative overflow-hidden group/marquee">
                       {!mounted ? (
@@ -365,6 +385,26 @@ export default function Home() {
                         </div>
                       )}
                     </div>
+
+                    {recentDonations.length > 0 && (
+                      <div className="mt-6">
+                        <button
+                          onClick={() => setIsDonationModalOpen(true)}
+                          className="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-4 text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-600/30"
+                        >
+                          <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-10 mix-blend-overlay"></div>
+                          <div className="relative z-10 flex items-center justify-between">
+                            <div className="text-left">
+                              <span className="block text-[10px] font-bold uppercase tracking-widest text-primary-200 mb-0.5">Make an Impact</span>
+                              <span className="block text-xl font-black font-heading">Donate Now</span>
+                            </div>
+                            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition-colors">
+                              <Heart className="w-5 h-5 fill-white" />
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    )}
 
                     {recentDonations.length === 0 && (
                       <div className={cn(
@@ -495,6 +535,12 @@ export default function Home() {
         onClose={() => setIsSubscriptionOpen(false)}
       />
 
+      <DonationModal
+        isOpen={isDonationModalOpen}
+        onClose={() => setIsDonationModalOpen(false)}
+        fundName="General Fund"
+      />
+
       <FamilyRegistrationModal
         isOpen={isFamilyRegistrationOpen}
         onClose={() => setIsFamilyRegistrationOpen(false)}
@@ -509,7 +555,7 @@ export default function Home() {
         className="max-w-2xl p-0 bg-transparent border-none shadow-none"
         hideScrollbar={true}
       >
-        {selectedAnnouncement && <SocialPost post={selectedAnnouncement} />}
+        {selectedAnnouncement && <SocialPost post={selectedAnnouncement} currentUser={currentUser} />}
       </Modal>
 
       <Modal

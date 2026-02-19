@@ -3,27 +3,58 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Clock, ShieldCheck, ThumbsUp, MessageCircle, MoreHorizontal, ArrowLeft, Heart } from "lucide-react";
-import { getAnnouncements } from "@/lib/announcements";
+import { getAnnouncements, getPaginatedAnnouncements } from "@/lib/announcements";
 import { Announcement } from "@/lib/types";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
 import { cn, formatTimeAgo } from "@/lib/utils";
 import SocialPost from "@/components/feed/SocialPost";
 import Link from "next/link";
+import { auth } from "@/lib/firebase";
 
 export default function UpdatesPage() {
     const [updates, setUpdates] = useState<Announcement[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [lastDoc, setLastDoc] = useState<any>(null);
+    const [hasMore, setHasMore] = useState(true);
+    const [currentUser, setCurrentUser] = useState<any>(null);
 
+    // Auth Listener - Single Subscription for all posts
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            setCurrentUser(user);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // Initial Fetch
     useEffect(() => {
         const fetchUpdates = async () => {
             setIsLoading(true);
-            const data = await getAnnouncements(30);
+            const { data, lastDoc: last } = await getPaginatedAnnouncements(10);
             setUpdates(data || []);
+            setLastDoc(last);
+            setHasMore(data.length === 10); // Simple check, might need robust check
             setIsLoading(false);
         };
         fetchUpdates();
     }, []);
+
+    const handleLoadMore = async () => {
+        if (isLoadingMore || !lastDoc) return;
+        setIsLoadingMore(true);
+        const { data, lastDoc: last } = await getPaginatedAnnouncements(10, lastDoc);
+
+        if (data.length > 0) {
+            setUpdates(prev => [...prev, ...data]);
+            setLastDoc(last);
+            setHasMore(data.length === 10);
+        } else {
+            setHasMore(false);
+        }
+        setIsLoadingMore(false);
+    };
 
     return (
         <div className="min-h-screen bg-secondary-50 dark:bg-secondary-950 flex flex-col transition-colors duration-300">
@@ -71,8 +102,32 @@ export default function UpdatesPage() {
                 ) : (
                     <div className="space-y-4 md:space-y-6">
                         {updates.map((post, idx) => (
-                            <SocialPost key={post.id} post={post} delay={idx * 0.05} />
+                            <SocialPost
+                                key={post.id}
+                                post={post}
+                                delay={idx < 5 ? idx * 0.05 : 0}
+                                currentUser={currentUser}
+                            />
                         ))}
+
+                        {hasMore && (
+                            <div className="pt-4 flex justify-center">
+                                <button
+                                    onClick={handleLoadMore}
+                                    disabled={isLoadingMore}
+                                    className="px-6 py-2.5 bg-white dark:bg-secondary-800 border border-secondary-200 dark:border-secondary-700 text-secondary-600 dark:text-secondary-300 font-bold rounded-xl hover:bg-secondary-50 dark:hover:bg-secondary-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {isLoadingMore ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                            Loading...
+                                        </>
+                                    ) : (
+                                        "Load More Updates"
+                                    )}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </main>

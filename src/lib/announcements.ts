@@ -50,6 +50,53 @@ export const getAnnouncements = async (limitCount = 10): Promise<Announcement[]>
     }
 };
 
+export const getPaginatedAnnouncements = async (
+    limitCount = 10,
+    lastVisible: any = null
+): Promise<{ data: Announcement[]; lastDoc: any }> => {
+    try {
+        let q = query(
+            collection(db, COLLECTION_NAME),
+            orderBy("createdAt", "desc"),
+            limit(limitCount)
+        );
+
+        if (lastVisible) {
+            const { startAfter } = await import("firebase/firestore");
+            q = query(
+                collection(db, COLLECTION_NAME),
+                orderBy("createdAt", "desc"),
+                startAfter(lastVisible),
+                limit(limitCount)
+            );
+        }
+
+        const querySnapshot = await getDocs(q);
+        const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+
+        const data = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                title: data.title,
+                content: data.content,
+                date: data.date,
+                type: data.type,
+                priority: data.priority,
+                externalUrl: data.externalUrl,
+                createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : (data.createdAt || Date.now()),
+                likes: data.likes || [],
+                comments: data.comments || []
+            } as Announcement;
+        });
+
+        return { data, lastDoc };
+    } catch (error) {
+        console.error("Error fetching paginated announcements:", error);
+        return { data: [], lastDoc: null };
+    }
+};
+
 export const createAnnouncement = async (announcement: Omit<Announcement, "id" | "createdAt">): Promise<string | null> => {
     try {
         const docRef = await addDoc(collection(db, COLLECTION_NAME), {

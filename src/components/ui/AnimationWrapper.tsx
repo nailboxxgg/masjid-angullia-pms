@@ -56,7 +56,7 @@ export default function AnimationWrapper({
             animate={!mounted ? "hidden" : (withScroll ? undefined : "visible")}
             whileInView={mounted && withScroll ? "visible" : undefined}
             exit="hidden"
-            viewport={withScroll ? { once: false, margin: "-100px" } : undefined}
+            viewport={withScroll ? { once: true, margin: "-50px" } : undefined}
             variants={variants[animation]}
             transition={{ duration, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
             className={className}

@@ -19,7 +19,7 @@ export default function FamilyRegistrationModal({ isOpen, onClose }: FamilyRegis
             className="max-w-2xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl"
             hideScrollbar={true}
         >
-            <div className="p-6 md:p-8 bg-white dark:bg-secondary-900 max-h-[85vh] overflow-y-auto overflow-x-hidden scrollbar-hide">
+            <div className="p-6 md:p-8 bg-white dark:bg-secondary-900">
                 <div className="mb-8">
                     <h2 className="text-2xl font-black text-secondary-900 dark:text-white font-heading tracking-tight mb-2">
                         Join Our Community

@@ -9,6 +9,65 @@ import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { createStaffAccountDirectly, getStaffMembers, revokeStaffAccess, StaffMember } from "@/lib/staff";
 import { cn } from "@/lib/utils";
+import { getSubscribers, Subscriber } from "@/lib/notifications";
+
+function SubscriberManager() {
+    const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const load = async () => {
+            const data = await getSubscribers();
+            setSubscribers(data);
+            setIsLoading(false);
+        };
+        load();
+    }, []);
+
+    return (
+        <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm transition-all hover:shadow-2xl hover:border-primary-200 dark:hover:border-primary-900/50 rounded-2xl overflow-hidden group">
+            <CardHeader className="border-b border-secondary-100 dark:border-secondary-800 pb-4 bg-secondary-50/30 dark:bg-secondary-800/20 group-hover:bg-secondary-50/80 dark:group-hover:bg-secondary-800/40 transition-colors">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl dark:bg-blue-900/20 dark:text-blue-400 ring-1 ring-blue-100 dark:ring-blue-800/50">
+                        <User className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-lg font-bold text-secondary-900 dark:text-white uppercase tracking-tight">SMS Subscribers</CardTitle>
+                        <CardDescription className="text-secondary-500 font-medium text-xs mt-0.5">Manage community members subscribed to text alerts.</CardDescription>
+                    </div>
+                    <div className="ml-auto bg-primary-50 dark:bg-primary-900/20 px-3 py-1 rounded-full border border-primary-100 dark:border-primary-800/50">
+                        <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400 uppercase tracking-widest">{subscribers.length} ACTIVE</span>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+                <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
+                    {isLoading ? (
+                        <p className="text-center text-sm text-secondary-500 py-4">Loading list...</p>
+                    ) : subscribers.length === 0 ? (
+                        <p className="text-center text-sm text-secondary-500 py-4">No subscribers yet.</p>
+                    ) : (
+                        subscribers.map(sub => (
+                            <div key={sub.id} className="flex items-center justify-between p-3 bg-secondary-50 dark:bg-secondary-800/30 rounded-lg border border-secondary-100 dark:border-secondary-800">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs">
+                                        PH
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-secondary-900 dark:text-white text-sm">{sub.phoneNumber}</p>
+                                        <p className="text-[10px] text-secondary-500">
+                                            Joined {sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'Unknown'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 export default function AdminSettingsPage() {
     const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +84,7 @@ export default function AdminSettingsPage() {
     const [inviteEmail, setInviteEmail] = useState("");
     const [inviteName, setInviteName] = useState("");
     const [invitePassword, setInvitePassword] = useState("");
-    const [inviteRole, setInviteRole] = useState<StaffMember['role']>("staff");
+    const [inviteRole, setInviteRole] = useState<StaffMember['role']>("admin");
     const [isInviting, setIsInviting] = useState(false);
 
     useEffect(() => {
@@ -332,14 +391,11 @@ export default function AdminSettingsPage() {
                                         <div className="relative">
                                             <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400 pointer-events-none" />
                                             <select
-                                                value={inviteRole}
-                                                onChange={(e) => setInviteRole(e.target.value as any)}
-                                                className="flex h-12 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all pl-10 pr-4 shadow-sm appearance-none"
+                                                value="admin"
+                                                disabled
+                                                className="flex h-12 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none bg-secondary-50 dark:bg-secondary-900 text-secondary-500 dark:text-secondary-400 transition-all pl-10 pr-4 shadow-sm appearance-none cursor-not-allowed"
                                             >
-                                                <option value="staff">Staff Member</option>
-                                                <option value="volunteer">Volunteer</option>
                                                 <option value="admin">Administrator</option>
-                                                <option value="employee">Employee</option>
                                             </select>
                                         </div>
                                     </div>
@@ -441,6 +497,11 @@ export default function AdminSettingsPage() {
                             </div>
                         </CardContent>
                     </Card>
+                </motion.div>
+
+                {/* Subscriber Management */}
+                <motion.div variants={itemVariants} className="lg:col-span-2">
+                    <SubscriberManager />
                 </motion.div>
 
                 {/* Notifications */}

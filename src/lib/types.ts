@@ -4,7 +4,7 @@ export interface Donation {
     donorName: string; // 'Anonymous' if isAnonymous is true
     contactNumber?: string;
     email?: string;
-    type: 'Zakat' | 'Sadaqah' | 'Construction' | 'Education' | 'Other' | 'General';
+    type: 'Community Welfare' | 'General Donation' | 'Construction' | 'Education' | 'Other' | 'General';
     date: number; // timestamp
     status: 'pending' | 'completed' | 'failed';
     paymentMethod?: 'gcash' | 'paymaya' | 'grab_pay' | 'bank_transfer' | 'qr_ph';

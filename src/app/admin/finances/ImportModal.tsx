@@ -89,8 +89,8 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                 // Validate Type
                 let type: Donation['type'] = 'General';
                 const typeStr = String(typeRaw).toLowerCase();
-                if (typeStr.includes('zakat')) type = 'Zakat';
-                else if (typeStr.includes('sadaqah')) type = 'Sadaqah';
+                if (typeStr.includes('zakat')) type = 'Community Welfare';
+                else if (typeStr.includes('sadaqah')) type = 'General Donation';
                 else if (typeStr.includes('construction')) type = 'Construction';
                 else if (typeStr.includes('education')) type = 'Education';
 

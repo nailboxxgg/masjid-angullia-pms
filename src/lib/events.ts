@@ -133,15 +133,31 @@ export const getRegistrants = async (eventId: string): Promise<Registrant[]> => 
     }
 };
 
-export const deleteEvent = async (id: string, registrantsCount: number = 0) => {
+export const deleteEvent = async (id: string) => {
     try {
-        // If there are registrants, we should probably delete them too or archive them.
-        // For now, simpler delete.
-        const docRef = doc(db, COLLECTION_NAME, id);
-        await deleteDoc(docRef);
+        // 1. Delete associated registrants first to avoid orphans
+        const registrantsQuery = query(
+            collection(db, "event_registrants"),
+            where("eventId", "==", id)
+        );
+        const registrantsSnapshot = await getDocs(registrantsQuery);
+
+        // Execute deletes in a batch (limit 500 operations, usually sufficient for this scale)
+        const { writeBatch } = await import("firebase/firestore");
+        const batch = writeBatch(db);
+
+        registrantsSnapshot.docs.forEach((doc) => {
+            batch.delete(doc.ref);
+        });
+
+        // 2. Delete the event document
+        const eventRef = doc(db, COLLECTION_NAME, id);
+        batch.delete(eventRef);
+
+        await batch.commit();
         return true;
     } catch (error) {
-        console.error("Error deleting event:", error);
+        console.error("Error deleting event and registrants:", error);
         return false;
     }
 };

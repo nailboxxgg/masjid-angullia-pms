@@ -18,6 +18,15 @@ import { Donation } from "./types";
 
 const COLLECTION_NAME = "donations";
 
+// Helper to map legacy types to new types
+const mapDonationType = (type: string): Donation['type'] => {
+    switch (type) {
+        case 'Zakat': return 'Community Welfare';
+        case 'Sadaqah': return 'General Donation';
+        default: return type as Donation['type'];
+    }
+};
+
 export const getDonations = async (limitCount = 50): Promise<Donation[]> => {
     try {
         const q = query(
@@ -33,7 +42,7 @@ export const getDonations = async (limitCount = 50): Promise<Donation[]> => {
                 id: doc.id,
                 amount: data.amount,
                 donorName: data.donorName,
-                type: data.type,
+                type: mapDonationType(data.type),
                 date: data.date instanceof Timestamp ? data.date.toMillis() : new Date(data.date).getTime(),
                 email: data.email,
                 isAnonymous: data.isAnonymous,
@@ -97,24 +106,40 @@ export interface DonationStats {
 
 export const getDonationStats = async (): Promise<DonationStats> => {
     try {
-        // Fetch all donations (or a large limit for now) for aggregation
-        // In production, use Firestore Aggregation Queries
-        const donations = await getDonations(500);
+        // Fetch recent donations for the list
+        const recentDonations = await getDonations(10);
 
-        const totalCollected = donations.reduce((sum, d) => sum + d.amount, 0);
+        // Fetch larger set for stats aggregation
+        // TODO: Replace with Firestore Aggregation Queries in production to avoid high read costs
+        const q = query(
+            collection(db, COLLECTION_NAME),
+            orderBy("date", "desc"),
+            limit(500)
+        );
+        const querySnapshot = await getDocs(q);
+        const allDonations = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                ...data,
+                type: mapDonationType(data.type),
+                date: data.date instanceof Timestamp ? data.date.toMillis() : new Date(data.date).getTime(),
+            } as Donation;
+        });
+
+        const totalCollected = allDonations.reduce((sum, d) => sum + (d.amount || 0), 0);
 
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
 
-        const monthlyCollected = donations
+        const monthlyCollected = allDonations
             .filter(d => {
                 const date = new Date(d.date);
                 return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
             })
-            .reduce((sum, d) => sum + d.amount, 0);
+            .reduce((sum, d) => sum + (d.amount || 0), 0);
 
         const breakdown: Record<string, number> = {};
-        donations.forEach(d => {
+        allDonations.forEach(d => {
             const type = d.type || 'Other';
             breakdown[type] = (breakdown[type] || 0) + d.amount;
         });
@@ -123,7 +148,7 @@ export const getDonationStats = async (): Promise<DonationStats> => {
             totalCollected,
             monthlyCollected,
             breakdown,
-            recentDonations: donations.slice(0, 10)
+            recentDonations
         };
     } catch (error) {
         console.error("Error fetching stats:", error);

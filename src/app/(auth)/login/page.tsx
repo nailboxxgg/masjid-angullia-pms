@@ -105,7 +105,11 @@ function LoginForm() {
 
                 // STRICT ACCESS: Only Admins can log in to the portal
                 if (role === 'admin') {
-                    router.push("/admin");
+                    try {
+                        router.push("/admin");
+                    } catch (navError) {
+                        window.location.href = "/admin";
+                    }
                     return;
                 } else if (['staff', 'volunteer', 'employee'].includes(role)) {
                     // Block other staff roles
@@ -118,8 +122,13 @@ function LoginForm() {
 
             // Default redirect for families
             router.push("/");
-        } catch (err: unknown) {
+        } catch (err: any) {
             console.error(err);
+            // Fallback for network/navigation errors
+            if (err.message && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
+                window.location.href = "/";
+                return;
+            }
             setError("Invalid credentials. Please check your email and password.");
         } finally {
             setLoading(false);

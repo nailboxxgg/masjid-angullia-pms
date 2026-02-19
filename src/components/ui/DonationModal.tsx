@@ -54,9 +54,9 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                 let donationType: Donation['type'] = 'General';
                 const lowerFund = fundName.toLowerCase();
                 if (lowerFund.includes('education')) donationType = 'Education';
-                else if (lowerFund.includes('ramadan') || lowerFund.includes('iftar')) donationType = 'Sadaqah';
+                else if (lowerFund.includes('meals')) donationType = 'General Donation';
                 else if (lowerFund.includes('construction') || lowerFund.includes('mosque')) donationType = 'Construction';
-                else if (lowerFund.includes('zakat')) donationType = 'Zakat';
+                else if (lowerFund.includes('welfare')) donationType = 'Community Welfare';
 
                 await addDonation({
                     amount: transaction.amount,
@@ -71,13 +71,21 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                     message: `Donation to ${fundName}`
                 });
 
-                router.push("/donations/success");
+                try {
+                    router.push("/donations/success");
+                } catch {
+                    window.location.href = "/donations/success";
+                }
             } else {
-                router.push("/donations/failed");
+                try {
+                    router.push("/donations/failed");
+                } catch {
+                    window.location.href = "/donations/failed";
+                }
             }
         } catch (error) {
             console.error("Donation processing error:", error);
-            router.push("/donations/failed");
+            window.location.href = "/donations/failed";
         }
     };
 
