@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // -- Helper Functions --
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // -- Admin & Staff Collections --
+    // Only authenticated users (admins/staff) can read/write data here.
+    match /attendance/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /staff/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /users/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /admin_presence/{document=**} { allow read, write: if isAuthenticated(); }
+
+    // -- Public Content (Read Only for Public) --
+    // Anyone can view these, but only Admins can change them.
+    match /events/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /announcements/{document=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // -- Public Submissions (Create Only for Public) --
+    // Anyone can submit, but only Admins can view/edit/delete the list.
+    match /feedback/{document=**} {
+      allow create: if true;
+      allow read, update, delete: if isAuthenticated();
+    }
+    match /subscribers/{document=**} {
+      allow create: if true;
+      allow read, update, delete: if isAuthenticated();
+    }
+    match /donations/{document=**} {
+      allow create: if true;
+      allow read, update, delete: if isAuthenticated();
+    }
+  }
+}

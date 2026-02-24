@@ -21,45 +21,16 @@ function AdminLayoutContent({
 }) {
     const router = useRouter();
     const pathname = usePathname();
-    const { role, loading, user } = useAdmin();
+    const { loading, user } = useAdmin();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         let stopHeartbeat: (() => void) | undefined;
 
         if (!loading) {
-            if (!user || !role || !['admin', 'staff', 'volunteer', 'employee'].includes(role)) {
+            if (!user) {
                 router.push("/");
             } else {
-                // Route Protection for Non-Admin roles
-                if (role !== 'admin') {
-                    // Volunteers: ONLY Attendance
-                    if (role === 'volunteer') {
-                        if (pathname !== '/admin/attendance') {
-                            console.warn(`Volunteer access redirected to attendance from ${pathname}`);
-                            router.push("/admin/attendance");
-                        }
-                    } else {
-                        // Staff / Employees: Limited routes
-                        const adminOnlyRoutes = [
-                            '/admin/families',
-                            '/admin/settings',
-                            '/admin/feedback',
-                            '/admin/feed'
-                        ];
-
-                        if (adminOnlyRoutes.some(route => pathname.startsWith(route)) || pathname === '/admin' || pathname === '/admin/') {
-                            // If they shouldn't see dashboard either, redirect to attendance
-                            if (pathname === '/admin' || pathname === '/admin/') {
-                                router.push("/admin/attendance");
-                            } else {
-                                console.warn(`Access denied for role ${role} to ${pathname}`);
-                                router.push("/admin/attendance"); // Default fallback
-                            }
-                        }
-                    }
-                }
-
                 // User is authorized
                 stopHeartbeat = startPresenceHeartbeat();
             }
@@ -102,7 +73,7 @@ function AdminLayoutContent({
                 window.removeEventListener(event, resetTimer);
             });
         };
-    }, [router, user, role, loading]);
+    }, [router, user, loading]);
 
     if (loading) {
         return (
@@ -112,16 +83,7 @@ function AdminLayoutContent({
         );
     }
 
-    if (!user || !role) return null;
-
-    // Strict Render Guard: Prevent rendering children if user is a volunteer attempting to access dashboard or other routes
-    if (role === 'volunteer' && pathname !== '/admin/attendance') {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-secondary-950">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400"></div>
-            </div>
-        );
-    }
+    if (!user) return null;
 
     return (
         <div className="flex min-h-screen bg-slate-50 dark:bg-secondary-950 text-secondary-900 dark:text-secondary-100">

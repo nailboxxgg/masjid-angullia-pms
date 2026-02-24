@@ -5,7 +5,11 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query } from "firebase/firestore";
 import { getSMSProvider } from "@/lib/sms";
 
-export async function broadcastSMSAction(message: string, clientPhoneNumbers?: string[]) {
+type SMSBroadcastResult =
+    | { success: true; sent: number; total: number; results: any[]; message?: string; provider?: string }
+    | { success: false; error: string };
+
+export async function broadcastSMSAction(message: string, clientPhoneNumbers?: string[]): Promise<SMSBroadcastResult> {
     try {
         if (!message) {
             return { success: false, error: "Message is required" };
@@ -26,7 +30,7 @@ export async function broadcastSMSAction(message: string, clientPhoneNumbers?: s
         }
 
         if (phoneNumbers.length === 0) {
-            return { success: true, count: 0, message: "No subscribers found." };
+            return { success: true, sent: 0, total: 0, results: [], message: "No subscribers found." };
         }
 
         // 2. Initialize Provider
@@ -36,9 +40,9 @@ export async function broadcastSMSAction(message: string, clientPhoneNumbers?: s
         let successCount = 0;
         const results = await Promise.all(
             phoneNumbers.map(async (phone) => {
-                const sent = await smsProvider.send(phone, message);
-                if (sent) successCount++;
-                return sent;
+                const result = await smsProvider.send(phone, message);
+                if (result.success) successCount++;
+                return { phone, ...result };
             })
         );
 

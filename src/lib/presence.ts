@@ -85,7 +85,7 @@ export const subscribeToActiveAdmins = (callback: (admins: AdminPresence[]) => v
             if (diff < ONLINE_THRESHOLD) status = 'online';
             else if (diff < AWAY_THRESHOLD) status = 'away';
 
-            // Only push if online or away, or include all if you want to show "Offline" users
+            // Only push if online or away
             if (status !== 'offline') {
                 admins.push({
                     uid: data.uid,

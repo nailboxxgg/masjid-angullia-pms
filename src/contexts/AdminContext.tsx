@@ -7,13 +7,11 @@ import { auth, db } from "@/lib/firebase";
 
 interface AdminContextType {
     user: User | null;
-    role: 'admin' | 'staff' | 'volunteer' | 'employee' | null;
     loading: boolean;
 }
 
 const AdminContext = createContext<AdminContextType>({
     user: null,
-    role: null,
     loading: true,
 });
 
@@ -21,7 +19,6 @@ export const useAdmin = () => useContext(AdminContext);
 
 export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [role, setRole] = useState<'admin' | 'staff' | 'volunteer' | 'employee' | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -59,18 +56,15 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
                         }
                     }
 
-                    if (staffDoc.exists()) {
-                        setRole(staffDoc.data().role);
-                    } else {
-                        setRole(null);
+                    if (!staffDoc.exists()) {
+                        // Not in staff collection — unauthorized
+                        setUser(null);
                     }
                 } catch (error) {
-                    console.error("Error fetching staff role:", error);
-                    setRole(null);
+                    console.error("Error fetching staff doc:", error);
                 }
             } else {
                 setUser(null);
-                setRole(null);
             }
             setLoading(false);
         });
@@ -79,7 +73,7 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     return (
-        <AdminContext.Provider value={{ user, role, loading }}>
+        <AdminContext.Provider value={{ user, loading }}>
             {children}
         </AdminContext.Provider>
     );

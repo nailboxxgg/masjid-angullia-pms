@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Event } from "@/lib/types";
-import { uploadImage } from "@/lib/storage";
+import { resizeImage, imageToBase64 } from "@/lib/image-utils";
 import { ArrowLeft, Save, Upload, Loader2, Users, FileText } from "lucide-react";
 import Link from "next/link";
 import EventAttendanceManager from "@/components/admin/events/EventAttendanceManager";
@@ -47,11 +47,28 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         fetchEvent();
     }, [id, router]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            setImageFile(file);
+
+            // Generate preview immediately
             setImagePreview(URL.createObjectURL(file));
+
+            try {
+                // Resize image before setting to state
+                console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+                const resizedBlob = await resizeImage(file, 1200, 0.8);
+                console.log(`Resized size: ${(resizedBlob.size / 1024 / 1024).toFixed(2)} MB`);
+
+                const resizedFile = new File([resizedBlob], file.name, {
+                    type: file.type,
+                    lastModified: Date.now(),
+                });
+                setImageFile(resizedFile);
+            } catch (error) {
+                console.error("Error resizing image:", error);
+                setImageFile(file);
+            }
         }
     };
 
@@ -66,7 +83,9 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         try {
             let imageUrl = formData.imageUrl;
             if (imageFile) {
-                imageUrl = await uploadImage(imageFile, "events");
+                console.log("Converting image to Base64...");
+                imageUrl = await imageToBase64(imageFile);
+                console.log(`Image converted: ${((imageUrl?.length || 0) / 1024).toFixed(1)} KB`);
             }
 
             const updates = {

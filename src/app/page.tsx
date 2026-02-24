@@ -39,6 +39,7 @@ export default function Home() {
 
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
+  const [combinedUpdates, setCombinedUpdates] = useState<(Announcement | Event)[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isEventRegistrationOpen, setIsEventRegistrationOpen] = useState(false);
   const [isFamilyRegistrationOpen, setIsFamilyRegistrationOpen] = useState(false);
@@ -49,20 +50,30 @@ export default function Home() {
   const [selectedFullImage, setSelectedFullImage] = useState<{ src: string, alt: string } | null>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [loginStage, setLoginStage] = useState<'role' | 'login'>('role');
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
     const fetchUpdates = async () => {
       const [announcementData, eventData, donationData] = await Promise.all([
-        getAnnouncements(3), // Fetch 3 to check if more exist
-        getEvents(3),
+        getAnnouncements(5),
+        getEvents(5),
         getDonations(5)
       ]);
       setAnnouncements(announcementData || []);
       setEvents(eventData || []);
       setRecentDonations(donationData || []);
+
+      // Merge and sort
+      const merged = [
+        ...(announcementData || []),
+        ...(eventData || [])
+      ].sort((a, b) => {
+        const timeA = a.createdAt || (('date' in a && !isNaN(Date.parse((a as any).date))) ? Date.parse((a as any).date) : 0);
+        const timeB = b.createdAt || (('date' in b && !isNaN(Date.parse((b as any).date))) ? Date.parse((b as any).date) : 0);
+        return timeB - timeA;
+      });
+      setCombinedUpdates(merged.slice(0, 4));
     };
     fetchUpdates();
 
@@ -92,7 +103,6 @@ export default function Home() {
     setIsEventRegistrationOpen(true);
   };
 
-  const [loginRole, setLoginRole] = useState<'admin'>('admin');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,39 +128,18 @@ export default function Home() {
         const emailSnapshot = await getDocs(qEmail);
         if (!emailSnapshot.empty) {
           userDoc = emailSnapshot.docs[0] as any;
-
-          // One-time migration: Create UID doc and delete Email doc?
-          // For now, just allow access.
         }
       }
 
-      let finalRole = loginRole;
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        const dbRole = userData.role;
-
-        // Strict Role Validation
-        if (loginRole === 'admin') {
-          if (dbRole !== 'admin') {
-            throw new Error(`Access denied. You are registered as ${dbRole.toUpperCase()}, not ADMINISTRATOR.`);
-          }
-        }
-
-        finalRole = dbRole;
-      } else {
+      if (!userDoc.exists()) {
         // Not in staff collection, check if they are the super admin seed
         if (email !== process.env.NEXT_PUBLIC_ADMIN_SEED_EMAIL) {
-          throw new Error(`Access denied. No ${loginRole.toUpperCase()} account found with this email.`);
+          throw new Error(`Access denied. No admin account found with this email.`);
         }
       }
 
-      // Check specifically for seed admin to complement role selection
+      // Auto-setup seed admin in staff collection if not present
       if (email === process.env.NEXT_PUBLIC_ADMIN_SEED_EMAIL) {
-        if (loginRole !== 'admin') {
-          throw new Error("Access denied. Direct admin credentials can only be used with the ADMINISTRATOR choice.");
-        }
-        finalRole = 'admin';
         if (!userDoc.exists() || userDoc.data()?.role !== 'admin') {
           await setDoc(doc(db, "staff", uid), {
             email: email,
@@ -166,18 +155,15 @@ export default function Home() {
       // Perform Clock In
       try {
         const displayName = user.displayName || user.email?.split('@')[0] || "User";
-        // Convert to compatible role string
-        // Map legacy roles (inclusive of Volunteer/Employee) to 'staff'
-        const effectiveRole: 'admin' | 'staff' = finalRole === 'admin' ? 'admin' : 'staff';
-        await clockIn(uid, displayName, email, effectiveRole);
+        await clockIn(uid, displayName, email, 'admin');
         console.log("Auto clocked in successfully");
       } catch (clockErr) {
         // Ignore "already clocked in" errors or others during login, don't block login
         console.log("Clock in status:", clockErr);
       }
 
-      // Redirect to Admin Portal for all authorized staff/roles
-      console.log(`Redirecting to portal as ${finalRole}...`);
+      // Redirect to Admin Portal
+      console.log("Redirecting to admin portal...");
       router.push("/admin");
 
     } catch (err: unknown) {
@@ -277,14 +263,21 @@ export default function Home() {
                     </Link>
                   </div>
 
-                  {mounted && announcements.length > 0 ? (
+                  {mounted && combinedUpdates.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                      {announcements.slice(0, 2).map((post: Announcement, idx: number) => (
+                      {combinedUpdates.slice(0, 4).map((post: Announcement | Event, idx: number) => (
                         <AnnouncementCard
                           key={post.id}
                           post={post}
                           delay={0.5 + (idx * 0.1)}
-                          onClick={() => setSelectedAnnouncement(post)}
+                          onClick={() => {
+                            if ('location' in post) {
+                              setSelectedEvent(post as Event);
+                              setIsEventRegistrationOpen(true);
+                            } else {
+                              setSelectedAnnouncement(post as Announcement);
+                            }
+                          }}
                         />
                       ))}
                     </div>
@@ -562,144 +555,86 @@ export default function Home() {
         isOpen={isLoginModalOpen}
         onClose={() => {
           setIsLoginModalOpen(false);
-          setLoginStage('role'); // Reset stage on close
         }}
         title=""
         className="max-w-md bg-white/90 dark:bg-secondary-900/90 backdrop-blur-xl border-secondary-200 dark:border-secondary-800 shadow-2xl rounded-[2rem]"
         hideScrollbar={true}
       >
-        <AnimatePresence mode="wait">
-          {loginStage === 'role' ? (
-            <motion.div
-              key="role-selection"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3 }}
-              className="py-4"
-            >
-              <div className="text-center flex flex-col items-center mb-8">
-                <div className="bg-primary-500/10 dark:bg-primary-500/20 p-4 rounded-3xl mb-4 text-primary-600 dark:text-primary-400">
-                  <Lock className="w-10 h-10" />
-                </div>
-                <h2 className="text-3xl font-black tracking-tight text-secondary-900 dark:text-white font-heading">
-                  Admin Portal
-                </h2>
-                <p className="mt-2 text-sm font-medium text-secondary-500 dark:text-secondary-400">
-                  Select your role to proceed
-                </p>
-              </div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="text-center flex flex-col items-center mb-8">
+            <div className="bg-primary-500/10 dark:bg-primary-500/20 p-4 rounded-3xl mb-4 text-primary-600 dark:text-primary-400">
+              <Lock className="w-10 h-10" />
+            </div>
+            <h2 className="text-3xl font-black tracking-tight text-secondary-900 dark:text-white font-heading">
+              Admin Portal
+            </h2>
+            <p className="mt-2 text-sm font-medium text-secondary-500 dark:text-secondary-400">
+              Please enter your credentials
+            </p>
+          </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                {[
-                  { r: 'admin', label: 'Administrator', desc: 'Full system management' }
-                ].map(({ r, label, desc }) => (
+          <form className="space-y-6" onSubmit={handleLogin}>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="email-address" className="text-xs font-black uppercase tracking-widest ml-1 mb-2 block text-secondary-500">Email Address</label>
+                <input
+                  id="email-address"
+                  name="email"
+                  type="email"
+                  required
+                  className="block w-full rounded-2xl border-0 py-4 px-5 text-secondary-900 dark:text-white bg-secondary-100 dark:bg-secondary-800/50 ring-1 ring-inset ring-secondary-200 dark:ring-secondary-700 placeholder:text-secondary-400 focus:ring-2 focus:ring-inset focus:ring-primary-500 text-base sm:text-sm transition-all shadow-inner"
+                  placeholder="name@example.com"
+                />
+              </div>
+              <div className="relative">
+                <label htmlFor="password" className="text-xs font-black uppercase tracking-widest ml-1 mb-2 block text-secondary-500">Password</label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    className="block w-full rounded-2xl border-0 py-4 pl-5 pr-12 text-secondary-900 dark:text-white bg-secondary-100 dark:bg-secondary-800/50 ring-1 ring-inset ring-secondary-200 dark:ring-secondary-700 placeholder:text-secondary-400 focus:ring-2 focus:ring-inset focus:ring-primary-500 text-base sm:text-sm transition-all shadow-inner"
+                    placeholder="••••••••"
+                  />
                   <button
-                    key={r}
-                    onClick={() => {
-                      setLoginRole(r as any);
-                      setLoginStage('login');
-                    }}
-                    className="flex flex-col items-start p-5 rounded-2xl border-2 border-secondary-100 dark:border-secondary-800 hover:border-primary-500 dark:hover:border-primary-400 bg-white/50 dark:bg-secondary-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all text-left group"
+                    type="button"
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-secondary-400 hover:text-primary-500 transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
                   >
-                    <span className="text-sm font-black uppercase tracking-widest text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                      {label}
-                    </span>
-                    <span className="text-xs font-medium text-secondary-500 group-hover:text-secondary-700 dark:group-hover:text-secondary-300">
-                      {desc}
-                    </span>
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
                   </button>
-                ))}
+                </div>
               </div>
+            </div>
 
-              <div className="mt-8 text-center">
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="login-form"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+            {loginError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-red-600 dark:text-red-400 text-xs font-bold text-center bg-red-50 dark:bg-red-950/30 p-3 rounded-xl border border-red-100 dark:border-red-900/50"
+              >
+                {loginError}
+              </motion.div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="group relative flex w-full justify-center rounded-2xl bg-primary-600 py-4 text-sm font-black uppercase tracking-widest text-white hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:opacity-70 transition-all shadow-xl shadow-primary-500/25 hover:shadow-primary-500/35 hover:-translate-y-0.5 active:translate-y-0"
             >
-              <div className="flex items-center gap-4 mb-8">
-                <button
-                  onClick={() => setLoginStage('role')}
-                  className="p-2 rounded-xl bg-secondary-100 dark:bg-secondary-800 text-secondary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                >
-                  <ArrowRight className="w-5 h-5 rotate-180" />
-                </button>
-                <div>
-                  <h2 className="text-2xl font-black tracking-tight text-secondary-900 dark:text-white font-heading uppercase">
-                    {loginRole} Login
-                  </h2>
-                  <p className="text-sm font-medium text-secondary-500 dark:text-secondary-400 leading-none mt-1">
-                    Please enter your credentials
-                  </p>
-                </div>
-              </div>
-
-              <form className="space-y-6" onSubmit={handleLogin}>
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="email-address" className="text-xs font-black uppercase tracking-widest ml-1 mb-2 block text-secondary-500">Email Address</label>
-                    <input
-                      id="email-address"
-                      name="email"
-                      type="email"
-                      required
-                      className="block w-full rounded-2xl border-0 py-4 px-5 text-secondary-900 dark:text-white bg-secondary-100 dark:bg-secondary-800/50 ring-1 ring-inset ring-secondary-200 dark:ring-secondary-700 placeholder:text-secondary-400 focus:ring-2 focus:ring-inset focus:ring-primary-500 text-base sm:text-sm transition-all shadow-inner"
-                      placeholder="name@example.com"
-                    />
-                  </div>
-                  <div className="relative">
-                    <label htmlFor="password" className="text-xs font-black uppercase tracking-widest ml-1 mb-2 block text-secondary-500">Password</label>
-                    <div className="relative">
-                      <input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        required
-                        className="block w-full rounded-2xl border-0 py-4 pl-5 pr-12 text-secondary-900 dark:text-white bg-secondary-100 dark:bg-secondary-800/50 ring-1 ring-inset ring-secondary-200 dark:ring-secondary-700 placeholder:text-secondary-400 focus:ring-2 focus:ring-inset focus:ring-primary-500 text-base sm:text-sm transition-all shadow-inner"
-                        placeholder="••••••••"
-                      />
-                      <button
-                        type="button"
-                        className="absolute inset-y-0 right-0 flex items-center pr-4 text-secondary-400 hover:text-primary-500 transition-colors"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-5 w-5" />
-                        ) : (
-                          <Eye className="h-5 w-5" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {loginError && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-red-600 dark:text-red-400 text-xs font-bold text-center bg-red-50 dark:bg-red-950/30 p-3 rounded-xl border border-red-100 dark:border-red-900/50"
-                  >
-                    {loginError}
-                  </motion.div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="group relative flex w-full justify-center rounded-2xl bg-primary-600 py-4 text-sm font-black uppercase tracking-widest text-white hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:opacity-70 transition-all shadow-xl shadow-primary-500/25 hover:shadow-primary-500/35 hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  {isLoading ? "Authenticating..." : "Sign In & Access"}
-                </button>
-              </form>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              {isLoading ? "Authenticating..." : "Sign In & Access"}
+            </button>
+          </form>
+        </motion.div>
       </Modal>
     </div>
   );

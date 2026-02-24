@@ -20,15 +20,14 @@ import { cn } from "@/lib/utils";
 import { getAttendanceSessions, getTodayDateString } from "@/lib/attendance";
 import { addManualAttendance, getStaffList } from "@/lib/staff";
 import { AttendanceSession, Staff } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import * as XLSX from "xlsx";
-import { useAdmin } from "@/contexts/AdminContext";
 import Modal from "@/components/ui/modal";
 import { Plus } from "lucide-react";
+import { getSubscribers, Subscriber } from "@/lib/notifications";
 
 export default function AdminAttendancePage() {
-    const { role } = useAdmin();
     const [sessions, setSessions] = useState<AttendanceSession[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(getTodayDateString());
@@ -48,13 +47,11 @@ export default function AdminAttendancePage() {
 
     useEffect(() => {
         const fetchStaff = async () => {
-            if (role === 'admin') {
-                const staff = await getStaffList();
-                setStaffList(staff);
-            }
+            const staff = await getStaffList();
+            setStaffList(staff);
         };
         fetchStaff();
-    }, [role]);
+    }, []);
 
     const handleManualSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -240,7 +237,7 @@ export default function AdminAttendancePage() {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <motion.div variants={itemVariants}>
-                    <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white">Staff Attendance</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white">Attendance</h1>
                     <p className="text-secondary-900 dark:text-secondary-200 mt-1 font-medium italic text-balance">Real-time monitoring of masjid staff presence and working hours.</p>
                 </motion.div>
 
@@ -254,16 +251,14 @@ export default function AdminAttendancePage() {
                             className="w-full pl-9 pr-4 py-2 bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 text-secondary-900 dark:text-secondary-100 placeholder:text-secondary-500 dark:placeholder:text-secondary-400 shadow-sm"
                         />
                     </div>
-                    {role === 'admin' && (
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => setIsManualModalOpen(true)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 shadow-sm transition-all"
-                        >
-                            <Plus className="w-4 h-4" /> Manual Entry
-                        </motion.button>
-                    )}
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setIsManualModalOpen(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-bold hover:bg-primary-700 shadow-sm transition-all"
+                    >
+                        <Plus className="w-4 h-4" /> Manual Entry
+                    </motion.button>
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -354,18 +349,16 @@ export default function AdminAttendancePage() {
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {role === 'admin' && (
-                    <Card className="border-l-4 border-l-primary-500 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-secondary-500">Active Now</CardTitle>
-                            <User className="h-4 w-4 text-primary-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{activeSessionsCount}</div>
-                            <p className="text-xs text-secondary-400 mt-1">Staff currently clocked in</p>
-                        </CardContent>
-                    </Card>
-                )}
+                <Card className="border-l-4 border-l-primary-500 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-secondary-500">Active Now</CardTitle>
+                        <User className="h-4 w-4 text-primary-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{activeSessionsCount}</div>
+                        <p className="text-xs text-secondary-400 mt-1">Staff currently clocked in</p>
+                    </CardContent>
+                </Card>
 
                 <Card className="border-l-4 border-l-emerald-500 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -373,29 +366,25 @@ export default function AdminAttendancePage() {
                         <HistoryIcon className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
-                            {role === 'admin' ? sessions.length : visitorSessions.length}
-                        </div>
+                        <div className="text-2xl font-bold">{sessions.length}</div>
                         <p className="text-xs text-secondary-400 mt-1">Records for {selectedDate}</p>
                     </CardContent>
                 </Card>
 
-                {role === 'admin' && (
-                    <Card className="border-l-4 border-l-amber-500 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-secondary-500">Completion Rate</CardTitle>
-                            <Clock className="h-4 w-4 text-amber-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {sessions.length > 0
-                                    ? Math.round((sessions.filter(s => s.status === 'completed').length / sessions.length) * 100)
-                                    : 0}%
-                            </div>
-                            <p className="text-xs text-secondary-400 mt-1">Completed sessions</p>
-                        </CardContent>
-                    </Card>
-                )}
+                <Card className="border-l-4 border-l-amber-500 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-secondary-500">Completion Rate</CardTitle>
+                        <Clock className="h-4 w-4 text-amber-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">
+                            {sessions.length > 0
+                                ? Math.round((sessions.filter(s => s.status === 'completed').length / sessions.length) * 100)
+                                : 0}%
+                        </div>
+                        <p className="text-xs text-secondary-400 mt-1">Completed sessions</p>
+                    </CardContent>
+                </Card>
 
                 <Card className="border-l-4 border-l-slate-400 shadow-sm hover:shadow-md bg-white dark:bg-secondary-900">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -422,19 +411,17 @@ export default function AdminAttendancePage() {
                 >
                     Visitor Logs
                 </button>
-                {role === 'admin' && (
-                    <button
-                        onClick={() => setActiveTab('staff')}
-                        className={cn(
-                            "px-4 py-2 rounded-lg text-sm font-bold transition-all",
-                            activeTab === 'staff'
-                                ? "bg-white dark:bg-secondary-900 text-primary-600 dark:text-primary-400 shadow-sm"
-                                : "text-secondary-500 hover:text-secondary-900 dark:hover:text-secondary-100"
-                        )}
-                    >
-                        Staff Attendance
-                    </button>
-                )}
+                <button
+                    onClick={() => setActiveTab('staff')}
+                    className={cn(
+                        "px-4 py-2 rounded-lg text-sm font-bold transition-all",
+                        activeTab === 'staff'
+                            ? "bg-white dark:bg-secondary-900 text-primary-600 dark:text-primary-400 shadow-sm"
+                            : "text-secondary-500 hover:text-secondary-900 dark:hover:text-secondary-100"
+                    )}
+                >
+                    Staff Attendance
+                </button>
             </div>
 
             {/* Filters & Search */}
@@ -688,6 +675,67 @@ export default function AdminAttendancePage() {
                     </div>
                 </Card>
             </div>
+
+            {/* SMS Subscribers */}
+            <SubscriberManager />
         </motion.div>
+    );
+}
+
+function SubscriberManager() {
+    const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const load = async () => {
+            const data = await getSubscribers();
+            setSubscribers(data);
+            setIsLoading(false);
+        };
+        load();
+    }, []);
+
+    return (
+        <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm transition-all hover:shadow-2xl hover:border-primary-200 dark:hover:border-primary-900/50 rounded-2xl overflow-hidden group">
+            <CardHeader className="border-b border-secondary-100 dark:border-secondary-800 pb-4 bg-secondary-50/30 dark:bg-secondary-800/20 group-hover:bg-secondary-50/80 dark:group-hover:bg-secondary-800/40 transition-colors">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl dark:bg-blue-900/20 dark:text-blue-400 ring-1 ring-blue-100 dark:ring-blue-800/50">
+                        <User className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-lg font-bold text-secondary-900 dark:text-white uppercase tracking-tight">SMS Subscribers</CardTitle>
+                        <CardDescription className="text-secondary-500 font-medium text-xs mt-0.5">Manage community members subscribed to text alerts.</CardDescription>
+                    </div>
+                    <div className="ml-auto bg-primary-50 dark:bg-primary-900/20 px-3 py-1 rounded-full border border-primary-100 dark:border-primary-800/50">
+                        <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400 uppercase tracking-widest">{subscribers.length} ACTIVE</span>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+                <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
+                    {isLoading ? (
+                        <p className="text-center text-sm text-secondary-500 py-4">Loading list...</p>
+                    ) : subscribers.length === 0 ? (
+                        <p className="text-center text-sm text-secondary-500 py-4">No subscribers yet.</p>
+                    ) : (
+                        subscribers.map(sub => (
+                            <div key={sub.id} className="flex items-center justify-between p-3 bg-secondary-50 dark:bg-secondary-800/30 rounded-lg border border-secondary-100 dark:border-secondary-800">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs">
+                                        PH
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-secondary-900 dark:text-white text-sm">{sub.phoneNumber}</p>
+                                        <p className="text-[10px] text-secondary-500">
+                                            Joined {sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'Unknown'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </CardContent>
+        </Card>
     );
 }

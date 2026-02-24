@@ -46,6 +46,7 @@ export interface Event {
     imageUrl?: string;
     capacity?: number;
     category?: string;
+    createdAt?: number;
 }
 
 export interface FamilyMember {

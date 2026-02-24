@@ -27,7 +27,7 @@ export async function POST(request: Request) {
         const snapshot = await getDocs(query(subscribersRef));
 
         if (snapshot.empty) {
-            return NextResponse.json({ success: true, count: 0, message: "No subscribers found." });
+            return NextResponse.json({ success: true, sent: 0, total: 0, results: [], message: "No subscribers found." });
         }
 
         const phoneNumbers = snapshot.docs.map(doc => doc.data().phoneNumber as string);
@@ -40,9 +40,9 @@ export async function POST(request: Request) {
         let successCount = 0;
         const results = await Promise.all(
             phoneNumbers.map(async (phone) => {
-                const sent = await smsProvider.send(phone, message);
-                if (sent) successCount++;
-                return sent;
+                const result = await smsProvider.send(phone, message);
+                if (result.success) successCount++;
+                return { phone, ...result };
             })
         );
 

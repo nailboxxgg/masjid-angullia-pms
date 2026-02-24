@@ -5,11 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-import { LockKeyhole, Menu, X, Bell, Calendar, MessageSquare, Users } from "lucide-react";
+import { LockKeyhole, Menu, X, Bell, Calendar, MessageSquare, Users, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
+    { label: "Home", href: "/", icon: Home },
     { label: "Announcements", href: "/updates", icon: Bell },
     { label: "Events", href: "/events", icon: Calendar },
     { label: "Concerns & Feedback", href: "/feedback", icon: MessageSquare },
@@ -91,6 +92,7 @@ export default function Navbar() {
                             >
                                 Register Family
                             </button>
+
                             <button
                                 onClick={() => window.dispatchEvent(new CustomEvent('open-login-modal'))}
                                 className="p-2.5 rounded-xl text-primary-600/70 hover:text-primary-600 dark:text-primary-400/70 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all"
@@ -158,17 +160,18 @@ export default function Navbar() {
                                 Register Family
                             </button>
 
+                            <button
+                                onClick={() => {
+                                    setIsMenuOpen(false);
+                                    window.dispatchEvent(new CustomEvent('open-login-modal'));
+                                }}
+                                className="flex items-center justify-center gap-2 px-4 py-4 rounded-2xl bg-secondary-900 dark:bg-secondary-800 text-white font-bold text-sm"
+                            >
+                                <LockKeyhole className="w-4 h-4" />
+                                Staff Portal
+                            </button>
                             <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={() => {
-                                        setIsMenuOpen(false);
-                                        window.dispatchEvent(new CustomEvent('open-login-modal'));
-                                    }}
-                                    className="flex items-center justify-center gap-2 px-4 py-4 rounded-2xl bg-secondary-900 dark:bg-secondary-800 text-white font-bold text-sm"
-                                >
-                                    <LockKeyhole className="w-4 h-4" />
-                                    Staff Portal
-                                </button>
+
                                 <div className="flex items-center justify-center py-4 rounded-2xl bg-secondary-100 dark:bg-secondary-800">
                                     <ThemeToggle />
                                     <span className="ml-2 text-sm font-bold text-secondary-600 dark:text-secondary-400">Appearance</span>

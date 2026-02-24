@@ -36,7 +36,7 @@ export default function StatsOverview({ stats }: StatsOverviewProps) {
             <motion.div variants={itemVariants} whileHover="hover">
                 <Card className="bg-white dark:bg-secondary-900 border-secondary-200 dark:border-secondary-800 shadow-sm hover:shadow-2xl transition-all rounded-2xl overflow-hidden border-l-4 border-l-emerald-500 h-full group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-black text-secondary-500 dark:text-secondary-400 uppercase tracking-widest">Maison Monthly</CardTitle>
+                        <CardTitle className="text-[10px] font-black text-secondary-500 dark:text-secondary-400 uppercase tracking-widest">Monthly Collections</CardTitle>
                         <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl ring-1 ring-emerald-100 dark:ring-emerald-800/50 group-hover:rotate-12 transition-transform">
                             <TrendingUp className="w-4 h-4 text-emerald-500" />
                         </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createEvent } from "@/lib/events";
-import { uploadImage } from "@/lib/storage";
+import { resizeImage, imageToBase64 } from "@/lib/image-utils";
 import { ArrowLeft, Save, Upload, Calendar, MapPin, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Modal from "@/components/ui/modal";
@@ -37,11 +37,32 @@ export default function NewEventPage() {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            setImageFile(file);
+
+            // Generate preview immediately
             setImagePreview(URL.createObjectURL(file));
+
+            try {
+                // Resize image before setting it to state
+                // Max width 1200px, 80% quality JPEG
+                console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+                const resizedBlob = await resizeImage(file, 1200, 0.8);
+                console.log(`Resized size: ${(resizedBlob.size / 1024 / 1024).toFixed(2)} MB`);
+
+                // Convert Blob back to File
+                const resizedFile = new File([resizedBlob], file.name, {
+                    type: file.type,
+                    lastModified: Date.now(),
+                });
+
+                setImageFile(resizedFile);
+            } catch (error) {
+                console.error("Error resizing image:", error);
+                // Fallback to original file if resizing fails
+                setImageFile(file);
+            }
         }
     };
 
@@ -90,13 +111,13 @@ export default function NewEventPage() {
 
             let imageUrl = "";
             if (imageFile) {
-                console.log("Uploading image...");
+                console.log("Converting image to Base64...");
                 try {
-                    imageUrl = await uploadImage(imageFile, "events");
-                    console.log("Image uploaded:", imageUrl);
-                } catch (imgError) {
-                    console.error("Image upload failed:", imgError);
-                    setErrorMsg("Failed to upload image. Please try again or skip the image.");
+                    imageUrl = await imageToBase64(imageFile);
+                    console.log(`Image converted: ${(imageUrl.length / 1024).toFixed(1)} KB`);
+                } catch (imgError: any) {
+                    console.error("Image conversion failed:", imgError);
+                    setErrorMsg(imgError.message || "Failed to process image. Please try a smaller image.");
                     setIsSubmitting(false);
                     return;
                 }

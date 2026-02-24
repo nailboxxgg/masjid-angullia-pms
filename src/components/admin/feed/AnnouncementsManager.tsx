@@ -85,11 +85,23 @@ export default function AnnouncementsManager() {
                         const data = await broadcastSMSAction(smsMessage, phoneNumbers);
 
                         if (data.success) {
-                            setStatusData({
-                                success: true,
-                                title: "Announcement Posted & Broadcasted!",
-                                message: `Successfully sent SMS to ${data.sent} subscribers.`
-                            });
+                            if (data.sent === 0 && data.results && data.results.length > 0) {
+                                // Extract unique errors
+                                const errors = Array.from(new Set(data.results.map((r: any) => r.error).filter(Boolean)));
+                                const errorMsg = errors.length > 0 ? errors.join(", ") : "Unknown error";
+
+                                setStatusData({
+                                    success: true, // Announcement posted, but SMS failed
+                                    title: "Posted, SMS Failed",
+                                    message: `Announcement created, but SMS failed for all ${data.total} subscribers. Error: ${errorMsg}`
+                                });
+                            } else {
+                                setStatusData({
+                                    success: true,
+                                    title: "Announcement Posted & Broadcasted!",
+                                    message: `Successfully sent SMS to ${data.sent} / ${data.total} subscribers.${data.sent < data.total ? ' Some failed.' : ''}`
+                                });
+                            }
                         } else {
                             setStatusData({
                                 success: true, // Announcement still successful, just SMS failed

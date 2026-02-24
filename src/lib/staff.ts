@@ -199,7 +199,7 @@ export const createStaffAccountDirectly = async (email: string, password: string
 import { Staff, AttendanceRecord, AttendanceSession } from "./types";
 import { format } from "date-fns";
 
-const ATTENDANCE_COLLECTION = "attendance_logs";
+const ATTENDANCE_COLLECTION = "attendance";
 const SESSIONS_COLLECTION = "attendance_sessions";
 
 // Staff Management (ID Based)

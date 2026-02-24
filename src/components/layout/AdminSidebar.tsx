@@ -44,23 +44,12 @@ interface AdminSidebarProps {
     onClose: () => void;
 }
 
-import { AdminProvider, useAdmin } from "@/contexts/AdminContext";
 
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
-    const { role } = useAdmin();
     const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
     const { unreadCount } = useNotifications();
-
-    // Differentiate routes based on role
-    const filteredRoutes = adminRoutes.filter(route => {
-        if (role === 'admin') return true;
-        // Volunteers ONLY see Attendance
-        if (role === 'volunteer') return route.name === 'Attendance';
-        // Staff only see Overview, Attendance, Finances, and Events
-        return ['Overview', 'Attendance', 'Finances', 'Events'].includes(route.name);
-    });
 
     // Auto-redirect if trying to access blocked route in sidebar logic? 
     // Handled by layout.tsx already.
@@ -119,7 +108,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                             transition={{ delay: 0.3 }}
                         >
                             <h1 className="font-black text-lg tracking-tight text-secondary-900 dark:text-white uppercase">
-                                {role || 'Staff'} Portal
+                                Admin Portal
                             </h1>
                             <p className="text-[9px] font-black uppercase tracking-[0.25em] text-primary-600 dark:text-primary-400">Masjid Angullia</p>
                         </motion.div>
@@ -135,7 +124,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto scrollbar-thin scrollbar-thumb-secondary-100 dark:scrollbar-thumb-secondary-800">
-                    {filteredRoutes.map((route, index) => {
+                    {adminRoutes.map((route, index) => {
                         const Icon = route.icon;
                         const isActive = pathname === route.href;
                         return (

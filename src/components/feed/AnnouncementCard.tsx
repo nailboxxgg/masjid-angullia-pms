@@ -1,20 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { Clock, ArrowRight, ShieldCheck, Zap } from "lucide-react";
-import { Announcement } from "@/lib/types";
+import { Clock, ArrowRight, ShieldCheck, Zap, Calendar } from "lucide-react";
+import { Announcement, Event } from "@/lib/types";
 import { formatTimeAgo, cn } from "@/lib/utils";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import { motion } from "framer-motion";
 
 interface AnnouncementCardProps {
-    post: Announcement;
+    post: Announcement | Event;
     delay?: number;
     onClick?: () => void;
 }
 
 export default function AnnouncementCard({ post, delay = 0, onClick }: AnnouncementCardProps) {
+    const isEvent = 'location' in post;
+    const title = post.title;
+    const content = 'content' in post ? post.content : (post as Event).description;
+    const createdAt = post.createdAt || ('date' in post && !isNaN(Date.parse(post.date)) ? Date.parse(post.date) : Date.now());
+    const type = 'type' in post ? post.type : 'Event';
+
     return (
         <AnimationWrapper animation="reveal" duration={0.8} delay={delay}>
             <div
@@ -32,21 +37,28 @@ export default function AnnouncementCard({ post, delay = 0, onClick }: Announcem
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
-                                MA
+                                {isEvent ? <Calendar className="w-4 h-4" /> : "MA"}
                             </div>
                             <div>
                                 <div className="flex items-center gap-1">
-                                    <span className="text-xs font-bold tracking-tight">Masjid Angullia</span>
+                                    <span className="text-xs font-bold tracking-tight">
+                                        {isEvent ? "Community Event" : "Masjid Angullia"}
+                                    </span>
                                     <ShieldCheck className="w-3 h-3 text-primary-500 fill-primary-500" />
                                 </div>
                                 <span className="text-[10px] text-secondary-400 dark:text-secondary-500 flex items-center gap-1">
-                                    <Clock className="w-2.5 h-2.5" /> {formatTimeAgo(post.createdAt || post.date)}
+                                    <Clock className="w-2.5 h-2.5" /> {formatTimeAgo(createdAt)}
                                 </span>
                             </div>
                         </div>
-                        {post.type === 'Urgent' && (
+                        {type === 'Urgent' && (
                             <div className="flex items-center gap-1 bg-red-500/10 text-red-500 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider">
                                 <Zap className="w-2.5 h-2.5" /> Urgent
+                            </div>
+                        )}
+                        {isEvent && (
+                            <div className="flex items-center gap-1 bg-primary-500/10 text-primary-600 dark:text-primary-400 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider">
+                                <Calendar className="w-2.5 h-2.5" /> Event
                             </div>
                         )}
                     </div>
@@ -54,10 +66,10 @@ export default function AnnouncementCard({ post, delay = 0, onClick }: Announcem
                     {/* Content */}
                     <div className="flex-1">
                         <h4 className="text-lg font-bold font-heading leading-tight mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                            {post.title}
+                            {title}
                         </h4>
                         <p className="text-sm text-secondary-600 dark:text-secondary-400 line-clamp-3 leading-relaxed">
-                            {post.content}
+                            {content}
                         </p>
                     </div>
 
@@ -67,7 +79,7 @@ export default function AnnouncementCard({ post, delay = 0, onClick }: Announcem
                             onClick={onClick}
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary-50 dark:bg-white/5 text-secondary-900 dark:text-white text-xs font-bold hover:bg-primary-600 hover:text-white dark:hover:bg-primary-600 transition-all group/btn w-full justify-center border border-secondary-100 dark:border-white/5"
                         >
-                            Read Full Story
+                            {isEvent ? "Event Details" : "Read Full Story"}
                             <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
                         </button>
                     </div>

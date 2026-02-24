@@ -6,7 +6,6 @@ import { deleteDonation, updateDonationStatus, getDonations, getDonationStats, D
 import Modal from "@/components/ui/modal";
 import { Download, Upload } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAdmin } from "@/contexts/AdminContext";
 
 import StatsOverview from "./StatsOverview";
 import DonationFilters from "./DonationFilters";
@@ -14,7 +13,6 @@ import DonationTable from "./DonationTable";
 import ImportModal from "./ImportModal";
 
 export default function FinancesPage() {
-    const { role } = useAdmin();
     const [donations, setDonations] = useState<Donation[]>([]);
     const [stats, setStats] = useState<DonationStats>({
         totalCollected: 0,
@@ -48,8 +46,6 @@ export default function FinancesPage() {
     };
 
     const handleStatusUpdate = async (id: string, status: Donation['status']) => {
-        if (role !== 'admin') return;
-
         // Optimistic update
         setDonations(prev => prev.map(d => d.id === id ? { ...d, status } : d));
 
@@ -62,13 +58,13 @@ export default function FinancesPage() {
     };
 
     const handleDelete = (id: string) => {
-        if (role !== 'admin') return;
+
         setDonationToDelete(id);
         setIsDeleteModalOpen(true);
     };
 
     const confirmDelete = async () => {
-        if (donationToDelete && role === 'admin') {
+        if (donationToDelete) {
             const success = await deleteDonation(donationToDelete);
             if (success) {
                 loadData();
@@ -118,16 +114,14 @@ export default function FinancesPage() {
                     <p className="text-secondary-900 dark:text-secondary-200 mt-1 font-medium italic text-balance">Comprehensive tracking of masjid funds and community contributions.</p>
                 </motion.div>
                 <motion.div variants={itemVariants} className="flex flex-wrap gap-2 w-full lg:w-auto">
-                    {role === 'admin' && (
-                        <motion.button
-                            whileHover={{ scale: 1.02, y: -2 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => setIsImportOpen(true)}
-                            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-primary-600 dark:bg-primary-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-700 dark:hover:bg-primary-800 shadow-xl shadow-primary-500/20 transition-all shrink-0"
-                        >
-                            <Upload className="w-4 h-4" /> Import Data
-                        </motion.button>
-                    )}
+                    <motion.button
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setIsImportOpen(true)}
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-primary-600 dark:bg-primary-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-700 dark:hover:bg-primary-800 shadow-xl shadow-primary-500/20 transition-all shrink-0"
+                    >
+                        <Upload className="w-4 h-4" /> Import Data
+                    </motion.button>
                     <motion.button
                         whileHover={{ scale: 1.02, y: -2 }}
                         whileTap={{ scale: 0.98 }}
@@ -151,7 +145,7 @@ export default function FinancesPage() {
                 <DonationTable
                     donations={filteredDonations}
                     isLoading={isLoading}
-                    role={role}
+                    role={null}
                     onStatusUpdate={handleStatusUpdate}
                     onDelete={handleDelete}
                 />

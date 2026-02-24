@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Clock, ShieldCheck, ThumbsUp, MessageCircle, MoreHorizontal, ArrowLeft, Heart } from "lucide-react";
 import { getAnnouncements, getPaginatedAnnouncements } from "@/lib/announcements";
-import { Announcement } from "@/lib/types";
+import { getEvents } from "@/lib/events";
+import { Announcement, Event } from "@/lib/types";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
 import { cn, formatTimeAgo } from "@/lib/utils";
@@ -14,7 +15,7 @@ import { auth } from "@/lib/firebase";
 import Navbar from "@/components/layout/Navbar";
 
 export default function UpdatesPage() {
-    const [updates, setUpdates] = useState<Announcement[]>([]);
+    const [updates, setUpdates] = useState<(Announcement | Event)[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [lastDoc, setLastDoc] = useState<any>(null);
@@ -33,10 +34,24 @@ export default function UpdatesPage() {
     useEffect(() => {
         const fetchUpdates = async () => {
             setIsLoading(true);
-            const { data, lastDoc: last } = await getPaginatedAnnouncements(10);
-            setUpdates(data || []);
+            const [{ data, lastDoc: last }, eventData] = await Promise.all([
+                getPaginatedAnnouncements(10),
+                getEvents(10)
+            ]);
+
+            // Merge and sort
+            const merged = [
+                ...(data || []),
+                ...(eventData || [])
+            ].sort((a, b) => {
+                const timeA = a.createdAt || (('date' in a && !isNaN(Date.parse((a as any).date))) ? Date.parse((a as any).date) : 0);
+                const timeB = b.createdAt || (('date' in b && !isNaN(Date.parse((b as any).date))) ? Date.parse((b as any).date) : 0);
+                return timeB - timeA;
+            });
+
+            setUpdates(merged);
             setLastDoc(last);
-            setHasMore(data.length === 10); // Simple check, might need robust check
+            setHasMore(data.length === 10);
             setIsLoading(false);
         };
         fetchUpdates();

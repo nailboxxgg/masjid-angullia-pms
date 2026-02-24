@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShieldCheck, Clock, MoreHorizontal, ThumbsUp, MessageCircle, Send } from "lucide-react";
-import { Announcement, Comment } from "@/lib/types";
+import { ShieldCheck, Clock, MoreHorizontal, ThumbsUp, MessageCircle, Send, Calendar } from "lucide-react";
+import { Announcement, Comment, Event } from "@/lib/types";
 import { formatTimeAgo, cn } from "@/lib/utils";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import FacebookEmbed from "@/components/ui/FacebookEmbed";
@@ -12,14 +12,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { User } from "firebase/auth";
 
 interface SocialPostProps {
-    post: Announcement;
+    post: Announcement | Event;
     delay?: number;
     currentUser?: User | null;
 }
 
 export default function SocialPost({ post, delay = 0, currentUser = null }: SocialPostProps) {
-    const [likes, setLikes] = useState<string[]>(post.likes || []);
-    const [comments, setComments] = useState<Comment[]>(post.comments || []);
+    const isEvent = 'location' in post;
+    const [likes, setLikes] = useState<string[]>(('likes' in post ? post.likes : []) || []);
+    const [comments, setComments] = useState<Comment[]>(('comments' in post ? post.comments : []) || []);
     const [isLiked, setIsLiked] = useState(false);
     const [showComments, setShowComments] = useState(false);
     const [newComment, setNewComment] = useState("");
@@ -70,12 +71,12 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
     };
 
     const handleRedirect = () => {
-        if (post.externalUrl) {
-            window.open(post.externalUrl, '_blank');
+        if (!isEvent && (post as Announcement).externalUrl) {
+            window.open((post as Announcement).externalUrl!, '_blank');
         }
     };
 
-    const isTextOnly = !post.externalUrl;
+    const isTextOnly = !isEvent && !(post as Announcement).externalUrl;
 
     return (
         <AnimationWrapper animation="reveal" duration={0.6} delay={delay}>
@@ -84,15 +85,17 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
                 <div className="p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                         <div className="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white shadow-inner shrink-0 leading-none">
-                            <span className="font-bold text-xs">MA</span>
+                            {isEvent ? <Calendar className="w-5 h-5" /> : <span className="font-bold text-xs">MA</span>}
                         </div>
                         <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                                <h4 className="font-bold text-secondary-900 dark:text-secondary-100 leading-none text-sm md:text-base truncate">Masjid Angullia</h4>
+                                <h4 className="font-bold text-secondary-900 dark:text-secondary-100 leading-none text-sm md:text-base truncate">
+                                    {isEvent ? "Community Event" : "Masjid Angullia"}
+                                </h4>
                                 <ShieldCheck className="w-3.5 h-3.5 text-primary-500 fill-primary-500 shrink-0" />
                             </div>
                             <p className="text-[10px] md:text-xs text-secondary-500 dark:text-secondary-400 mt-1 flex items-center gap-1">
-                                {formatTimeAgo(post.createdAt || post.date)} • <Clock className="w-3 h-3" />
+                                {formatTimeAgo(post.createdAt || (isEvent ? Date.parse((post as Event).date) : (post as Announcement).date))} • <Clock className="w-3 h-3" />
                             </p>
                         </div>
                     </div>
@@ -105,29 +108,29 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
                 <div
                     className={cn(
                         "px-4 pb-3",
-                        post.externalUrl && "cursor-pointer hover:bg-secondary-50/50 dark:hover:bg-secondary-800/20 transition-colors",
-                        isTextOnly && "py-8 md:py-12 bg-gradient-to-br from-primary-600 to-primary-800 text-white shadow-inner"
+                        !isEvent && (post as Announcement).externalUrl && "cursor-pointer hover:bg-secondary-50/50 dark:hover:bg-secondary-800/20 transition-colors",
+                        !isEvent && !(post as Announcement).externalUrl && "py-8 md:py-12 bg-gradient-to-br from-primary-600 to-primary-800 text-white shadow-inner"
                     )}
-                    onClick={handleRedirect}
+                    onClick={() => !isEvent && handleRedirect()}
                 >
                     <h5 className={cn(
                         "font-bold mb-2 leading-tight",
-                        isTextOnly ? "text-xl md:text-3xl text-center font-heading" : "text-base text-secondary-900 dark:text-secondary-100 line-clamp-2 md:line-clamp-none"
+                        !isEvent && !(post as Announcement).externalUrl ? "text-xl md:text-3xl text-center font-heading" : "text-base text-secondary-900 dark:text-secondary-100 line-clamp-2 md:line-clamp-none"
                     )}>
                         {post.title}
                     </h5>
                     <p className={cn(
                         "leading-relaxed whitespace-pre-wrap break-words",
-                        isTextOnly ? "text-base md:text-xl text-center opacity-90 max-w-xl mx-auto" : "text-sm text-secondary-600 dark:text-secondary-400"
+                        !isEvent && !(post as Announcement).externalUrl ? "text-base md:text-xl text-center opacity-90 max-w-xl mx-auto" : "text-sm text-secondary-600 dark:text-secondary-400"
                     )}>
-                        {post.content}
+                        {isEvent ? (post as Event).description : (post as Announcement).content}
                     </p>
                 </div>
 
                 {/* Media Section */}
-                {post.externalUrl ? (
+                {!isEvent && (post as Announcement).externalUrl ? (
                     <div className="cursor-pointer" onClick={handleRedirect}>
-                        <FacebookEmbed url={post.externalUrl} />
+                        <FacebookEmbed url={(post as Announcement).externalUrl!} />
                     </div>
                 ) : null}
 
@@ -150,35 +153,37 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
                     </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="px-1.5 py-1 border-t border-secondary-50 dark:border-secondary-800/50 flex items-center gap-1">
-                    <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
-                        onClick={handleLike}
-                        className={cn(
-                            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors text-sm font-semibold",
-                            isLiked ? "text-blue-600 dark:text-blue-400" : "text-secondary-600 dark:text-secondary-400"
-                        )}
-                    >
-                        <motion.div
-                            animate={isLiked ? { scale: [1, 1.4, 1] } : { scale: 1 }}
-                            transition={{ duration: 0.3 }}
+                {/* Action Buttons - Only show for Announcements (where likes/comments are supported) */}
+                {!isEvent && (
+                    <div className="px-1.5 py-1 border-t border-secondary-50 dark:border-secondary-800/50 flex items-center gap-1">
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
+                            onClick={handleLike}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors text-sm font-semibold",
+                                isLiked ? "text-blue-600 dark:text-blue-400" : "text-secondary-600 dark:text-secondary-400"
+                            )}
                         >
-                            <ThumbsUp className={cn("w-5 h-5", isLiked && "fill-current")} />
-                        </motion.div>
-                        Like
-                    </motion.button>
-                    <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
-                        onClick={() => setShowComments(!showComments)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors text-sm font-semibold text-secondary-600 dark:text-secondary-400"
-                    >
-                        <MessageCircle className="w-5 h-5" />
-                        Comment
-                    </motion.button>
-                </div>
+                            <motion.div
+                                animate={isLiked ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <ThumbsUp className={cn("w-5 h-5", isLiked && "fill-current")} />
+                            </motion.div>
+                            Like
+                        </motion.button>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
+                            onClick={() => setShowComments(!showComments)}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors text-sm font-semibold text-secondary-600 dark:text-secondary-400"
+                        >
+                            <MessageCircle className="w-5 h-5" />
+                            Comment
+                        </motion.button>
+                    </div>
+                )}
 
                 {/* Comments Section */}
                 {showComments && (
