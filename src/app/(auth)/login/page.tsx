@@ -10,7 +10,6 @@ import { collection, query, where, getDocs, limit, getDoc, doc } from "firebase/
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Footer from "@/components/layout/Footer";
-import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 
 function LoginForm() {
@@ -20,14 +19,14 @@ function LoginForm() {
     const [error, setError] = useState("");
     const [identifier, setIdentifier] = useState("");
 
-    const { savedData, recover, saveProgress, clearProgress } = useSessionRecovery("login", { identifier: "" });
+    const { savedData, saveProgress, clearProgress } = useSessionRecovery("login", { identifier: "" });
 
     // Effect to check if there is saved data
     useEffect(() => {
         if (savedData && savedData.identifier && savedData.identifier !== identifier) {
             // Optional: User notification logic could go here or render conditionally
         }
-    }, [savedData]);
+    }, [savedData, identifier]);
 
     // Handle input change and save progress
     const handleIdentifierChange = (val: string) => {
@@ -88,7 +87,7 @@ function LoginForm() {
             clearProgress(); // Success: clear persistence
 
             // Check if user is staff/admin/volunteer
-            let staffDoc = await getDoc(doc(db, "staff", user.uid));
+            const staffDoc = await getDoc(doc(db, "staff", user.uid));
 
             // Resiliency: If not found by UID, try looking up by email (legacy ID)
             if (!staffDoc.exists()) {
@@ -96,7 +95,22 @@ function LoginForm() {
                 const qEmail = query(staffRef, where("email", "==", loginEmail.toLowerCase()), limit(1));
                 const emailSnapshot = await getDocs(qEmail);
                 if (!emailSnapshot.empty) {
-                    staffDoc = emailSnapshot.docs[0] as any;
+                    const staffData = emailSnapshot.docs[0].data();
+                    const role = staffData.role;
+
+                    if (role === 'admin') {
+                        try {
+                            router.push("/admin");
+                        } catch (navError) {
+                            window.location.href = "/admin";
+                        }
+                        return;
+                    } else if (['staff', 'volunteer', 'employee'].includes(role)) {
+                        await auth.signOut();
+                        setError("Access restricted. Staff and Volunteers must use the ID-based Attendance Station.");
+                        setLoading(false);
+                        return;
+                    }
                 }
             }
 
@@ -122,10 +136,10 @@ function LoginForm() {
 
             // Default redirect for families
             router.push("/");
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
             // Fallback for network/navigation errors
-            if (err.message && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
+            if (err instanceof Error && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
                 window.location.href = "/";
                 return;
             }

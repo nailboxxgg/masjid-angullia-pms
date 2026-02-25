@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 
 console.log("Current working directory:", process.cwd());
 

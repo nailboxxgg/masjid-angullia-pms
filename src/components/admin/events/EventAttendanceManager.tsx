@@ -36,10 +36,6 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
     // Manual Add State
     const [manualName, setManualName] = useState("");
 
-    useEffect(() => {
-        loadData();
-    }, [event.id]);
-
     const loadData = async () => {
         setIsLoading(true);
         try {
@@ -65,6 +61,10 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
         }
         setIsLoading(false);
     };
+
+    useEffect(() => {
+        loadData();
+    }, [event.id]);
 
     const handleSearch = async (term: string) => {
         setSearchQuery(term);
@@ -111,7 +111,7 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
             const newRecord: Omit<EventAttendance, "id"> = {
                 eventId: event.id,
                 name,
-                uid,
+                ...(uid ? { uid } : {}),
                 status: 'present',
                 timestamp: Date.now(),
                 recordedBy: adminUid

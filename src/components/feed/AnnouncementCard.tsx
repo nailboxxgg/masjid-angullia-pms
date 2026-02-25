@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import { Clock, ArrowRight, ShieldCheck, Zap, Calendar } from "lucide-react";
 import { Announcement, Event } from "@/lib/types";
 import { formatTimeAgo, cn } from "@/lib/utils";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
-import { motion } from "framer-motion";
 
 interface AnnouncementCardProps {
     post: Announcement | Event;
@@ -17,7 +16,7 @@ export default function AnnouncementCard({ post, delay = 0, onClick }: Announcem
     const isEvent = 'location' in post;
     const title = post.title;
     const content = 'content' in post ? post.content : (post as Event).description;
-    const createdAt = post.createdAt || ('date' in post && !isNaN(Date.parse(post.date)) ? Date.parse(post.date) : Date.now());
+    const createdAt = useMemo(() => post.createdAt || ('date' in post && !isNaN(Date.parse(post.date)) ? Date.parse(post.date) : Date.now()), [post]);
     const type = 'type' in post ? post.type : 'Event';
 
     return (

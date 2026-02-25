@@ -37,16 +37,16 @@ export default function AnnouncementsManager() {
     const [externalUrl, setExternalUrl] = useState("");
     const [sendSMS, setSendSMS] = useState(false);
 
-    useEffect(() => {
-        loadAnnouncements();
-    }, []);
-
     const loadAnnouncements = async () => {
         setIsLoading(true);
         const data = await getAnnouncements();
         setAnnouncements(data);
         setIsLoading(false);
     };
+
+    useEffect(() => {
+        loadAnnouncements();
+    }, []);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -87,7 +87,7 @@ export default function AnnouncementsManager() {
                         if (data.success) {
                             if (data.sent === 0 && data.results && data.results.length > 0) {
                                 // Extract unique errors
-                                const errors = Array.from(new Set(data.results.map((r: any) => r.error).filter(Boolean)));
+                                const errors = Array.from(new Set(data.results.map((r: { error?: string }) => r.error).filter(Boolean)));
                                 const errorMsg = errors.length > 0 ? errors.join(", ") : "Unknown error";
 
                                 setStatusData({
@@ -208,7 +208,7 @@ export default function AnnouncementsManager() {
                                     <div className="flex gap-2">
                                         <select
                                             value={newType}
-                                            onChange={(e) => setNewType(e.target.value as any)}
+                                            onChange={(e) => setNewType(e.target.value as Announcement['type'])}
                                             className="flex h-11 w-full rounded-md border text-sm outline-none px-3 bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
                                         >
                                             <option value="General">General</option>
@@ -217,7 +217,7 @@ export default function AnnouncementsManager() {
                                         </select>
                                         <select
                                             value={newPriority}
-                                            onChange={(e) => setNewPriority(e.target.value as any)}
+                                            onChange={(e) => setNewPriority(e.target.value as Announcement['priority'])}
                                             className="flex h-11 w-full rounded-md border text-sm outline-none px-3 bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
                                         >
                                             <option value="low">Low</option>

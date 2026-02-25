@@ -122,7 +122,7 @@ export default function NotificationDropdown({
                                                         {notification.senderName}
                                                     </p>
                                                     <span className="text-[10px] text-secondary-400 dark:text-secondary-500 shrink-0 font-medium">
-                                                        {formatTimeAgo(notification.createdAt?.toDate?.() || notification.createdAt)}
+                                                        {formatTimeAgo(notification.createdAt)}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2 mt-0.5">

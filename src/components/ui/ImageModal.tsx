@@ -1,10 +1,9 @@
 "use client";
 
-import { X, ZoomIn } from "lucide-react";
+import { X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { cn } from "@/lib/utils";
 
 interface ImageModalProps {
     isOpen: boolean;
@@ -14,11 +13,11 @@ interface ImageModalProps {
 }
 
 export default function ImageModal({ isOpen, onClose, src, alt }: ImageModalProps) {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const mounted = useSyncExternalStore(
+        () => () => { },
+        () => true,
+        () => false
+    );
 
     useEffect(() => {
         if (isOpen) {

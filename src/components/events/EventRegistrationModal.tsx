@@ -69,7 +69,7 @@ export default function EventRegistrationModal({ isOpen, onClose, event }: Event
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <CheckCircle className="w-8 h-8 text-green-600" />
                     </div>
-                    <h3 className="text-xl font-bold text-secondary-900 mb-2">You're All Set!</h3>
+                    <h3 className="text-xl font-bold text-secondary-900 mb-2">You&apos;re All Set!</h3>
                     <p className="text-secondary-600 mb-6">
                         You have successfully registered for <strong>{event.title}</strong>.
                     </p>

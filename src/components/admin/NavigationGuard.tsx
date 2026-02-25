@@ -10,7 +10,16 @@ import { clockOut } from "@/lib/attendance";
 
 export default function NavigationGuard() {
     const router = useRouter();
-    const [modalType, setModalType] = useState<"logout" | "refresh" | null>(null);
+    const [modalType, setModalType] = useState<"logout" | "refresh" | null>(() => {
+        if (typeof window === 'undefined') return null;
+        const hasSeenSyncModal = sessionStorage.getItem("hasSeenSyncModal");
+        const navEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
+        if (navEntries.length > 0 && navEntries[0].type === "reload" && !hasSeenSyncModal) {
+            sessionStorage.setItem("hasSeenSyncModal", "true");
+            return "refresh";
+        }
+        return null;
+    });
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     useEffect(() => {
@@ -22,7 +31,7 @@ export default function NavigationGuard() {
         };
 
         // 2. Intercept Back Button
-        const handlePopState = (event: PopStateEvent) => {
+        const handlePopState = (_event: PopStateEvent) => {
             // Stop the actual navigation
             window.history.pushState(null, "", window.location.href);
             setModalType("logout");
@@ -30,17 +39,6 @@ export default function NavigationGuard() {
 
         // Initialize state for back button interception
         window.history.pushState(null, "", window.location.href);
-
-        // 3. Detect if page was refreshed
-        // Check if we've already shown the sync modal in this session
-        const hasSeenSyncModal = sessionStorage.getItem("hasSeenSyncModal");
-        const navEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
-
-        if (navEntries.length > 0 && navEntries[0].type === "reload" && !hasSeenSyncModal) {
-            setModalType("refresh");
-            // Mark as seen for this session immediately
-            sessionStorage.setItem("hasSeenSyncModal", "true");
-        }
 
         window.addEventListener("beforeunload", handleBeforeUnload);
         window.addEventListener("popstate", handlePopState);

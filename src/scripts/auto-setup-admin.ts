@@ -25,9 +25,9 @@ async function setupAdmin() {
         }, { merge: true });
 
         console.log("Admin account successfully set up in the 'staff' collection!");
-    } catch (error: any) {
-        console.error("Error setting up admin account:", error.message);
-        if (error.code === 'auth/user-not-found') {
+    } catch (error: unknown) {
+        console.error("Error setting up admin account:", error instanceof Error ? error.message : error);
+        if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/user-not-found') {
             console.log("Note: This account doesn't seem to exist in Firebase Auth yet. Please make sure it's created in the Firebase Console first.");
         }
     }

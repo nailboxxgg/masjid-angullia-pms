@@ -27,6 +27,18 @@ import Modal from "@/components/ui/modal";
 import { Plus } from "lucide-react";
 import { getSubscribers, Subscriber } from "@/lib/notifications";
 
+interface ConsolidatedStaffSession extends Omit<AttendanceSession, 'status' | 'role'> {
+    totalDurationMs: number;
+    sessionsCount: number;
+    latestClockIn: number;
+    latestClockOut?: number;
+    isActive: boolean;
+    displayDuration?: string;
+    displayTime?: string;
+    status: string;
+    role?: string;
+}
+
 export default function AdminAttendancePage() {
     const [sessions, setSessions] = useState<AttendanceSession[]>([]);
     const [loading, setLoading] = useState(true);
@@ -86,12 +98,10 @@ export default function AdminAttendancePage() {
     };
 
     const handleExport = () => {
-        const dataToExport = activeTab === 'visitor' ? visitorSessions : finalStaffList;
-
-        let exportData: any[] = [];
+        let exportData: Record<string, string | undefined>[] = [];
 
         if (activeTab === 'visitor') {
-            exportData = dataToExport.map(session => ({
+            exportData = visitorSessions.map(session => ({
                 'Name': session.displayName,
                 'Phone': session.phone || 'N/A',
                 'Time': new Date(session.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -99,7 +109,7 @@ export default function AdminAttendancePage() {
                 'Device': session.deviceInfo || 'Unknown'
             }));
         } else {
-            exportData = dataToExport.map(staff => ({
+            exportData = finalStaffList.map(staff => ({
                 'Name': staff.displayName,
                 'Email': staff.email,
                 'Role': staff.role || 'Staff',
@@ -204,7 +214,7 @@ export default function AdminAttendancePage() {
         }
 
         return acc;
-    }, {} as Record<string, any>));
+    }, {} as Record<string, ConsolidatedStaffSession>));
 
     const finalStaffList = consolidatedStaffSessions.map(staff => {
         const hours = Math.floor(staff.totalDurationMs / (1000 * 60 * 60));
@@ -213,7 +223,7 @@ export default function AdminAttendancePage() {
         return {
             ...staff,
             displayDuration: staff.isActive ? `On-going (${hours}h ${minutes}m)` : `${hours}h ${minutes}m`,
-            status: staff.isActive ? 'active' : 'completed',
+            status: (staff.isActive ? 'active' : 'completed') as AttendanceSession['status'],
             // For Time column, show First In - Last Out? Or Latest activity?
             // User asked: "record only the status, time and duration"
             // Let's show: Latest Activity Time
@@ -224,7 +234,7 @@ export default function AdminAttendancePage() {
     });
 
 
-    const displayData = activeTab === 'visitor' ? visitorSessions : finalStaffList;
+    const displayData = (activeTab === 'visitor' ? visitorSessions : finalStaffList) as (AttendanceSession & Partial<ConsolidatedStaffSession>)[];
     const activeSessionsCount = sessions.filter(s => s.status === 'active').length;
 
     return (
@@ -476,7 +486,7 @@ export default function AdminAttendancePage() {
                             <p className="text-secondary-500 text-sm mt-1 font-medium italic">Try adjusting filters</p>
                         </div>
                     ) : (
-                        displayData.map((session: any) => (
+                        displayData.map((session) => (
                             <motion.div
                                 key={session.id}
                                 variants={itemVariants}
@@ -598,7 +608,7 @@ export default function AdminAttendancePage() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    displayData.map((session: any) => (
+                                    displayData.map((session) => (
                                         <tr key={session.id} className="hover:bg-secondary-50/50 dark:hover:bg-white/5 group transition-all cursor-default">
                                             <td className="px-6 py-4 relative">
                                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />

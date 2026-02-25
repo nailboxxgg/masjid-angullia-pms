@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Modal from "./modal";
 import { subscribeToNotifications } from "@/lib/notifications";
-import { Bell, Loader2, CheckCircle, Smartphone } from "lucide-react";
+import { Loader2, CheckCircle, Smartphone } from "lucide-react";
 
 interface SubscriptionModalProps {
     isOpen: boolean;
@@ -40,7 +40,7 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
                 setStatus('error');
                 setMessage(result.message);
             }
-        } catch (error) {
+        } catch (_error) {
             setStatus('error');
             setMessage("Something went wrong. Please try again.");
         } finally {

@@ -1,17 +1,15 @@
 
-import { db, auth } from "./firebase";
+import { db } from "./firebase";
 import {
     collection,
     addDoc,
     updateDoc,
-    deleteDoc,
     getDocs,
     doc,
     query,
     where,
     orderBy,
     limit,
-    Timestamp,
     serverTimestamp,
     runTransaction
 } from "firebase/firestore";
@@ -106,9 +104,9 @@ export const registerForEvent = async (eventId: string, details: Omit<Registrant
         });
 
         return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error registering for event:", error);
-        return { success: false, error: error.message };
+        return { success: false, error: error instanceof Error ? error.message : "Registration failed" };
     }
 };
 

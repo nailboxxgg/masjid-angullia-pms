@@ -14,10 +14,6 @@ export default function AttendanceLogsPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [dateFilter, setDateFilter] = useState("");
 
-    useEffect(() => {
-        loadLogs();
-    }, [dateFilter]);
-
     const loadLogs = async () => {
         setIsLoading(true);
         try {
@@ -38,6 +34,10 @@ export default function AttendanceLogsPage() {
         }
         setIsLoading(false);
     };
+
+    useEffect(() => {
+        loadLogs();
+    }, [dateFilter]);
 
     const filteredLogs = logs.filter(log =>
         log.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -133,8 +133,8 @@ export default function AttendanceLogsPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${log.type === 'clock_in'
-                                                    ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300'
-                                                    : 'bg-secondary-100 text-secondary-700 dark:bg-secondary-800 dark:text-secondary-300'
+                                                ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300'
+                                                : 'bg-secondary-100 text-secondary-700 dark:bg-secondary-800 dark:text-secondary-300'
                                                 }`}>
                                                 {log.type === 'clock_in' ? 'Clock In' : 'Clock Out'}
                                             </span>

@@ -5,7 +5,7 @@ import { CloudOff, Wifi } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function OfflineIndicator() {
-    const [isOffline, setIsOffline] = useState(false);
+    const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' ? !navigator.onLine : false);
     const [showReconnected, setShowReconnected] = useState(false);
 
     useEffect(() => {
@@ -21,11 +21,6 @@ export default function OfflineIndicator() {
 
         window.addEventListener("online", handleOnline);
         window.addEventListener("offline", handleOffline);
-
-        // Initial check
-        if (!navigator.onLine) {
-            setIsOffline(true);
-        }
 
         return () => {
             window.removeEventListener("online", handleOnline);

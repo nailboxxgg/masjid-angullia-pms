@@ -9,6 +9,8 @@ import * as XLSX from "xlsx";
 import { addDonation } from "@/lib/donations";
 import { Donation } from "@/lib/types";
 
+type ExcelRow = Record<string, string | number | undefined>;
+
 interface ImportModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -18,7 +20,7 @@ interface ImportModalProps {
 export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [file, setFile] = useState<File | null>(null);
-    const [previewData, setPreviewData] = useState<any[]>([]);
+    const [previewData, setPreviewData] = useState<ExcelRow[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [uploadStatus, setUploadStatus] = useState<"idle" | "parsing" | "uploading" | "success" | "error">("idle");
     const [errorMessage, setErrorMessage] = useState("");
@@ -50,14 +52,14 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
 
             // Basic validation: Check if keys likely match standard columns
             // We expect at least: 'Amount' or 'Donor'
-            const firstRow = jsonData[0] as any;
+            const firstRow = jsonData[0] as ExcelRow;
             if (!firstRow['Amount'] && !firstRow['amount']) {
                 setErrorMessage("Could not find an 'Amount' column. Please ensure header row exists.");
                 setUploadStatus("error");
                 return;
             }
 
-            setPreviewData(jsonData.slice(0, 5)); // Preview first 5
+            setPreviewData((jsonData as ExcelRow[]).slice(0, 5)); // Preview first 5
             setUploadStatus("idle");
         } catch (error) {
             console.error("Parse error:", error);
@@ -79,12 +81,12 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
 
             let successCount = 0;
 
-            for (const row of jsonData as any[]) {
+            for (const row of jsonData as ExcelRow[]) {
                 // Map row to Donation object
                 // Capable of handling various casing scenarios
                 const amount = Number(row['Amount'] || row['amount'] || 0);
-                const donor = row['Donor'] || row['donor'] || row['Name'] || row['name'] || "Anonymous";
-                const typeRaw = row['Type'] || row['type'] || "General";
+                const donor = String(row['Donor'] || row['donor'] || row['Name'] || row['name'] || "Anonymous");
+                const typeRaw = String(row['Type'] || row['type'] || "General");
 
                 // Validate Type
                 let type: Donation['type'] = 'General';
@@ -98,12 +100,12 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                 // Excel dates are sometimes numbers (days since 1900) or strings
                 let date = Date.now();
                 const rowDate = row['Date'] || row['date'];
-                if (rowDate) {
+                if (rowDate !== undefined) {
                     if (typeof rowDate === 'number') {
                         // JS Date from Excel serial date
                         date = new Date((rowDate - (25567 + 2)) * 86400 * 1000).getTime();
                     } else {
-                        const parsed = new Date(rowDate).getTime();
+                        const parsed = new Date(String(rowDate)).getTime();
                         if (!isNaN(parsed)) date = parsed;
                     }
                 }
@@ -117,12 +119,13 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                         status: 'completed',
                         paymentMethod: 'bank_transfer', // Assume offline/bank for manual imports
                         isAnonymous: donor.toLowerCase() === 'anonymous',
-                        message: row['Message'] || row['message'] || row['Reference'] || row['reference']
+                        message: String(row['Message'] || row['message'] || row['Reference'] || row['reference'] || '')
                     });
                     successCount++;
                 }
             }
 
+            console.log(`Successfully imported ${successCount} donations`);
             setUploadStatus("success");
             setTimeout(() => {
                 onClose();
@@ -230,10 +233,10 @@ export default function ImportModal({ isOpen, onClose, onSuccess }: ImportModalP
                                                         <tbody className="divide-y divide-secondary-200 dark:divide-secondary-700 text-secondary-700 dark:text-secondary-200">
                                                             {previewData.map((row, i) => (
                                                                 <tr key={i}>
-                                                                    <td className="px-3 py-1.5">{row['Date'] || row['date'] || '-'}</td>
-                                                                    <td className="px-3 py-1.5">{row['Donor'] || row['donor'] || row['Name'] || '-'}</td>
-                                                                    <td className="px-3 py-1.5">{row['Amount'] || row['amount'] || '-'}</td>
-                                                                    <td className="px-3 py-1.5">{row['Type'] || row['type'] || '-'}</td>
+                                                                    <td className="px-3 py-1.5">{String(row['Date'] || row['date'] || '-')}</td>
+                                                                    <td className="px-3 py-1.5">{String(row['Donor'] || row['donor'] || row['Name'] || '-')}</td>
+                                                                    <td className="px-3 py-1.5">{String(row['Amount'] || row['amount'] || '-')}</td>
+                                                                    <td className="px-3 py-1.5">{String(row['Type'] || row['type'] || '-')}</td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>

@@ -1,8 +1,8 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { getFunctions } from "firebase/functions";
-import { getStorage } from "firebase/storage";
+import { getAuth, Auth } from "firebase/auth";
+import { getFunctions, Functions } from "firebase/functions";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 
 export const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,17 +15,14 @@ export const firebaseConfig = {
 };
 
 // Initialize Firebase (singleton pattern)
-let app;
-if (typeof window !== "undefined" || firebaseConfig.apiKey) {
-    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+let app: FirebaseApp;
+if (!getApps().length) {
+    if (!firebaseConfig.apiKey) {
+        console.warn("Firebase API Key is missing. Initializing with empty config (likely during build).");
+    }
+    app = initializeApp(firebaseConfig);
 } else {
-    // During build or if missing keys, provide a dummy/null app or handle gracefully
-    console.warn("Firebase API Key is missing. Skipping initialization (likely during build).");
-    app = {
-        options: {},
-        name: "[DEFAULT]",
-        automaticDataCollectionEnabled: false
-    } as any;
+    app = getApp();
 }
 
 export const db = getFirestore(app);
@@ -45,7 +42,32 @@ if (typeof window !== "undefined") {
     });
 }
 
-export const auth = getAuth(app);
-export const functions = getFunctions(app);
-export const storage = getStorage(app);
+// Lazy-initialize auth, functions, and storage to avoid
+// "auth/invalid-api-key" errors during Next.js build when
+// env vars are not available (e.g. CI).
+let _auth: Auth;
+let _functions: Functions;
+let _storage: FirebaseStorage;
+
+export const auth = new Proxy({} as Auth, {
+    get(_, prop) {
+        if (!_auth) _auth = getAuth(app);
+        return Reflect.get(_auth, prop);
+    }
+});
+
+export const functions = new Proxy({} as Functions, {
+    get(_, prop) {
+        if (!_functions) _functions = getFunctions(app);
+        return Reflect.get(_functions, prop);
+    }
+});
+
+export const storage = new Proxy({} as FirebaseStorage, {
+    get(_, prop) {
+        if (!_storage) _storage = getStorage(app);
+        return Reflect.get(_storage, prop);
+    }
+});
+
 export default app;

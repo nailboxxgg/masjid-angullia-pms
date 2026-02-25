@@ -216,7 +216,7 @@ export default function AdminFamiliesPage() {
                 >
                     <div className="space-y-4 py-2 bg-white dark:bg-secondary-900">
                         <p className="text-secondary-600 dark:text-secondary-400">
-                            Are you sure you want to delete the family <span className="font-semibold text-secondary-900 dark:text-secondary-100">"{familyToDelete?.name}"</span>?
+                            Are you sure you want to delete the family <span className="font-semibold text-secondary-900 dark:text-secondary-100">&ldquo;{familyToDelete?.name}&rdquo;</span>?
                             This action cannot be undone and will remove all family member records.
                         </p>
                         <div className="flex justify-end gap-3 pt-2">

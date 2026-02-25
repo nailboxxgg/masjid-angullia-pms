@@ -26,16 +26,16 @@ export default function AdminStaffPage() {
         email: ""
     });
 
-    useEffect(() => {
-        loadStaff();
-    }, []);
-
     const loadStaff = async () => {
         setIsLoading(true);
         const data = await getStaffList();
         setStaffList(data);
         setIsLoading(false);
     };
+
+    useEffect(() => {
+        loadStaff();
+    }, []);
 
     const handleCopyId = (id: string) => {
         navigator.clipboard.writeText(id);
@@ -246,7 +246,7 @@ export default function AdminStaffPage() {
                                         <label className="text-xs font-bold text-secondary-500 uppercase tracking-wider">Role</label>
                                         <select
                                             value={formData.role}
-                                            onChange={e => setFormData({ ...formData, role: e.target.value as any })}
+                                            onChange={e => setFormData({ ...formData, role: e.target.value as Staff['role'] })}
                                             className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-950 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium"
                                         >
                                             <option value="Staff">Staff</option>

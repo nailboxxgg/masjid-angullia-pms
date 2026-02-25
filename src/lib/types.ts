@@ -91,7 +91,7 @@ export interface AttendanceRecord {
     displayName: string;
     email?: string;
     type: 'clock_in' | 'clock_out' | 'visitor';
-    role?: 'admin' | 'staff';
+    role?: 'admin' | 'staff' | 'volunteer';
     phone?: string;
     timestamp: number;
     date: string; // YYYY-MM-DD
@@ -105,7 +105,7 @@ export interface AttendanceSession {
     displayName: string;
     email?: string;
     type?: 'staff_session' | 'visitor_log';
-    role?: 'admin' | 'staff';
+    role?: 'admin' | 'staff' | 'volunteer';
     phone?: string;
     date: string;
     clockIn: number;

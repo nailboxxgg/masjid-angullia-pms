@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
 import { getEvents } from "@/lib/events";
 import { Event, Donation } from "@/lib/types";
+import { User } from "firebase/auth";
 import { getDonations } from "@/lib/donations";
 import EventRegistrationModal from "@/components/events/EventRegistrationModal";
 import SubscriptionModal from "@/components/ui/SubscriptionModal";
@@ -27,6 +28,8 @@ import ImageModal from "@/components/ui/ImageModal";
 import FamilyRegistrationModal from "@/components/families/FamilyRegistrationModal";
 import AnnouncementCard from "@/components/feed/AnnouncementCard";
 import { clockIn } from "@/lib/attendance";
+
+const emptySubscribe = () => () => { };
 
 const Modal = dynamic(() => import("@/components/ui/modal"), { ssr: false });
 
@@ -49,11 +52,10 @@ export default function Home() {
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [selectedFullImage, setSelectedFullImage] = useState<{ src: string, alt: string } | null>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    setMounted(true);
     const fetchUpdates = async () => {
       const [announcementData, eventData, donationData] = await Promise.all([
         getAnnouncements(5),
@@ -69,8 +71,8 @@ export default function Home() {
         ...(announcementData || []),
         ...(eventData || [])
       ].sort((a, b) => {
-        const timeA = a.createdAt || (('date' in a && !isNaN(Date.parse((a as any).date))) ? Date.parse((a as any).date) : 0);
-        const timeB = b.createdAt || (('date' in b && !isNaN(Date.parse((b as any).date))) ? Date.parse((b as any).date) : 0);
+        const timeA = a.createdAt || (('date' in a && !isNaN(Date.parse((a as Event).date))) ? Date.parse((a as Event).date) : 0);
+        const timeB = b.createdAt || (('date' in b && !isNaN(Date.parse((b as Event).date))) ? Date.parse((b as Event).date) : 0);
         return timeB - timeA;
       });
       setCombinedUpdates(merged.slice(0, 4));
@@ -127,7 +129,7 @@ export default function Home() {
         const qEmail = query(staffRef, where("email", "==", email.toLowerCase()), limit(1));
         const emailSnapshot = await getDocs(qEmail);
         if (!emailSnapshot.empty) {
-          userDoc = emailSnapshot.docs[0] as any;
+          userDoc = emailSnapshot.docs[0];
         }
       }
 

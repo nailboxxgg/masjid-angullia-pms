@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { Check, X, Clock, MapPin, Phone, Users, User, AlertCircle, Search } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+
 import { getPendingFamilies, updateFamily, deleteFamily } from "@/lib/families";
-import { Family } from "@/lib/types";
+import { Family, FamilyMember } from "@/lib/types";
 import { formatTimeAgo } from "@/lib/utils";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 
@@ -17,16 +17,16 @@ export default function AdminRequestsPage() {
     const [processingId, setProcessingId] = useState<string | null>(null);
     const [confirmAction, setConfirmAction] = useState<{ type: 'approve' | 'reject', family: Family } | null>(null);
 
-    useEffect(() => {
-        loadRequests();
-    }, []);
-
     const loadRequests = async () => {
         setIsLoading(true);
         const data = await getPendingFamilies();
         setRequests(data);
         setIsLoading(false);
     };
+
+    useEffect(() => {
+        loadRequests();
+    }, []);
 
     const filteredRequests = requests.filter(request =>
         (request.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -120,7 +120,7 @@ export default function AdminRequestsPage() {
                                                 </span>
                                                 <span className="text-xs font-semibold text-secondary-400 flex items-center gap-1">
                                                     <Clock className="w-3 h-3" />
-                                                    {formatTimeAgo(request.createdAt)}
+                                                    {formatTimeAgo(request.createdAt ?? 0)}
                                                 </span>
                                             </div>
                                             <h3 className="text-2xl font-black text-secondary-900 dark:text-white font-heading leading-tight line-clamp-2">
@@ -164,7 +164,7 @@ export default function AdminRequestsPage() {
                                             <div className="pt-2">
                                                 <p className="text-[10px] text-secondary-400 font-black uppercase tracking-widest mb-2 px-1">Family Members ({request.members.length})</p>
                                                 <div className="flex flex-wrap gap-2">
-                                                    {request.members.map((m: any) => (
+                                                    {request.members.map((m: FamilyMember) => (
                                                         <span key={m.id} className="inline-flex items-center px-3 py-1.5 rounded-xl bg-white dark:bg-secondary-800 text-xs font-bold text-secondary-600 dark:text-secondary-300 border border-secondary-100 dark:border-secondary-700 shadow-sm">
                                                             {m.name} <span className="text-secondary-400 font-medium ml-1.5 text-[10px]"> {m.relation}</span>
                                                         </span>

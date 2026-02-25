@@ -8,7 +8,7 @@ export interface QRPhTransaction {
     expiresAt: number;
 }
 
-export const generateQRPh = async (amount: number, description: string): Promise<QRPhTransaction> => {
+export const generateQRPh = async (amount: number, _description: string): Promise<QRPhTransaction> => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -28,7 +28,7 @@ export const generateQRPh = async (amount: number, description: string): Promise
     };
 };
 
-export const checkPaymentStatus = async (referenceNumber: string): Promise<'pending' | 'completed' | 'failed'> => {
+export const checkPaymentStatus = async (_referenceNumber: string): Promise<'pending' | 'completed' | 'failed'> => {
     // Simulate network check
     await new Promise(resolve => setTimeout(resolve, 1000));
 

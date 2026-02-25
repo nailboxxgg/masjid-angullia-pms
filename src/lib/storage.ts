@@ -1,5 +1,5 @@
 import { storage } from "./firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL, UploadResult } from "firebase/storage";
 
 /**
  * Uploads an image to Firebase Storage and returns the download URL.
@@ -29,7 +29,7 @@ export const uploadImage = async (file: File, path: string = 'uploads'): Promise
             setTimeout(() => reject(new Error("Upload timed out. Check your network or CORS configuration.")), 15000)
         );
 
-        const snapshot = await Promise.race([uploadPromise, timeoutPromise]) as any; // Cast to avoid type mismatch with timeout
+        const snapshot = await Promise.race([uploadPromise, timeoutPromise]) as UploadResult; // Cast to avoid type mismatch with timeout
 
         console.log("[Upload] Upload completed, fetching URL...");
         const downloadURL = await getDownloadURL(snapshot.ref);

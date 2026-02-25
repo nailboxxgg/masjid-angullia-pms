@@ -1,6 +1,6 @@
 "use server";
 
-import { PrayerData, PrayerTimes, HijriDate } from "@/lib/prayer-times";
+import { PrayerData } from "@/lib/prayer-times";
 
 const CITY = "Alaminos";
 const COUNTRY = "Philippines";
