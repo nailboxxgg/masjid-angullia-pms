@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Event } from "@/lib/types";
 import { resizeImage, imageToBase64 } from "@/lib/image-utils";
@@ -27,24 +27,24 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchEvent = async () => {
-            try {
-                const docRef = doc(db, "events", id);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = { id: docSnap.id, ...docSnap.data() } as Event;
-                    setEvent(data);
-                    setFormData(data);
-                    if (data.imageUrl) setImagePreview(data.imageUrl);
-                } else {
-                    router.push("/admin/events");
-                }
-            } catch (error) {
-                console.error("Error fetching event:", error);
+        const docRef = doc(db, "events", id);
+        const unsubscribe = onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = { id: docSnap.id, ...docSnap.data() } as Event;
+                setEvent(data);
+                // Only set form data on initial load to avoid overwriting user edits
+                setFormData(prev => Object.keys(prev).length === 0 ? data : prev);
+                if (data.imageUrl && !imagePreview) setImagePreview(data.imageUrl);
+            } else {
+                router.push("/admin/events");
             }
             setIsLoading(false);
-        };
-        fetchEvent();
+        }, (error) => {
+            console.error("Error listening to event:", error);
+            setIsLoading(false);
+        });
+
+        return () => unsubscribe();
     }, [id, router]);
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

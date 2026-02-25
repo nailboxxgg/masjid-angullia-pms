@@ -6,6 +6,7 @@ import { deleteDonation, updateDonationStatus, getDonations, getDonationStats, D
 import Modal from "@/components/ui/modal";
 import { Download, Upload } from "lucide-react";
 import { motion } from "framer-motion";
+import * as XLSX from "xlsx";
 
 import StatsOverview from "./StatsOverview";
 import DonationFilters from "./DonationFilters";
@@ -101,6 +102,30 @@ export default function FinancesPage() {
         return matchesSearch && matchesType;
     });
 
+    const handleExportCSV = () => {
+        if (filteredDonations.length === 0) {
+            alert("No donations to export.");
+            return;
+        }
+
+        const exportData = filteredDonations.map(d => ({
+            Date: new Date(d.date).toLocaleDateString(),
+            Donor: d.isAnonymous ? "Anonymous" : d.donorName,
+            Email: d.email || "",
+            Amount: d.amount,
+            Type: d.type,
+            Status: d.status,
+            "Payment Method": d.paymentMethod || "",
+            "Reference #": d.referenceNumber || "",
+            Message: d.message || "",
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Donations");
+        XLSX.writeFile(workbook, `donations_export_${new Date().toISOString().slice(0, 10)}.csv`);
+    };
+
     return (
         <motion.div
             variants={containerVariants}
@@ -125,6 +150,7 @@ export default function FinancesPage() {
                     <motion.button
                         whileHover={{ scale: 1.02, y: -2 }}
                         whileTap={{ scale: 0.98 }}
+                        onClick={handleExportCSV}
                         className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-secondary-900 dark:text-secondary-100 hover:bg-secondary-50 dark:hover:bg-secondary-800 shadow-sm transition-all"
                     >
                         <Download className="w-4 h-4" /> Export CSV

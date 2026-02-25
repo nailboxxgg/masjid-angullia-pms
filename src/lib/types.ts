@@ -123,4 +123,5 @@ export interface EventAttendance {
     status: 'present';
     timestamp: number;
     recordedBy: string; // Admin UID
+    isWalkIn?: boolean;
 }

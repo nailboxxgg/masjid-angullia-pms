@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Calendar, Clock, MapPin, Users, Heart, Sparkles } from "lucide-react";
-import { getEvents } from "@/lib/events";
+import { subscribeToEvents } from "@/lib/events";
 import { Event } from "@/lib/types";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
@@ -18,13 +18,13 @@ export default function EventsPage() {
     const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
     useEffect(() => {
-        const fetchEvents = async () => {
-            setIsLoading(true);
-            const data = await getEvents(30);
+        setIsLoading(true);
+        const unsubscribe = subscribeToEvents(30, (data) => {
             setEvents(data || []);
             setIsLoading(false);
-        };
-        fetchEvents();
+        });
+
+        return () => unsubscribe();
     }, []);
 
     const handleRegister = (event: Event) => {

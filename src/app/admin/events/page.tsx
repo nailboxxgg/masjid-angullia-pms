@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getEvents, deleteEvent } from "@/lib/events";
+import { getEvents, deleteEvent, subscribeToEvents } from "@/lib/events";
 import { Event } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Calendar, Plus, Search, MapPin, Users, Edit, Trash2, MoreVertical, Eye } from "lucide-react";
@@ -14,15 +14,14 @@ export default function AdminEventsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
 
-    const loadEvents = async () => {
-        setIsLoading(true);
-        const data = await getEvents(50); // Fetch more for admin
-        setEvents(data);
-        setIsLoading(false);
-    };
-
     useEffect(() => {
-        loadEvents();
+        setIsLoading(true);
+        const unsubscribe = subscribeToEvents(50, (data) => {
+            setEvents(data || []);
+            setIsLoading(false);
+        });
+
+        return () => unsubscribe();
     }, []);
 
     const handleDelete = async (id: string, e: React.MouseEvent) => {
