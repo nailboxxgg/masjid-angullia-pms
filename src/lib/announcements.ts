@@ -14,7 +14,8 @@ import {
     updateDoc,
     arrayUnion,
     arrayRemove,
-    getDoc
+    QueryDocumentSnapshot,
+    DocumentData
 } from "firebase/firestore";
 import { Announcement, Comment } from "./types";
 
@@ -52,8 +53,8 @@ export const getAnnouncements = async (limitCount = 10): Promise<Announcement[]>
 
 export const getPaginatedAnnouncements = async (
     limitCount = 10,
-    lastVisible: any = null
-): Promise<{ data: Announcement[]; lastDoc: any }> => {
+    lastVisible: QueryDocumentSnapshot<DocumentData> | null = null
+): Promise<{ data: Announcement[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null }> => {
     try {
         let q = query(
             collection(db, COLLECTION_NAME),

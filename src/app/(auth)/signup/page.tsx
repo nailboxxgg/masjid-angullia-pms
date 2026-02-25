@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Lock, ArrowLeft, MessageCircle, Mail, User, ShieldCheck, CheckCircle2 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import FeedbackModal from "@/components/modules/FeedbackModal";
@@ -11,7 +10,6 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { checkWhitelistStatus, completeStaffSignup, StaffMember } from "@/lib/staff";
 
 export default function SignupPage() {
-    const router = useRouter();
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [step, setStep] = useState<'check' | 'signup' | 'success'>('check');
@@ -64,9 +62,9 @@ export default function SignupPage() {
             await completeStaffSignup(user.uid, email);
 
             setStep('success');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Signup error:", err);
-            setError(err.message || "Failed to create account.");
+            setError(err instanceof Error ? err.message : "Failed to create account.");
         } finally {
             setIsLoading(false);
         }

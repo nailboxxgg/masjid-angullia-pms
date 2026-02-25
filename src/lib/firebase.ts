@@ -1,4 +1,4 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getFunctions } from "firebase/functions";
@@ -15,7 +15,7 @@ export const firebaseConfig = {
 };
 
 // Initialize Firebase (singleton pattern)
-let app;
+let app: FirebaseApp;
 if (typeof window !== "undefined" || firebaseConfig.apiKey) {
     app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 } else {
@@ -25,7 +25,7 @@ if (typeof window !== "undefined" || firebaseConfig.apiKey) {
         options: {},
         name: "[DEFAULT]",
         automaticDataCollectionEnabled: false
-    } as any;
+    } as FirebaseApp;
 }
 
 export const db = getFirestore(app);

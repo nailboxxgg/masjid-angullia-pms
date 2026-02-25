@@ -75,9 +75,10 @@ export default function DonationsPage() {
             } catch (navError) {
                 window.location.href = "/admin";
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            if (err.message && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
+            const errMsg = err instanceof Error ? err.message : "";
+            if (errMsg.includes("Failed to fetch") || errMsg.includes("NetworkError")) {
                 window.location.href = "/admin";
                 return;
             }
@@ -108,7 +109,7 @@ export default function DonationsPage() {
                     </AnimationWrapper>
                     <AnimationWrapper animation="fadeIn" delay={0.2}>
                         <p className="text-xl text-primary-100 max-w-2xl mx-auto mb-8">
-                            "The believer's shade on the Day of Resurrection will be their charity." (Tirmidhi)
+                            &ldquo;The believer&apos;s shade on the Day of Resurrection will be their charity.&rdquo; (Tirmidhi)
                         </p>
                         <button
                             onClick={() => setIsQrModalOpen(true)}

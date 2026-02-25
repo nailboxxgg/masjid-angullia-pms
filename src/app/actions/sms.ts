@@ -6,7 +6,7 @@ import { collection, getDocs, query } from "firebase/firestore";
 import { getSMSProvider } from "@/lib/sms";
 
 type SMSBroadcastResult =
-    | { success: true; sent: number; total: number; results: any[]; message?: string; provider?: string }
+    | { success: true; sent: number; total: number; results: { phone: string; success: boolean; error?: string }[]; message?: string; provider?: string }
     | { success: false; error: string };
 
 export async function broadcastSMSAction(message: string, clientPhoneNumbers?: string[]): Promise<SMSBroadcastResult> {

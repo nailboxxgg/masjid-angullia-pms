@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { ShieldCheck, Clock, MoreHorizontal, ThumbsUp, MessageCircle, Send, Calendar } from "lucide-react";
 import { Announcement, Comment, Event } from "@/lib/types";
 import { formatTimeAgo, cn } from "@/lib/utils";
@@ -21,7 +21,6 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
     const isEvent = 'location' in post;
     const [likes, setLikes] = useState<string[]>(('likes' in post ? post.likes : []) || []);
     const [comments, setComments] = useState<Comment[]>(('comments' in post ? post.comments : []) || []);
-    const [isLiked, setIsLiked] = useState(false);
     const [showComments, setShowComments] = useState(false);
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,13 +28,7 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
     const userId = currentUser?.uid;
     const userName = currentUser?.displayName || currentUser?.email?.split('@')[0] || "User";
 
-    useEffect(() => {
-        if (userId) {
-            setIsLiked(likes.includes(userId));
-        } else {
-            setIsLiked(false);
-        }
-    }, [likes, userId]);
+    const isLiked = useMemo(() => userId ? likes.includes(userId) : false, [likes, userId]);
 
     const handleLike = async () => {
         if (!userId) {
@@ -44,7 +37,6 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
         }
 
         const newLikedState = !isLiked;
-        setIsLiked(newLikedState);
         setLikes(prev => newLikedState ? [...prev, userId] : prev.filter(id => id !== userId));
 
         await toggleLikeAnnouncement(post.id, userId, !newLikedState);
@@ -76,7 +68,6 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
         }
     };
 
-    const isTextOnly = !isEvent && !(post as Announcement).externalUrl;
 
     return (
         <AnimationWrapper animation="reveal" duration={0.6} delay={delay}>

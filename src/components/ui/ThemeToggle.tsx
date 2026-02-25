@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 
-export default function ThemeToggle() {
-    const { theme, setTheme, resolvedTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
+const emptySubscribe = () => () => { };
 
-    // Avoid hydration mismatch by only rendering after mount
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+export default function ThemeToggle() {
+    const { setTheme, resolvedTheme } = useTheme();
+    const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
     const toggleTheme = (event: React.MouseEvent<HTMLButtonElement>) => {
         const isDark = resolvedTheme === "dark";

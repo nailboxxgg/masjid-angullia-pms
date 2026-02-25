@@ -12,7 +12,7 @@ export interface FeedbackData {
     type: FeedbackType;
     message: string;
     status: 'New' | 'Read' | 'Resolved';
-    createdAt: any;
+    createdAt: number;
 }
 
 const COLLECTION_NAME = "feedback";

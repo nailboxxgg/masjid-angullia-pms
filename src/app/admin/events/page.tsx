@@ -14,16 +14,16 @@ export default function AdminEventsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
 
-    useEffect(() => {
-        loadEvents();
-    }, []);
-
     const loadEvents = async () => {
         setIsLoading(true);
         const data = await getEvents(50); // Fetch more for admin
         setEvents(data);
         setIsLoading(false);
     };
+
+    useEffect(() => {
+        loadEvents();
+    }, []);
 
     const handleDelete = async (id: string, e: React.MouseEvent) => {
         e.preventDefault(); // Prevent link click

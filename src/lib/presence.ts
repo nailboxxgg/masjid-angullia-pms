@@ -6,11 +6,8 @@ import {
     setDoc,
     onSnapshot,
     query,
-    where,
-    Timestamp,
     serverTimestamp
 } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
 
 export interface AdminPresence {
     uid: string;

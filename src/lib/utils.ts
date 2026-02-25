@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
 
-export function formatTimeAgo(date: any) {
+export function formatTimeAgo(date: string | number | Date) {
     if (!date) return "";
     const d = new Date(date);
     const now = typeof window !== 'undefined' ? Date.now() : d.getTime(); // Match on server to avoid 'Just now' mismatch

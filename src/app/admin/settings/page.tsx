@@ -19,7 +19,7 @@ export default function AdminSettingsPage() {
         newRequestAlerts: true,
         dailyDonationSummary: false
     });
-    const [userProfile, setUserProfile] = useState<any>(null);
+    const [userProfile, setUserProfile] = useState<Record<string, unknown> | null>(null);
 
     // Staff Management State
     const [staffList, setStaffList] = useState<StaffMember[]>([]);
@@ -96,8 +96,9 @@ export default function AdminSettingsPage() {
             // Refresh list
             const staffData = await getStaffMembers();
             setStaffList(staffData);
-        } catch (error: any) {
-            alert(error.message || "Failed to create staff account.");
+        } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : "Failed to create staff account.";
+            alert(errMsg);
         } finally {
             setIsInviting(false);
         }
@@ -197,7 +198,7 @@ export default function AdminSettingsPage() {
                                 <label className="text-xs font-bold uppercase tracking-widest text-secondary-500 ml-1">Full Name</label>
                                 <input
                                     type="text"
-                                    defaultValue={userProfile?.name || ""}
+                                    defaultValue={(userProfile?.name as string) || ""}
                                     placeholder={isFetching ? "Loading..." : "Admin User"}
                                     readOnly
                                     className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 opacity-70 cursor-not-allowed"
@@ -207,7 +208,7 @@ export default function AdminSettingsPage() {
                                 <label className="text-xs font-bold uppercase tracking-widest text-secondary-500 ml-1">Email Address</label>
                                 <input
                                     type="email"
-                                    defaultValue={userProfile?.email || ""}
+                                    defaultValue={(userProfile?.email as string) || ""}
                                     placeholder={isFetching ? "Loading..." : "admin@masjidangullia.com"}
                                     readOnly
                                     className="flex h-11 w-full rounded-xl border-none ring-1 ring-secondary-200 dark:ring-secondary-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500 bg-secondary-50/50 dark:bg-secondary-950 text-secondary-900 dark:text-white transition-all px-4 opacity-70 cursor-not-allowed"

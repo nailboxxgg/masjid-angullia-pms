@@ -294,7 +294,7 @@ export default function AdminFeedbackPage() {
                                                         </span>
                                                         <span className="flex items-center gap-1.5 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-secondary-400 bg-secondary-50 dark:bg-secondary-800/50 px-2.5 py-1 md:px-3 md:py-1.5 rounded-xl border border-secondary-100 dark:border-secondary-800">
                                                             <Clock className="w-3 h-3 md:w-3.5 md:h-3.5" />
-                                                            {item.createdAt?.toDate ? new Date(item.createdAt.toDate()).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) : 'Pending'}
+                                                            {typeof item.createdAt === 'number' ? new Date(item.createdAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) : (item.createdAt && typeof (item.createdAt as unknown as { toDate?: () => Date }).toDate === 'function' ? new Date((item.createdAt as unknown as { toDate: () => Date }).toDate()).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) : 'Pending')}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -377,7 +377,7 @@ export default function AdminFeedbackPage() {
                                     {selectedFeedback.type}
                                 </span>
                                 <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-secondary-400 italic">
-                                    <Clock className="w-3.5 h-3.5 md:w-4 md:h-4" /> {selectedFeedback.createdAt?.toDate ? new Date(selectedFeedback.createdAt.toDate()).toLocaleString('en-PH', { dateStyle: 'full', timeStyle: 'short' }) : "Pending"}
+                                    <Clock className="w-3.5 h-3.5 md:w-4 md:h-4" /> {typeof selectedFeedback.createdAt === 'number' ? new Date(selectedFeedback.createdAt).toLocaleString('en-PH', { dateStyle: 'full', timeStyle: 'short' }) : (selectedFeedback.createdAt && typeof (selectedFeedback.createdAt as unknown as { toDate?: () => Date }).toDate === 'function' ? new Date((selectedFeedback.createdAt as unknown as { toDate: () => Date }).toDate()).toLocaleString('en-PH', { dateStyle: 'full', timeStyle: 'short' }) : "Pending")}
                                 </span>
                             </div>
                         </div>
@@ -385,7 +385,7 @@ export default function AdminFeedbackPage() {
                         <div className="bg-secondary-50/50 dark:bg-secondary-950 p-6 md:p-8 rounded-3xl border border-secondary-100 dark:border-secondary-800 shadow-inner">
                             <h5 className="text-[10px] font-black text-secondary-900 dark:text-white uppercase tracking-[0.2em] mb-4 opacity-40">Original Submission Body</h5>
                             <p className="text-secondary-800 dark:text-secondary-100 whitespace-pre-wrap leading-relaxed font-bold text-base md:text-lg italic">
-                                "{selectedFeedback.message}"
+                                &ldquo;{selectedFeedback.message}&rdquo;
                             </p>
                         </div>
 

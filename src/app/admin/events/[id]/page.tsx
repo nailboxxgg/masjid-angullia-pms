@@ -72,7 +72,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         }
     };
 
-    const handleInputChange = (field: keyof Event, value: any) => {
+    const handleInputChange = (field: keyof Event, value: Event[keyof Event]) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 

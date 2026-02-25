@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { User } from "firebase/auth";
+import type { QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
 import Image from "next/image";
 import { Clock, ShieldCheck, ThumbsUp, MessageCircle, MoreHorizontal, ArrowLeft, Heart } from "lucide-react";
 import { getAnnouncements, getPaginatedAnnouncements } from "@/lib/announcements";
@@ -18,9 +20,9 @@ export default function UpdatesPage() {
     const [updates, setUpdates] = useState<(Announcement | Event)[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [lastDoc, setLastDoc] = useState<any>(null);
+    const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
     const [hasMore, setHasMore] = useState(true);
-    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
 
     // Auth Listener - Single Subscription for all posts
     useEffect(() => {
@@ -44,8 +46,8 @@ export default function UpdatesPage() {
                 ...(data || []),
                 ...(eventData || [])
             ].sort((a, b) => {
-                const timeA = a.createdAt || (('date' in a && !isNaN(Date.parse((a as any).date))) ? Date.parse((a as any).date) : 0);
-                const timeB = b.createdAt || (('date' in b && !isNaN(Date.parse((b as any).date))) ? Date.parse((b as any).date) : 0);
+                const timeA = a.createdAt || (('date' in a && !isNaN(Date.parse((a as Event).date))) ? Date.parse((a as Event).date) : 0);
+                const timeB = b.createdAt || (('date' in b && !isNaN(Date.parse((b as Event).date))) ? Date.parse((b as Event).date) : 0);
                 return timeB - timeA;
             });
 

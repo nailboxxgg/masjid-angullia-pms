@@ -1,50 +1,47 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 
 export function useSessionRecovery<T>(key: string, initialData: T) {
-    const [savedData, setSavedData] = useState<T>(initialData);
-    const [isLoaded, setIsLoaded] = useState(false);
-
-    // Load data on mount
-    useEffect(() => {
-        const stored = localStorage.getItem(`session_recovery_${key}`);
-        if (stored) {
-            try {
+    const [savedData, setSavedData] = useState<T>(() => {
+        // Lazy initialization: read from localStorage on first render (client only)
+        if (typeof window === 'undefined') return initialData;
+        try {
+            const stored = localStorage.getItem(`session_recovery_${key}`);
+            if (stored) {
                 const parsed = JSON.parse(stored);
-                // Check expiry (10 mins)
                 const now = Date.now();
                 if (now - parsed.timestamp < 10 * 60 * 1000) {
-                    setSavedData(parsed.data);
+                    return parsed.data as T;
                 } else {
                     localStorage.removeItem(`session_recovery_${key}`);
                 }
-            } catch (e) {
-                console.error("Failed to parse session recovery data", e);
             }
+        } catch (e) {
+            console.error("Failed to parse session recovery data", e);
         }
-        setIsLoaded(true);
-    }, [key]);
+        return initialData;
+    });
 
     // Save data
-    const saveProgress = (data: T) => {
+    const saveProgress = useCallback((data: T) => {
         setSavedData(data);
         localStorage.setItem(`session_recovery_${key}`, JSON.stringify({
             data,
             timestamp: Date.now()
         }));
-    };
+    }, [key]);
 
     // Clear data
-    const clearProgress = () => {
+    const clearProgress = useCallback(() => {
         setSavedData(initialData);
         localStorage.removeItem(`session_recovery_${key}`);
-    };
+    }, [key, initialData]);
 
     // Recover function (returns data to populate form)
-    const recover = () => {
+    const recover = useCallback(() => {
         return savedData;
-    };
+    }, [savedData]);
 
-    return { savedData, isLoaded, recover, saveProgress, clearProgress };
+    return { savedData, isLoaded: true, recover, saveProgress, clearProgress };
 }

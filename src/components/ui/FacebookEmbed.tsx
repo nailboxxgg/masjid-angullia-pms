@@ -44,9 +44,9 @@ export default function FacebookEmbed({ url }: FacebookEmbedProps) {
             document.body.appendChild(script);
         } else {
             // Re-parse XFBML if SDK is already present
-            // @ts-ignore
+            // @ts-expect-error - FB SDK loaded dynamically
             if (window.FB) {
-                // @ts-ignore
+                // @ts-expect-error - FB SDK loaded dynamically
                 window.FB.XFBML.parse(containerRef.current);
             }
         }

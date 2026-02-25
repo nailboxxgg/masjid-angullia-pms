@@ -41,7 +41,7 @@ export class SemaphoreProvider implements SMSProvider {
             let data;
             try {
                 data = await response.json();
-            } catch (e) {
+            } catch (_e) {
                 const text = await response.text();
                 console.error("Semaphore JSON Parse Error:", text);
                 return { success: false, error: "Invalid JSON response from Semaphore" };
@@ -238,7 +238,7 @@ export class SMSPHProvider implements SMSProvider {
             let data;
             try {
                 data = await response.json();
-            } catch (e) {
+            } catch (_e) {
                 // If JSON fails, it might be a text response or HTML error
                 const text = await response.text();
                 return { success: false, error: `Invalid Response: ${text.substring(0, 50)}...` };
@@ -397,7 +397,7 @@ export const getSMSProvider = (): SMSProvider => {
                         break;
                     }
                 }
-            } catch (e) {
+            } catch (_e) {
                 console.error("Error parsing SMS_WEIGHTS, defaulting to first configured provider or mock");
             }
         }

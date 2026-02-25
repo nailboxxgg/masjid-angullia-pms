@@ -10,7 +10,7 @@ export interface Notification {
     type: "Concern" | "Feedback" | "Request" | "Message";
     senderName: string;
     preview: string;
-    createdAt: any;
+    createdAt: number;
     status: "New" | "Read" | "Resolved";
 }
 

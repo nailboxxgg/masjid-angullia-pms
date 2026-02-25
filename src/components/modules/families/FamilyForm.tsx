@@ -76,7 +76,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
         setMembers(members.filter((m) => m.id !== id));
     };
 
-    const updateMember = (id: string, field: keyof FamilyMember, value: any) => {
+    const updateMember = (id: string, field: keyof FamilyMember, value: FamilyMember[keyof FamilyMember]) => {
         setMembers(members.map(m => m.id === id ? { ...m, [field]: value } : m));
     };
 

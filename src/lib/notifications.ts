@@ -19,7 +19,7 @@ export const subscribeToNotifications = async (phoneNumber: string): Promise<{ s
     try {
         // Check for duplicates (Check both 09... and +63... formats)
         // Normalize: If we have +639123456789, we should also check if 09123456789 exists
-        let checkFormats = [phoneNumber];
+        const checkFormats = [phoneNumber];
 
         if (phoneNumber.startsWith("+63")) {
             checkFormats.push("0" + phoneNumber.substring(3));
@@ -57,7 +57,7 @@ export const getSubscribers = async (): Promise<Subscriber[]> => {
         );
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => {
-            const data = doc.data() as any;
+            const data = doc.data();
             return {
                 id: doc.id,
                 phoneNumber: data.phoneNumber,

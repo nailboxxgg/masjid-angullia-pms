@@ -3,7 +3,7 @@
 import { QRPhTransaction } from "@/lib/instapay";
 import { getDonationStats } from "@/lib/donations";
 
-export async function generatePaymentQR(amount: number, description: string): Promise<QRPhTransaction> {
+export async function generatePaymentQR(amount: number, _description: string): Promise<QRPhTransaction> {
     // Simulate server-side processing delay
     await new Promise(resolve => setTimeout(resolve, 500));
 

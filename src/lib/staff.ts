@@ -23,9 +23,9 @@ export interface StaffMember {
     name: string;
     role: 'admin' | 'staff' | 'volunteer' | 'employee';
     status: 'pending' | 'active';
-    invitedAt: any;
-    joinedAt?: any;
-    lastLogin?: any;
+    invitedAt: number;
+    joinedAt?: number;
+    lastLogin?: number;
 }
 
 /**
@@ -185,7 +185,7 @@ export const createStaffAccountDirectly = async (email: string, password: string
         // Clean up
         await deleteApp(secondaryApp);
         return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
         if (secondaryApp) await deleteApp(secondaryApp);
         console.error("Error creating staff account directly:", error);
         throw error;
@@ -240,8 +240,8 @@ export const getStaffList = async (): Promise<Staff[]> => {
 
         // Filter for documents that match the Staff interface (have 'id' and 'contactNumber')
         const staffList = snapshot.docs
-            .map(doc => doc.data() as any)
-            .filter(data => data.id && data.id.startsWith('S-')) as Staff[];
+            .map(doc => doc.data())
+            .filter((data): data is Staff => Boolean(data.id && typeof data.id === 'string' && data.id.startsWith('S-')));
 
         return staffList;
     } catch (error) {

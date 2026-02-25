@@ -26,7 +26,7 @@ export const promoteToAdmin = async (uid: string, email: string, name: string) =
         try {
             await deleteDoc(doc(db, "families", uid));
             console.log("Cleanup: Removed legacy admin record from 'families' collection.");
-        } catch (cleanupErr) {
+        } catch (_cleanupErr) {
             // Non-critical if it doesn't exist
             console.log("Cleanup: No legacy record found in 'families' or already removed.");
         }

@@ -21,11 +21,11 @@ export default function AnimationWrapper({
     withScroll = true,
     ...props
 }: AnimationWrapperProps & { withScroll?: boolean }) {
-    const [mounted, setMounted] = React.useState(false);
-
-    React.useEffect(() => {
-        setMounted(true);
-    }, []);
+    const mounted = React.useSyncExternalStore(
+        () => () => { },
+        () => true,
+        () => false
+    );
 
     const variants = {
         fadeIn: {

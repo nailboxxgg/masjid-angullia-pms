@@ -101,7 +101,7 @@ export default function DonationTable({ donations, isLoading, role, onStatusUpda
 
                         {donation.message && (
                             <div className="mb-4 p-3 bg-secondary-50/50 dark:bg-secondary-950/50 rounded-xl text-[11px] text-secondary-600 dark:text-secondary-400 italic border-l-2 border-primary-500">
-                                "{donation.message}"
+                                &ldquo;{donation.message}&rdquo;
                             </div>
                         )}
 
@@ -164,7 +164,7 @@ export default function DonationTable({ donations, isLoading, role, onStatusUpda
                                             </div>
                                             {donation.message && (
                                                 <div className="text-[10px] text-primary-600 dark:text-primary-400 italic line-clamp-1 border-l-2 border-primary-100 dark:border-primary-900/30 pl-2 mt-1.5 bg-primary-50/20 dark:bg-primary-900/10 py-0.5 rounded-r">
-                                                    "{donation.message}"
+                                                    &ldquo;{donation.message}&rdquo;
                                                 </div>
                                             )}
                                         </div>

@@ -115,9 +115,9 @@ export default function NewEventPage() {
                 try {
                     imageUrl = await imageToBase64(imageFile);
                     console.log(`Image converted: ${(imageUrl.length / 1024).toFixed(1)} KB`);
-                } catch (imgError: any) {
+                } catch (imgError: unknown) {
                     console.error("Image conversion failed:", imgError);
-                    setErrorMsg(imgError.message || "Failed to process image. Please try a smaller image.");
+                    setErrorMsg(imgError instanceof Error ? imgError.message : "Failed to process image. Please try a smaller image.");
                     setIsSubmitting(false);
                     return;
                 }
