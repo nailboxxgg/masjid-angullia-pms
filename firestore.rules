@@ -49,6 +49,7 @@ service cloud.firestore {
       allow create: if true;
       allow read, update, delete: if isAuthenticated();
     }
+
     match /subscribers/{document=**} {
       allow create, read: if true;
       allow update, delete: if isAuthenticated();
