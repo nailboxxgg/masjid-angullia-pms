@@ -109,7 +109,7 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
             const newRecord: Omit<EventAttendance, "id"> = {
                 eventId: event.id,
                 name,
-                uid,
+                ...(uid ? { uid } : {}),
                 status: 'present',
                 timestamp: Date.now(),
                 recordedBy: adminUid
