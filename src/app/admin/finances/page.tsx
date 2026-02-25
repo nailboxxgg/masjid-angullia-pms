@@ -83,7 +83,7 @@ export default function FinancesPage() {
         // For now, we are patching specific recent donations, but let's assume we want a fuller list for the table
         // or just use what stats gave us if we want to be fast.
         // But the table has pagination/search, so let's fetch a bit more for the table part.
-        const fullList = await getDonations(100);
+        const fullList = await getDonations(100, true);
 
         setStats(statsData);
         setDonations(fullList);

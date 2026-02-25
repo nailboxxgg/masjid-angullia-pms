@@ -70,8 +70,13 @@ export class InfobipProvider implements SMSProvider {
     private senderName: string;
 
     constructor(apiKey: string, baseUrl: string, senderName: string = "InfoSMS") {
-        this.apiKey = apiKey;
-        this.baseUrl = baseUrl.replace(/\/$/, ""); // Remove trailing slash if present
+        this.apiKey = apiKey.trim();
+        // Ensure baseUrl has https:// prefix if missing and no trailing slash
+        let url = baseUrl.trim();
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "https://" + url;
+        }
+        this.baseUrl = url.replace(/\/$/, "");
         this.senderName = senderName;
     }
 

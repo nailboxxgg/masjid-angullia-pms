@@ -1,8 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { Event, EventAttendance, Family } from "@/lib/types";
+import { Event, EventAttendance, Family, Registrant } from "@/lib/types";
+
 import { db } from "@/lib/firebase";
-import { getRegistrants, Registrant } from "@/lib/events";
+import { getRegistrants } from "@/lib/events";
+
 import {
     collection,
     query,

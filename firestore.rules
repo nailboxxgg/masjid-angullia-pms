@@ -24,11 +24,23 @@ service cloud.firestore {
     // Anyone can view these, but only Admins can change them.
     match /events/{document=**} {
       allow read: if true;
+      allow update: if true; // Needed for guest registration counter increments
       allow write: if isAuthenticated();
     }
     match /announcements/{document=**} {
       allow read: if true;
       allow write: if isAuthenticated();
+    }
+
+    // -- Donations (Public Read, Private Emails) --
+    match /donations/{donationId} {
+      allow get, list, create: if true;
+      allow update, delete: if isAuthenticated();
+      
+      // Private donor information is stored in a sub-collection
+      match /private/info {
+        allow get, list, write: if isAuthenticated();
+      }
     }
 
     // -- Public Submissions (Create Only for Public) --
@@ -38,12 +50,22 @@ service cloud.firestore {
       allow read, update, delete: if isAuthenticated();
     }
     match /subscribers/{document=**} {
-      allow create: if true;
-      allow read, update, delete: if isAuthenticated();
+      allow create, read: if true;
+      allow update, delete: if isAuthenticated();
     }
-    match /donations/{document=**} {
+
+    // -- Miscellaneous Collections --
+    match /families/{document=**} { 
       allow create: if true;
-      allow read, update, delete: if isAuthenticated();
+      allow read, update, delete: if isAuthenticated(); 
     }
+    match /attendance_sessions/{document=**} { allow read, write: if isAuthenticated(); }
+    match /event_registrants/{document=**} { 
+      allow create: if true;
+      allow read, write: if isAuthenticated(); 
+    }
+    match /event_attendance/{document=**} { allow read, write: if isAuthenticated(); }
+    match /attendance_logs/{document=**} { allow read, write: if isAuthenticated(); }
+    match /sessions/{document=**} { allow read, write: if isAuthenticated(); }
   }
 }

@@ -21,6 +21,8 @@ export default function EventRegistrationModal({ isOpen, onClose, event }: Event
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState("");
 
+    const isPastEvent = event ? new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0)) : false;
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!event) return;
@@ -74,6 +76,22 @@ export default function EventRegistrationModal({ isOpen, onClose, event }: Event
                     <button
                         onClick={handleClose}
                         className="w-full py-2.5 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
+            ) : isPastEvent ? (
+                <div className="text-center py-10">
+                    <div className="w-16 h-16 bg-secondary-100 dark:bg-secondary-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Clock className="w-8 h-8 text-secondary-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-secondary-900 dark:text-white mb-2 uppercase tracking-tight">Registration Closed</h3>
+                    <p className="text-secondary-600 dark:text-secondary-400 mb-6 text-sm">
+                        Registration for <strong>{event.title}</strong> has ended as the event date has already passed.
+                    </p>
+                    <button
+                        onClick={handleClose}
+                        className="w-full py-2.5 bg-secondary-900 dark:bg-white text-white dark:text-secondary-900 rounded-lg font-bold hover:opacity-90 transition-all uppercase text-xs tracking-widest"
                     >
                         Close
                     </button>
