@@ -1,16 +1,19 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect } from "react";
 import { Announcement } from "@/lib/types";
 import { getAnnouncements, createAnnouncement, deleteAnnouncement } from "@/lib/announcements";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Megaphone, Plus, Trash2, CheckCircle, AlertCircle } from "lucide-react";
+import { Megaphone, Plus, Trash2, CheckCircle, AlertCircle, ImagePlus, X } from "lucide-react";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import { cn } from "@/lib/utils";
 import Modal from "@/components/ui/modal"; // Re-using existing Modal component
 import { broadcastSMSAction } from "@/app/actions/sms";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { imageToBase64 } from "@/lib/image-utils";
+import Image from "next/image";
 
 export default function AnnouncementsManager() {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -36,6 +39,15 @@ export default function AnnouncementsManager() {
     const [newPriority, setNewPriority] = useState<Announcement['priority']>("normal");
     const [externalUrl, setExternalUrl] = useState("");
     const [sendSMS, setSendSMS] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
+    };
 
     const loadAnnouncements = async () => {
         setIsLoading(true);
@@ -43,6 +55,7 @@ export default function AnnouncementsManager() {
         setAnnouncements(data);
         setIsLoading(false);
     };
+
 
     useEffect(() => {
         loadAnnouncements();
@@ -52,13 +65,20 @@ export default function AnnouncementsManager() {
         e.preventDefault();
         setIsCreating(true);
 
-        // 1. Create Announcement in Firestore
+        // 1. Convert image if present
+        let imageUrl: string | undefined;
+        if (imageFile) {
+            imageUrl = await imageToBase64(imageFile);
+        }
+
+        // 2. Create Announcement in Firestore
         const success = await createAnnouncement({
             title: newTitle,
             content: newContent,
             type: newType,
             priority: newPriority,
             externalUrl: externalUrl,
+            imageUrl,
             date: new Date().toISOString()
         });
 
@@ -139,6 +159,8 @@ export default function AnnouncementsManager() {
             setNewPriority("normal");
             setExternalUrl("");
             setSendSMS(false);
+            setImageFile(null);
+            setImagePreview(null);
 
         } else {
             setStatusData({
@@ -235,6 +257,27 @@ export default function AnnouncementsManager() {
                                         className="flex min-h-[140px] w-full rounded-md border text-base focus:ring-2 focus:ring-primary-500 outline-none resize-none transition-all p-4 bg-secondary-50 dark:bg-secondary-800 border-secondary-200 dark:border-secondary-700 text-secondary-900 dark:text-secondary-100"
                                         placeholder="Write your announcement details here..."
                                     />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-secondary-900 dark:text-secondary-200">Image (Optional)</label>
+                                    {imagePreview ? (
+                                        <div className="relative rounded-xl overflow-hidden border border-secondary-200 dark:border-secondary-700">
+                                            <Image src={imagePreview} alt="Preview" width={600} height={300} className="w-full h-40 object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => { setImageFile(null); setImagePreview(null); }}
+                                                className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <label className="flex flex-col items-center justify-center h-28 w-full rounded-xl border-2 border-dashed border-secondary-300 dark:border-secondary-600 bg-secondary-50 dark:bg-secondary-800 cursor-pointer hover:border-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
+                                            <ImagePlus className="w-6 h-6 text-secondary-400 mb-1" />
+                                            <span className="text-xs font-medium text-secondary-500">Click to upload</span>
+                                            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                        </label>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-secondary-900 dark:text-secondary-200">Facebook Post URL (Optional)</label>

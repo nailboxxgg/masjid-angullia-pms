@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { PrayerData } from "@/lib/prayer-times";
 import { fetchPrayerTimes } from "@/app/actions/prayer-times";
-import { Loader2, Moon, Sun, CloudOff } from "lucide-react";
+import { Loader2, Moon, CloudOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function PrayerTimesWidget() {
@@ -40,7 +40,7 @@ export default function PrayerTimesWidget() {
     if (!data) return null;
 
     const timings = data.timings;
-    const hijri = data.date.hijri;
+    // Hijri data available at data.date.hijri if needed
 
     const prayers = [
         { name: "Fajr", time: timings.Fajr },

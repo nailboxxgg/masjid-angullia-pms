@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Lock, Bell } from "lucide-react";
 import { useState } from "react";
 import SubscriptionModal from "@/components/ui/SubscriptionModal";
 
@@ -10,7 +9,8 @@ interface FooterProps {
     onFeedbackClick?: () => void;
 }
 
-export default function Footer({ onAdminClick, onFeedbackClick }: FooterProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function Footer({ onAdminClick: _onAdminClick, onFeedbackClick }: FooterProps) {
     const [isSubModalOpen, setIsSubModalOpen] = useState(false);
 
     return (

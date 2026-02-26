@@ -5,24 +5,24 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { ArrowRight, MapPin, Heart, Clock, Lock, Smartphone, Eye, EyeOff, ZoomIn, Zap } from "lucide-react";
+import { ArrowRight, MapPin, Heart, Lock, Smartphone, Eye, EyeOff, ZoomIn, Zap } from "lucide-react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc, setDoc, collection, query, where, limit, getDocs } from "firebase/firestore";
 import { getAnnouncements } from "@/lib/announcements";
-import { Announcement } from "@/lib/types";
+import type { Announcement } from "@/lib/types";
 import PrayerTimesWidget from "@/components/PrayerTimesWidget";
 import { auth, db } from "@/lib/firebase";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
 import { getEvents } from "@/lib/events";
-import { Event, Donation } from "@/lib/types";
+import type { Event, Donation } from "@/lib/types";
 import { User } from "firebase/auth";
 import { getDonations } from "@/lib/donations";
 import EventRegistrationModal from "@/components/events/EventRegistrationModal";
 import SubscriptionModal from "@/components/ui/SubscriptionModal";
 import DonationModal from "@/components/ui/DonationModal";
 import { cn, formatTimeAgo } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import SocialPost from "@/components/feed/SocialPost";
 import ImageModal from "@/components/ui/ImageModal";
 import FamilyRegistrationModal from "@/components/families/FamilyRegistrationModal";
@@ -40,8 +40,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
 
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [, setAnnouncements] = useState<Announcement[]>([]);
+  const [, setEvents] = useState<Event[]>([]);
   const [combinedUpdates, setCombinedUpdates] = useState<(Announcement | Event)[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isEventRegistrationOpen, setIsEventRegistrationOpen] = useState(false);
@@ -99,7 +99,7 @@ export default function Home() {
     };
   }, []);
 
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleRegister = (event: Event) => {
     setSelectedEvent(event);
     setIsEventRegistrationOpen(true);

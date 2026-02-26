@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check, Copy, AlertCircle, Smartphone } from "lucide-react";
+import { X, Check, Copy, Smartphone } from "lucide-react";
 import { QRPhTransaction } from "@/lib/instapay";
 import { generatePaymentQR, verifyPaymentStatus } from "@/app/actions/donations";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+
 import { addDonation } from "@/lib/donations";
 import { Donation } from "@/lib/types";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
     Clock,
     Calendar,
@@ -9,19 +9,16 @@ import {
     Download,
     User,
     ArrowUpDown,
-    MoreHorizontal,
-    CheckCircle2,
     Timer,
     Monitor,
     History as HistoryIcon,
-    LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getAttendanceSessions, getTodayDateString } from "@/lib/attendance";
 import { addManualAttendance, getStaffList } from "@/lib/staff";
 import { AttendanceSession, Staff } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import * as XLSX from "xlsx";
 import Modal from "@/components/ui/modal";
 import { Plus } from "lucide-react";
@@ -154,11 +151,7 @@ export default function AdminAttendancePage() {
         }
     };
 
-    useEffect(() => {
-        fetchSessions();
-    }, [selectedDate]);
-
-    const fetchSessions = async () => {
+    const fetchSessions = useCallback(async () => {
         setLoading(true);
         try {
             const data = await getAttendanceSessions(selectedDate);
@@ -168,7 +161,11 @@ export default function AdminAttendancePage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [selectedDate]);
+
+    useEffect(() => {
+        fetchSessions();
+    }, [fetchSessions]);
 
     // Filter sessions based on search
     const filteredRawSessions = sessions.filter(session => {

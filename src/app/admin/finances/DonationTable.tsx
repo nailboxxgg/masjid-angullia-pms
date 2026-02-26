@@ -2,7 +2,7 @@
 
 import { Donation } from "@/lib/types";
 import { Card } from "@/components/ui/card";
-import { DollarSign, Mail, CheckCircle2, XCircle, AlertCircle, Trash2, Search } from "lucide-react";
+import { Mail, CheckCircle2, XCircle, AlertCircle, Trash2, Search } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface DonationTableProps {
@@ -28,7 +28,8 @@ const formatDate = (timestamp: number) => {
     });
 };
 
-export default function DonationTable({ donations, isLoading, role, onStatusUpdate, onDelete }: DonationTableProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function DonationTable({ donations, isLoading, role: _role, onStatusUpdate, onDelete }: DonationTableProps) {
     if (isLoading) {
         return (
             <div className="space-y-4">

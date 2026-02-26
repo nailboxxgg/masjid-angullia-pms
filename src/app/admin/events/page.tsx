@@ -1,13 +1,15 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getEvents, deleteEvent, subscribeToEvents } from "@/lib/events";
+import { deleteEvent, subscribeToEvents } from "@/lib/events";
 import { Event } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Calendar, Plus, Search, MapPin, Users, Edit, Trash2, MoreVertical, Eye } from "lucide-react";
+
+import { Calendar, Plus, Search, MapPin, Users, Trash2, Eye } from "lucide-react";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export default function AdminEventsPage() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -86,7 +88,7 @@ export default function AdminEventsPage() {
                                     {/* Image or Placeholder */}
                                     <div className="h-48 bg-secondary-100 dark:bg-secondary-800 relative overflow-hidden">
                                         {event.imageUrl ? (
-                                            <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                            <Image src={event.imageUrl} alt={event.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" fill />
                                         ) : (
                                             <div className="flex items-center justify-center h-full text-secondary-300">
                                                 <Calendar className="w-12 h-12" />

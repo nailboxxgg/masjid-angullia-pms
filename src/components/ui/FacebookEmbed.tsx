@@ -1,83 +1,51 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { ExternalLink, Facebook } from "lucide-react";
 
 interface FacebookEmbedProps {
     url: string;
 }
 
+/**
+ * Renders a clean link preview card for external URLs.
+ * 
+ * Previously this component attempted to use the Facebook SDK to embed
+ * posts directly, but that approach is unreliable:
+ * - Blocked on localhost by CORS/CSP
+ * - Blocked by ad blockers and privacy extensions
+ * - SDK creates empty DOM containers that take up space even when blocked
+ * - Inconsistent rendering across browsers
+ * 
+ * The link preview card is a more reliable and cleaner UX.
+ */
 export default function FacebookEmbed({ url }: FacebookEmbedProps) {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    observer.disconnect();
-                }
-            },
-            { rootMargin: "100px" } // Preload when close
-        );
-
-        if (containerRef.current) {
-            observer.observe(containerRef.current);
-        }
-
-        return () => {
-            observer.disconnect();
-        };
-    }, []);
-
-    useEffect(() => {
-        if (!isVisible) return;
-
-        // Load Facebook SDK if not already loaded
-        if (!document.getElementById("facebook-jssdk")) {
-            const script = document.createElement("script");
-            script.id = "facebook-jssdk";
-            script.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v18.0";
-            script.async = true;
-            script.defer = true;
-            script.crossOrigin = "anonymous";
-            document.body.appendChild(script);
-        } else {
-            // Re-parse XFBML if SDK is already present
-            // @ts-expect-error - FB SDK loaded dynamically
-            if (window.FB) {
-                // @ts-expect-error - FB SDK loaded dynamically
-                window.FB.XFBML.parse(containerRef.current);
-            }
-        }
-    }, [isVisible, url]);
-
-    // Check if the URL is a Facebook URL
     const isFacebook = url.includes("facebook.com") || url.includes("fb.watch");
 
-    if (!isFacebook) {
-        return (
-            <div className="p-4 bg-secondary-50 dark:bg-secondary-800 rounded-xl border border-secondary-200 dark:border-secondary-700 text-center">
-                <p className="text-sm text-secondary-500">View external content: <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">{url}</a></p>
-            </div>
-        );
-    }
-
     return (
-        <div ref={containerRef} className="w-full min-h-[150px] flex justify-center bg-secondary-50 dark:bg-secondary-900/40 rounded-xl py-4 transition-colors">
-            {isVisible ? (
-                <div
-                    className="fb-post"
-                    data-href={url}
-                    data-width="auto"
-                    data-show-text="true"
-                ></div>
-            ) : (
-                <div className="flex flex-col items-center justify-center space-y-2 text-secondary-400">
-                    <div className="w-6 h-6 border-2 border-secondary-300 border-t-primary-600 rounded-full animate-spin"></div>
-                    <span className="text-xs">Loading content...</span>
+        <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block mx-4 mb-3 rounded-xl border border-secondary-200 dark:border-secondary-700 overflow-hidden hover:border-primary-500/50 hover:shadow-md transition-all group"
+        >
+            <div className="bg-secondary-50 dark:bg-secondary-800/60 p-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-600/10 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
+                    {isFacebook ? (
+                        <Facebook className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    ) : (
+                        <ExternalLink className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                    )}
                 </div>
-            )}
-        </div>
+                <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-secondary-900 dark:text-secondary-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                        {isFacebook ? "View on Facebook" : "View External Content"}
+                    </p>
+                    <p className="text-xs text-secondary-500 dark:text-secondary-400 truncate mt-0.5">
+                        {url}
+                    </p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-secondary-400 shrink-0 group-hover:text-primary-500 transition-colors" />
+            </div>
+        </a>
     );
 }

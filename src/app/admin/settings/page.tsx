@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Bell, ShieldCheck, PlusCircle, Save, Trash2, Mail, Shield, Clock as ClockIcon } from "lucide-react";
+import { User, Bell, ShieldCheck, PlusCircle, Save, Trash2, Mail, Shield } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import Modal from "@/components/ui/modal";
@@ -26,6 +26,7 @@ export default function AdminSettingsPage() {
     const [inviteEmail, setInviteEmail] = useState("");
     const [inviteName, setInviteName] = useState("");
     const [invitePassword, setInvitePassword] = useState("");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [inviteRole, setInviteRole] = useState<StaffMember['role']>("admin");
     const [isInviting, setIsInviting] = useState(false);
 
@@ -110,7 +111,8 @@ export default function AdminSettingsPage() {
         try {
             await revokeStaffAccess(email);
             setStaffList(staffList.filter(s => s.email !== email));
-        } catch (error) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_error) {
             alert("Failed to revoke access.");
         }
     };

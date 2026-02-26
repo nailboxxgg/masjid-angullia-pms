@@ -40,6 +40,7 @@ export default function SubscriptionModal({ isOpen, onClose }: SubscriptionModal
                 setStatus('error');
                 setMessage(result.message);
             }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (_error) {
             setStatus('error');
             setMessage("Something went wrong. Please try again.");

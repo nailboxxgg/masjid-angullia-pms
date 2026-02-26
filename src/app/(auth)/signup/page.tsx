@@ -39,7 +39,8 @@ export default function SignupPage() {
             } else {
                 setError("Registration Restricted: This email is not authorized to register.");
             }
-        } catch (err) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_err) {
             setError("An error occurred. Please try again.");
         } finally {
             setIsLoading(false);

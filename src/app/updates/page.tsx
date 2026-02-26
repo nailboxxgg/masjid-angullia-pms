@@ -3,16 +3,12 @@
 import { useState, useEffect } from "react";
 import type { User } from "firebase/auth";
 import type { QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
-import Image from "next/image";
-import { Clock, ShieldCheck, ThumbsUp, MessageCircle, MoreHorizontal, ArrowLeft, Heart } from "lucide-react";
-import { getAnnouncements, getPaginatedAnnouncements } from "@/lib/announcements";
+import { Heart } from "lucide-react";
+import { getPaginatedAnnouncements } from "@/lib/announcements";
 import { getEvents } from "@/lib/events";
 import { Announcement, Event } from "@/lib/types";
-import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
-import { cn, formatTimeAgo } from "@/lib/utils";
 import SocialPost from "@/components/feed/SocialPost";
-import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import Navbar from "@/components/layout/Navbar";
 

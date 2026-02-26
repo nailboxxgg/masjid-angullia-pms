@@ -16,8 +16,7 @@ import {
     updateDoc,
     increment
 } from "firebase/firestore";
-import { Check, Search, Trash2, UserPlus, X, Globe, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Check, Search, Trash2, UserPlus, Globe, ArrowRight } from "lucide-react";
 
 interface EventAttendanceManagerProps {
     event: Event;
@@ -34,6 +33,38 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Family[]>([]);
     const [isSearching, setIsSearching] = useState(false);
+
+    // Search function (declared before use)
+    const executeSearch = async (term: string) => {
+        if (term.length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            // Using a prefix search strategy
+            // Capitalize first letter to help with common casing
+            const searchPrefix = term.charAt(0).toUpperCase() + term.slice(1);
+            const q = query(
+                collection(db, "families"),
+                where("name", ">=", searchPrefix),
+                where("name", "<=", searchPrefix + '\uf8ff'),
+                orderBy("name")
+            );
+
+            const snapshot = await getDocs(q);
+            const results = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Family));
+
+            setSearchResults(results);
+        } catch (error) {
+            console.error("Search error:", error);
+        }
+        setIsSearching(false);
+    };
 
     // Debounce search input
     useEffect(() => {
@@ -92,36 +123,7 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
         };
     }, [event.id]);
 
-    const executeSearch = async (term: string) => {
-        if (term.length < 3) {
-            setSearchResults([]);
-            return;
-        }
 
-        setIsSearching(true);
-        try {
-            // Using a prefix search strategy
-            // Capitalize first letter to help with common casing
-            const searchPrefix = term.charAt(0).toUpperCase() + term.slice(1);
-            const q = query(
-                collection(db, "families"),
-                where("name", ">=", searchPrefix),
-                where("name", "<=", searchPrefix + '\uf8ff'),
-                orderBy("name")
-            );
-
-            const snapshot = await getDocs(q);
-            const results = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            } as Family));
-
-            setSearchResults(results);
-        } catch (error) {
-            console.error("Search error:", error);
-        }
-        setIsSearching(false);
-    };
 
     const addToAttendance = async (name: string, uid?: string, registrantId?: string) => {
         try {
@@ -154,12 +156,13 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
                 name,
                 ...(uid ? { uid } : {}),
                 status: 'present' as const,
+                // eslint-disable-next-line react-hooks/purity
                 timestamp: Date.now(),
                 recordedBy: adminUid,
                 isWalkIn
             };
 
-            const docRef = await addDoc(collection(db, "event_attendance"), newRecord);
+            await addDoc(collection(db, "event_attendance"), newRecord);
 
             // Do not manually update state here since the onSnapshot listener will
             // automatically fetch the new record and update the state.

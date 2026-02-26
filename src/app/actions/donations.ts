@@ -3,6 +3,7 @@
 import { QRPhTransaction } from "@/lib/instapay";
 import { getDonationStats } from "@/lib/donations";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function generatePaymentQR(amount: number, _description: string): Promise<QRPhTransaction> {
     // Simulate server-side processing delay
     await new Promise(resolve => setTimeout(resolve, 500));

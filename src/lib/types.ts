@@ -29,6 +29,7 @@ export interface Announcement {
     type: 'General' | 'Event' | 'Urgent' | 'Fundraising';
     priority: 'low' | 'normal' | 'high';
     externalUrl?: string;
+    imageUrl?: string;
     createdAt: number;
     likes?: string[]; // Array of user UIDs
     comments?: Comment[];

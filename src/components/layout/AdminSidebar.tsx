@@ -2,15 +2,14 @@
 
 import { clockOut } from "@/lib/attendance";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import Modal from "@/components/ui/modal";
 import {
     LayoutDashboard,
     User,
     Users,
     Calendar,
-    FileText,
     DollarSign,
     Settings,
     LogOut,
@@ -21,7 +20,7 @@ import {
     X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { useNotifications } from "@/hooks/useNotifications";
 import { goOffline } from "@/lib/presence";
@@ -47,7 +46,6 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     const pathname = usePathname();
-    const router = useRouter();
     const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
     const { unreadCount } = useNotifications();
 

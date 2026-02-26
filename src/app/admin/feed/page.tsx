@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import AnnouncementsManager from "@/components/admin/feed/AnnouncementsManager";
-import { Megaphone } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 export default function AdminFeedPage() {

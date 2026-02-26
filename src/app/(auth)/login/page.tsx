@@ -101,7 +101,8 @@ function LoginForm() {
                     if (role === 'admin') {
                         try {
                             router.push("/admin");
-                        } catch (navError) {
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        } catch (_navError) {
                             window.location.href = "/admin";
                         }
                         return;
@@ -121,7 +122,8 @@ function LoginForm() {
                 if (role === 'admin') {
                     try {
                         router.push("/admin");
-                    } catch (navError) {
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    } catch (_navError) {
                         window.location.href = "/admin";
                     }
                     return;

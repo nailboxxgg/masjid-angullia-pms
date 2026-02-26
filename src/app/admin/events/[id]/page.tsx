@@ -8,6 +8,7 @@ import { Event } from "@/lib/types";
 import { resizeImage, imageToBase64 } from "@/lib/image-utils";
 import { ArrowLeft, Save, Upload, Loader2, Users, FileText } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import EventAttendanceManager from "@/components/admin/events/EventAttendanceManager";
 import { useAdmin } from "@/contexts/AdminContext";
 import { cn } from "@/lib/utils";
@@ -45,7 +46,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
         });
 
         return () => unsubscribe();
-    }, [id, router]);
+    }, [id, router, imagePreview]);
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -158,7 +159,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                             />
 
                             {imagePreview ? (
-                                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                <Image src={imagePreview} alt="Preview" className="w-full h-full object-cover" fill />
                             ) : (
                                 <div className="text-center p-6">
                                     <Upload className="w-6 h-6 mx-auto mb-2 text-secondary-400" />

@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { LogOut, RefreshCcw, AlertTriangle, ShieldAlert } from "lucide-react";
+
+import { LogOut, RefreshCcw, ShieldAlert } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Modal from "@/components/ui/modal";
 import { auth } from "@/lib/firebase";
 import { clockOut } from "@/lib/attendance";
 
 export default function NavigationGuard() {
-    const router = useRouter();
     const [modalType, setModalType] = useState<"logout" | "refresh" | null>(() => {
         if (typeof window === 'undefined') return null;
         const hasSeenSyncModal = sessionStorage.getItem("hasSeenSyncModal");
@@ -31,6 +30,7 @@ export default function NavigationGuard() {
         };
 
         // 2. Intercept Back Button
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const handlePopState = (_event: PopStateEvent) => {
             // Stop the actual navigation
             window.history.pushState(null, "", window.location.href);
