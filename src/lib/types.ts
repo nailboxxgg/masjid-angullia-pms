@@ -116,6 +116,16 @@ export interface AttendanceSession {
     duration?: string;
 }
 
+export interface Registrant {
+    id: string;
+    eventId: string;
+    name: string;
+    email: string;
+    contactNumber: string;
+    createdAt: number;
+    status: 'pending' | 'accepted' | 'attended' | 'rejected';
+}
+
 export interface EventAttendance {
     id: string;
     eventId: string;

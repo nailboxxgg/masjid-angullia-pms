@@ -15,7 +15,7 @@ import {
     onSnapshot,
     Unsubscribe
 } from "firebase/firestore";
-import { Event } from "./types";
+import { Event, Registrant } from "./types";
 
 const COLLECTION_NAME = "events";
 
@@ -82,16 +82,7 @@ export const updateEvent = async (id: string, updates: Partial<Event>) => {
     }
 };
 
-export interface Registrant {
-    id?: string;
-    eventId: string;
-    name: string;
-    email: string; // Optional if not provided
-    contactNumber: string;
-    createdAt: number;
-}
-
-export const registerForEvent = async (eventId: string, details: Omit<Registrant, "id" | "eventId" | "createdAt">) => {
+export const registerForEvent = async (eventId: string, details: Omit<Registrant, "id" | "eventId" | "createdAt" | "status">) => {
     try {
         const eventRef = doc(db, COLLECTION_NAME, eventId);
         const registrantsRef = collection(db, "event_registrants");
@@ -104,6 +95,13 @@ export const registerForEvent = async (eventId: string, details: Omit<Registrant
             }
 
             const eventData = eventDoc.data() as Event;
+
+            // Automatic Closure Check (Server-side)
+            const eventDate = new Date(eventData.date);
+            if (eventDate < new Date()) {
+                throw new Error("Registration has closed for this event.");
+            }
+
             if (eventData.capacity && eventData.registrantsCount >= eventData.capacity) {
                 throw new Error("Event is full!");
             }
@@ -116,7 +114,8 @@ export const registerForEvent = async (eventId: string, details: Omit<Registrant
             transaction.set(newRegistrantRef, {
                 eventId,
                 ...details,
-                createdAt: Date.now()
+                createdAt: Date.now(),
+                status: 'pending'
             });
 
             // Increment count
@@ -129,6 +128,17 @@ export const registerForEvent = async (eventId: string, details: Omit<Registrant
     } catch (error: unknown) {
         console.error("Error registering for event:", error);
         return { success: false, error: error instanceof Error ? error.message : "Registration failed" };
+    }
+};
+
+export const updateRegistrantStatus = async (registrantId: string, status: Registrant['status']) => {
+    try {
+        const registrantRef = doc(db, "event_registrants", registrantId);
+        await updateDoc(registrantRef, { status });
+        return true;
+    } catch (error) {
+        console.error("Error updating registrant status:", error);
+        return false;
     }
 };
 

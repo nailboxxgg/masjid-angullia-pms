@@ -3,9 +3,10 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 
 async function setupAdmin() {
-    const email = "marcnelscasequin@gmail.com";
-    const password = "02272002";
-    const name = "Marc Nels Casequin";
+    const email = "[EMAIL_ADDRESS]";
+    const password = "[PASSWORD]";
+    const name = "Admin";
+
 
     console.log(`Attempting to sign in to retrieve UID for ${email}...`);
 

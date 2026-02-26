@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2, Send, CheckCircle, AlertCircle, User, MapPin, Phone, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { addFamily } from "@/lib/families";
@@ -20,6 +20,28 @@ export default function FamilyRegistrationForm({ onSuccess }: { onSuccess?: () =
 
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
     const [errorMsg, setErrorMsg] = useState("");
+
+    // Load from localStorage on mount
+    useEffect(() => {
+        const savedData = localStorage.getItem('family-registration-form');
+        if (savedData) {
+            try {
+                const parsed = JSON.parse(savedData);
+                setHeadName(parsed.headName || "");
+                setAddress(parsed.address || "");
+                setPhone(parsed.phone || "");
+                setMembers(parsed.members || []);
+            } catch (err) {
+                console.error("Failed to parse saved registration data:", err);
+            }
+        }
+    }, []);
+
+    // Save to localStorage when values change
+    useEffect(() => {
+        const dataToSave = { headName, address, phone, members };
+        localStorage.setItem('family-registration-form', JSON.stringify(dataToSave));
+    }, [headName, address, phone, members]);
 
     const handleAddMember = () => {
         if (!memberName.trim() || !memberRelation.trim()) return;
@@ -66,6 +88,9 @@ export default function FamilyRegistrationForm({ onSuccess }: { onSuccess?: () =
             const result = await addFamily(familyData);
 
             if (result) {
+                // Clear persistence on success
+                localStorage.removeItem('family-registration-form');
+
                 // Trigger Admin Notification
                 await submitFeedback({
                     name: headName,

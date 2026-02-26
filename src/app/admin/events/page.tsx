@@ -9,12 +9,13 @@ import { Event } from "@/lib/types";
 import { Calendar, Plus, Search, MapPin, Users, Trash2, Eye } from "lucide-react";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
+import RegistrantOverviewModal from "@/components/admin/events/RegistrantOverviewModal";
 
 export default function AdminEventsPage() {
     const [events, setEvents] = useState<Event[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [isManageRegistrationsOpen, setIsManageRegistrationsOpen] = useState(false);
 
     useEffect(() => {
         setIsLoading(true);
@@ -49,14 +50,28 @@ export default function AdminEventsPage() {
                     <h1 className="text-3xl font-bold tracking-tight text-secondary-900 dark:text-white uppercase tracking-tighter">Events Management</h1>
                     <p className="text-secondary-900 dark:text-secondary-200 mt-1 font-medium italic">Create and manage community events and attendance.</p>
                 </div>
-                <Link
-                    href="/admin/events/new"
-                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary-600/20"
-                >
-                    <Plus className="w-5 h-5" />
-                    Create Event
-                </Link>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setIsManageRegistrationsOpen(true)}
+                        className="flex items-center gap-2 bg-secondary-900 dark:bg-white text-white dark:text-secondary-900 px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg hover:opacity-90"
+                    >
+                        <Users className="w-5 h-5" />
+                        Manage Registrations
+                    </button>
+                    <Link
+                        href="/admin/events/new"
+                        className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary-600/20"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Create Event
+                    </Link>
+                </div>
             </div>
+
+            <RegistrantOverviewModal
+                isOpen={isManageRegistrationsOpen}
+                onClose={() => setIsManageRegistrationsOpen(false)}
+            />
 
             {/* Search */}
             <div className="relative">

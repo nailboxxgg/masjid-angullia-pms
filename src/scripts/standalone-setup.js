@@ -13,9 +13,9 @@ const firebaseConfig = {
 };
 
 async function setupAdmin() {
-    const email = "marcnelscasequin@gmail.com";
-    const password = "02272002";
-    const name = "Marcnel Casequin";
+    const email = "[EMAIL_ADDRESS]";
+    const password = "[PASSWORD]";
+    const name = "Admin";
 
     console.log(`Attempting to sign in for ${email}...`);
 
