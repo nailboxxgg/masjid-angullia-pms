@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Event, EventAttendance, Family, Registrant } from "@/lib/types";
 
 import { db } from "@/lib/firebase";
-import { getRegistrants } from "@/lib/events";
 
 import {
     collection,

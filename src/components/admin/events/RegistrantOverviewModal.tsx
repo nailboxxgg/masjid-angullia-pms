@@ -22,33 +22,31 @@ export default function RegistrantOverviewModal({ isOpen, onClose }: RegistrantO
     const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
+        const loadEvents = async () => {
+            setIsLoading(true);
+            const data = await getEvents(50);
+            setEvents(data);
+            setSelectedEventId(prev => prev || (data.length > 0 ? data[0].id : null));
+            setIsLoading(false);
+        };
+
         if (isOpen) {
             loadEvents();
         }
     }, [isOpen]);
 
-    const loadEvents = async () => {
-        setIsLoading(true);
-        const data = await getEvents(50);
-        setEvents(data);
-        if (data.length > 0 && !selectedEventId) {
-            setSelectedEventId(data[0].id);
-        }
-        setIsLoading(false);
-    };
-
     useEffect(() => {
+        const loadRegistrants = async (eventId: string) => {
+            setIsLoading(true);
+            const data = await getRegistrants(eventId);
+            setRegistrants(data);
+            setIsLoading(false);
+        };
+
         if (selectedEventId) {
             loadRegistrants(selectedEventId);
         }
     }, [selectedEventId]);
-
-    const loadRegistrants = async (eventId: string) => {
-        setIsLoading(true);
-        const data = await getRegistrants(eventId);
-        setRegistrants(data);
-        setIsLoading(false);
-    };
 
     const handleUpdateStatus = async (registrantId: string, status: Registrant['status']) => {
         setIsActionLoading(registrantId);
