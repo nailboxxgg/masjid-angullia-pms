@@ -5,10 +5,13 @@ import { CloudOff, Wifi } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function OfflineIndicator() {
-    const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' ? !navigator.onLine : false);
+    const [isOffline, setIsOffline] = useState(false);
     const [showReconnected, setShowReconnected] = useState(false);
 
     useEffect(() => {
+        // Set initial state on mount after hydration
+        setIsOffline(!navigator.onLine);
+
         const handleOnline = () => {
             setIsOffline(false);
             setShowReconnected(true);
