@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Clock, CheckCircle } from "lucide-react";
+import { Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clockInStaff, clockOutStaff } from "@/lib/staff";
 
@@ -9,7 +9,7 @@ export default function AttendancePortal() {
     const [staffId, setStaffId] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
-    const [staffName, setStaffName] = useState<string | null>(null);
+    const [, setStaffName] = useState<string | null>(null);
 
     const handleClockIn = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -128,8 +128,8 @@ export default function AttendancePortal() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
                             className={`mt-8 p-4 rounded-2xl text-center font-bold text-sm ${message.type === 'success'
-                                    ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                                    : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                                ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                                : 'bg-red-500/20 text-red-300 border border-red-500/30'
                                 }`}
                         >
                             {message.text}

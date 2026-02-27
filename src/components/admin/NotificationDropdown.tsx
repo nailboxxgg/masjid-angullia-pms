@@ -3,7 +3,7 @@
 import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, CheckCheck, MessageSquare, AlertTriangle, HelpCircle, Inbox } from "lucide-react";
+import { CheckCheck, MessageSquare, AlertTriangle, HelpCircle, Inbox } from "lucide-react";
 import { Notification } from "@/hooks/useNotifications";
 import { formatTimeAgo } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -52,7 +52,7 @@ export default function NotificationDropdown({
             document.addEventListener("mousedown", handleClickOutside);
         }
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose, triggerRef]);
 
     const handleNotificationClick = async (notification: Notification) => {
         await onMarkAsRead(notification.id);

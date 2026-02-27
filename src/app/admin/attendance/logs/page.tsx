@@ -1,12 +1,12 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
-import { Calendar, Clock, Search, User, Download, Filter } from "lucide-react";
+import { Calendar, Search } from "lucide-react";
 import { collection, query, orderBy, getDocs, where, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AttendanceRecord } from "@/lib/types";
-import AnimationWrapper from "@/components/ui/AnimationWrapper";
 
 export default function AttendanceLogsPage() {
     const [logs, setLogs] = useState<AttendanceRecord[]>([]);
@@ -14,15 +14,12 @@ export default function AttendanceLogsPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [dateFilter, setDateFilter] = useState("");
 
-    const loadLogs = async () => {
+    const loadLogs = useCallback(async () => {
         setIsLoading(true);
         try {
             let q = query(collection(db, "attendance_logs"), orderBy("timestamp", "desc"), limit(100));
 
             if (dateFilter) {
-                // If filtering by date, we might need a compound index or client-side filter
-                // For simplicity/speed without index creation, let's filter client side or use simple query
-                // Firestore exact match on date string
                 q = query(collection(db, "attendance_logs"), where("date", "==", dateFilter), orderBy("timestamp", "desc"));
             }
 
@@ -33,11 +30,11 @@ export default function AttendanceLogsPage() {
             console.error("Error loading logs:", error);
         }
         setIsLoading(false);
-    };
+    }, [dateFilter]);
 
     useEffect(() => {
         loadLogs();
-    }, [dateFilter]);
+    }, [loadLogs]);
 
     const filteredLogs = logs.filter(log =>
         log.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||

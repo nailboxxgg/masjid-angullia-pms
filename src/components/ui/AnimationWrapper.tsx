@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence, MotionProps } from "framer-motion";
+import { motion, MotionProps } from "framer-motion";
 import React from "react";
 
 interface AnimationWrapperProps extends MotionProps {

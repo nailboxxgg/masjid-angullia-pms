@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -23,6 +24,7 @@ export default function FamilyForm({ initialData, onSuccess, onCancel }: FamilyF
     const [members, setMembers] = useState<FamilyMember[]>([
         { id: "1", name: "", relation: "Spouse", isDeceased: false }
     ]);
+
 
     useEffect(() => {
         if (initialData) {

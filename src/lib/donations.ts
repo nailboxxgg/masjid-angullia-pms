@@ -57,9 +57,9 @@ export const getDonations = async (limitCount = 50, includePrivateInfo = false):
                     if (privateInfo?.email) {
                         donation.email = privateInfo.email;
                     }
-                } catch (e) {
+                } catch (error) {
                     // Silently ignore permission errors for private info
-                    console.log("Could not fetch private info for donation:", docSnapshot.id);
+                    console.log("Could not fetch private info for donation:", docSnapshot.id, error);
                 }
             }
 

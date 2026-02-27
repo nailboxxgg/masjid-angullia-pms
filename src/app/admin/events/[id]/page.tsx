@@ -2,12 +2,13 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Event } from "@/lib/types";
 import { resizeImage, imageToBase64 } from "@/lib/image-utils";
 import { ArrowLeft, Save, Upload, Loader2, Users, FileText } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import EventAttendanceManager from "@/components/admin/events/EventAttendanceManager";
 import { useAdmin } from "@/contexts/AdminContext";
 import { cn } from "@/lib/utils";
@@ -27,25 +28,25 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchEvent = async () => {
-            try {
-                const docRef = doc(db, "events", id);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = { id: docSnap.id, ...docSnap.data() } as Event;
-                    setEvent(data);
-                    setFormData(data);
-                    if (data.imageUrl) setImagePreview(data.imageUrl);
-                } else {
-                    router.push("/admin/events");
-                }
-            } catch (error) {
-                console.error("Error fetching event:", error);
+        const docRef = doc(db, "events", id);
+        const unsubscribe = onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = { id: docSnap.id, ...docSnap.data() } as Event;
+                setEvent(data);
+                // Only set form data on initial load to avoid overwriting user edits
+                setFormData(prev => Object.keys(prev).length === 0 ? data : prev);
+                if (data.imageUrl && !imagePreview) setImagePreview(data.imageUrl);
+            } else {
+                router.push("/admin/events");
             }
             setIsLoading(false);
-        };
-        fetchEvent();
-    }, [id, router]);
+        }, (error) => {
+            console.error("Error listening to event:", error);
+            setIsLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [id, router, imagePreview]);
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -158,7 +159,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                             />
 
                             {imagePreview ? (
-                                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                <Image src={imagePreview} alt="Preview" className="w-full h-full object-cover" fill />
                             ) : (
                                 <div className="text-center p-6">
                                     <Upload className="w-6 h-6 mx-auto mb-2 text-secondary-400" />

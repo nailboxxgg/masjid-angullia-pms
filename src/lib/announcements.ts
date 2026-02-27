@@ -40,6 +40,7 @@ export const getAnnouncements = async (limitCount = 10): Promise<Announcement[]>
                 type: data.type,
                 priority: data.priority,
                 externalUrl: data.externalUrl,
+                imageUrl: data.imageUrl,
                 createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : Date.now(),
                 likes: data.likes || [],
                 comments: data.comments || []
@@ -85,6 +86,7 @@ export const getPaginatedAnnouncements = async (
                 type: data.type,
                 priority: data.priority,
                 externalUrl: data.externalUrl,
+                imageUrl: data.imageUrl,
                 createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : (data.createdAt || Date.now()),
                 likes: data.likes || [],
                 comments: data.comments || []

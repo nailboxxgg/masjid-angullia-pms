@@ -41,6 +41,7 @@ export class SemaphoreProvider implements SMSProvider {
             let data;
             try {
                 data = await response.json();
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_e) {
                 const text = await response.text();
                 console.error("Semaphore JSON Parse Error:", text);
@@ -243,6 +244,7 @@ export class SMSPHProvider implements SMSProvider {
             let data;
             try {
                 data = await response.json();
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_e) {
                 // If JSON fails, it might be a text response or HTML error
                 const text = await response.text();
@@ -402,6 +404,7 @@ export const getSMSProvider = (): SMSProvider => {
                         break;
                     }
                 }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_e) {
                 console.error("Error parsing SMS_WEIGHTS, defaulting to first configured provider or mock");
             }

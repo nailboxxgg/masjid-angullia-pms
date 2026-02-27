@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Heart, BookOpen, Home, Utensils, HelpCircle, QrCode, X } from "lucide-react";
+import { ArrowLeft, Heart, BookOpen, Home, Utensils, QrCode } from "lucide-react";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import DonationModal from "@/components/ui/DonationModal";
 import Footer from "@/components/layout/Footer";
@@ -72,7 +72,8 @@ export default function DonationsPage() {
             await signInWithEmailAndPassword(auth, email, password);
             try {
                 router.push("/admin");
-            } catch (navError) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (_navError) {
                 window.location.href = "/admin";
             }
         } catch (err: unknown) {

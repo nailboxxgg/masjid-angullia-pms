@@ -29,6 +29,7 @@ export interface Announcement {
     type: 'General' | 'Event' | 'Urgent' | 'Fundraising';
     priority: 'low' | 'normal' | 'high';
     externalUrl?: string;
+    imageUrl?: string;
     createdAt: number;
     likes?: string[]; // Array of user UIDs
     comments?: Comment[];
@@ -133,4 +134,5 @@ export interface EventAttendance {
     status: 'present';
     timestamp: number;
     recordedBy: string; // Admin UID
+    isWalkIn?: boolean;
 }

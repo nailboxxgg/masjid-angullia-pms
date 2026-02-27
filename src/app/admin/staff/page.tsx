@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search, Trash2, User, UserPlus, Copy, Check, Users, MapPin, Phone, Mail } from "lucide-react";
+import { Search, Trash2, User, UserPlus, Copy, Check, Users, MapPin, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getStaffList, createStaff, deleteStaff } from "@/lib/staff";
 import { Staff } from "@/lib/types";

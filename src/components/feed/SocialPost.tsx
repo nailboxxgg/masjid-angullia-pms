@@ -7,7 +7,8 @@ import { formatTimeAgo, cn } from "@/lib/utils";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import FacebookEmbed from "@/components/ui/FacebookEmbed";
 import { toggleLikeAnnouncement, addCommentToAnnouncement } from "@/lib/announcements";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import Image from "next/image";
 
 import { User } from "firebase/auth";
 
@@ -118,7 +119,30 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
                     </p>
                 </div>
 
-                {/* Media Section */}
+                {/* Media Section - Image */}
+                {(() => {
+                    const imageUrl = isEvent
+                        ? (post as Event).imageUrl
+                        : (post as Announcement).imageUrl;
+
+                    if (imageUrl) {
+                        const isBase64 = imageUrl.startsWith('data:');
+                        return (
+                            <div className="relative w-full aspect-video overflow-hidden">
+                                <Image
+                                    src={imageUrl}
+                                    alt={post.title}
+                                    fill
+                                    className="object-cover"
+                                    {...(isBase64 ? { unoptimized: true } : {})}
+                                />
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
+
+                {/* Media Section - Facebook Embed */}
                 {!isEvent && (post as Announcement).externalUrl ? (
                     <div className="cursor-pointer" onClick={handleRedirect}>
                         <FacebookEmbed url={(post as Announcement).externalUrl!} />

@@ -11,7 +11,9 @@ import {
     orderBy,
     limit,
     serverTimestamp,
-    runTransaction
+    runTransaction,
+    onSnapshot,
+    Unsubscribe
 } from "firebase/firestore";
 import { Event, Registrant } from "./types";
 
@@ -34,6 +36,25 @@ export const getEvents = async (limitCount = 20): Promise<Event[]> => {
         console.error("Error fetching events:", error);
         return [];
     }
+};
+
+export const subscribeToEvents = (limitCount = 20, callback: (events: Event[]) => void): Unsubscribe => {
+    const q = query(
+        collection(db, COLLECTION_NAME),
+        orderBy("date", "asc"), // Upcoming events first
+        limit(limitCount)
+    );
+
+    return onSnapshot(q, (querySnapshot) => {
+        const events = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as Event));
+        callback(events);
+    }, (error) => {
+        console.error("Error subscribing to events:", error);
+        callback([]);
+    });
 };
 
 export const createEvent = async (event: Omit<Event, "id" | "registrantsCount">) => {

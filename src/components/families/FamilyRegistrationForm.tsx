@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { addFamily } from "@/lib/families";
 import { submitFeedback } from "@/lib/feedback";
 import { FamilyMember } from "@/lib/types";
-import { cn, normalizePhoneNumber } from "@/lib/utils";
+import { normalizePhoneNumber } from "@/lib/utils";
 
 export default function FamilyRegistrationForm({ onSuccess }: { onSuccess?: () => void }) {
     const [headName, setHeadName] = useState("");

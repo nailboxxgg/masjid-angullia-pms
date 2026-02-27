@@ -1,13 +1,14 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar, Clock, MapPin, Users, Heart, Sparkles } from "lucide-react";
-import { getEvents } from "@/lib/events";
+import { Calendar, Clock, MapPin, Users, Sparkles } from "lucide-react";
+import { subscribeToEvents } from "@/lib/events";
 import { Event } from "@/lib/types";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
+import Image from "next/image";
 import EventRegistrationModal from "@/components/events/EventRegistrationModal";
 import Navbar from "@/components/layout/Navbar";
 
@@ -18,13 +19,13 @@ export default function EventsPage() {
     const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
     useEffect(() => {
-        const fetchEvents = async () => {
-            setIsLoading(true);
-            const data = await getEvents(30);
+        setIsLoading(true);
+        const unsubscribe = subscribeToEvents(30, (data) => {
             setEvents(data || []);
             setIsLoading(false);
-        };
-        fetchEvents();
+        });
+
+        return () => unsubscribe();
     }, []);
 
     const handleRegister = (event: Event) => {
@@ -68,9 +69,10 @@ export default function EventsPage() {
                             <AnimationWrapper key={event.id} animation="reveal" delay={idx * 0.1} withScroll>
                                 <div className="group bg-white dark:bg-secondary-900 rounded-3xl overflow-hidden border border-secondary-100 dark:border-secondary-800 hover:border-primary-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/10 flex flex-col h-full">
                                     <div className="relative h-56 overflow-hidden">
-                                        <img
+                                        <Image
                                             src={event.imageUrl || "/images/mosque2.png"}
                                             alt={event.title}
+                                            fill
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />

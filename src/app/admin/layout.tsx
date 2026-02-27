@@ -1,16 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import NavigationGuard from "@/components/admin/NavigationGuard";
 import { startPresenceHeartbeat, goOffline } from "@/lib/presence";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 import { AdminProvider, useAdmin } from "@/contexts/AdminContext";
 
@@ -20,7 +18,6 @@ function AdminLayoutContent({
     children: React.ReactNode;
 }) {
     const router = useRouter();
-    const pathname = usePathname();
     const { loading, user } = useAdmin();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 

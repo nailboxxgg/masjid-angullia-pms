@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createEvent } from "@/lib/events";
 import { resizeImage, imageToBase64 } from "@/lib/image-utils";
-import { ArrowLeft, Save, Upload, Calendar, MapPin, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Upload, MapPin, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import Modal from "@/components/ui/modal";
 import { AnimatePresence } from "framer-motion";
 
@@ -178,7 +179,7 @@ export default function NewEventPage() {
 
                         {imagePreview ? (
                             <div className="relative w-full h-full">
-                                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                <Image src={imagePreview} alt="Preview" className="w-full h-full object-cover" fill />
                                 <button
                                     type="button"
                                     onClick={(e) => {

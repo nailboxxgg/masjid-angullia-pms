@@ -5,7 +5,6 @@ import FeedbackForm from "@/components/modules/FeedbackForm";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
-import Link from "next/link";
 
 export default function FeedbackPage() {
     return (

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Event, EventAttendance, Family, Registrant } from "@/lib/types";
 
 import { db } from "@/lib/firebase";
-import { getRegistrants } from "@/lib/events";
 
 import {
     collection,
@@ -13,10 +12,12 @@ import {
     addDoc,
     deleteDoc,
     doc,
-    orderBy
+    orderBy,
+    onSnapshot,
+    updateDoc,
+    increment
 } from "firebase/firestore";
-import { Check, Search, Trash2, UserPlus, X, Globe, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Check, Search, Trash2, UserPlus, Globe, ArrowRight } from "lucide-react";
 
 interface EventAttendanceManagerProps {
     event: Event;
@@ -29,45 +30,13 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
     const [isLoading, setIsLoading] = useState(true);
 
     // Search State
+    const [searchInput, setSearchInput] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<Family[]>([]);
     const [isSearching, setIsSearching] = useState(false);
 
-    // Manual Add State
-    const [manualName, setManualName] = useState("");
-
-    const loadData = async () => {
-        setIsLoading(true);
-        try {
-            // Load Attendance
-            const q = query(
-                collection(db, "event_attendance"),
-                where("eventId", "==", event.id),
-                orderBy("timestamp", "desc")
-            );
-            const snapshot = await getDocs(q);
-            const attendanceData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            } as EventAttendance));
-            setAttendanceList(attendanceData);
-
-            // Load Online Registrants
-            const registrantsData = await getRegistrants(event.id);
-            setRegistrants(registrantsData);
-
-        } catch (error) {
-            console.error("Error loading event data:", error);
-        }
-        setIsLoading(false);
-    };
-
-    useEffect(() => {
-        loadData();
-    }, [event.id]);
-
-    const handleSearch = async (term: string) => {
-        setSearchQuery(term);
+    // Search function (declared before use)
+    const executeSearch = async (term: string) => {
         if (term.length < 3) {
             setSearchResults([]);
             return;
@@ -76,10 +45,12 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
         setIsSearching(true);
         try {
             // Using a prefix search strategy
+            // Capitalize first letter to help with common casing
+            const searchPrefix = term.charAt(0).toUpperCase() + term.slice(1);
             const q = query(
                 collection(db, "families"),
-                where("name", ">=", term),
-                where("name", "<=", term + '\uf8ff'),
+                where("name", ">=", searchPrefix),
+                where("name", "<=", searchPrefix + '\uf8ff'),
                 orderBy("name")
             );
 
@@ -96,6 +67,65 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
         setIsSearching(false);
     };
 
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchInput !== searchQuery) {
+                setSearchQuery(searchInput);
+                executeSearch(searchInput);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchInput, searchQuery]);
+
+    // Manual Add State
+    const [manualName, setManualName] = useState("");
+
+    useEffect(() => {
+        setIsLoading(true);
+
+        // Real-time listener for event_attendance
+        const attendanceQuery = query(
+            collection(db, "event_attendance"),
+            where("eventId", "==", event.id),
+            orderBy("timestamp", "desc")
+        );
+        const unsubAttendance = onSnapshot(attendanceQuery, (snapshot) => {
+            const attendanceData = snapshot.docs.map(d => ({
+                id: d.id,
+                ...d.data()
+            } as EventAttendance));
+            setAttendanceList(attendanceData);
+            setIsLoading(false);
+        }, (error) => {
+            console.error("Error listening to attendance:", error);
+            setIsLoading(false);
+        });
+
+        // Real-time listener for event_registrants
+        const registrantsQuery = query(
+            collection(db, "event_registrants"),
+            where("eventId", "==", event.id),
+            orderBy("createdAt", "desc")
+        );
+        const unsubRegistrants = onSnapshot(registrantsQuery, (snapshot) => {
+            const registrantsData = snapshot.docs.map(d => ({
+                id: d.id,
+                ...d.data()
+            } as Registrant));
+            setRegistrants(registrantsData);
+        }, (error) => {
+            console.error("Error listening to registrants:", error);
+        });
+
+        return () => {
+            unsubAttendance();
+            unsubRegistrants();
+        };
+    }, [event.id]);
+
+
+
     const addToAttendance = async (name: string, uid?: string, registrantId?: string) => {
         try {
             // Check if already present
@@ -108,21 +138,48 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
                 return;
             }
 
-            const newRecord: Omit<EventAttendance, "id"> = {
+            // Prevent double-counting count drift:
+            // Check if the user we are adding is already in the event_registrants list
+            // If they are, we use their registrantId and they are NOT a walk-in.
+            let resolvedRegistrantId = registrantId;
+            if (!resolvedRegistrantId) {
+                const matchedRegistrant = registrants.find(r => r.name.toLowerCase() === name.toLowerCase());
+                if (matchedRegistrant) {
+                    resolvedRegistrantId = matchedRegistrant.id;
+                }
+            }
+
+            // Determine if walk-in (not an online registrant checking in)
+            const isWalkIn = !resolvedRegistrantId;
+
+            const newRecord = {
                 eventId: event.id,
                 name,
                 ...(uid ? { uid } : {}),
-                status: 'present',
+                status: 'present' as const,
+                // eslint-disable-next-line react-hooks/purity
                 timestamp: Date.now(),
-                recordedBy: adminUid
+                recordedBy: adminUid,
+                isWalkIn
             };
 
-            const docRef = await addDoc(collection(db, "event_attendance"), newRecord);
+            await addDoc(collection(db, "event_attendance"), newRecord);
 
-            setAttendanceList(prev => [{ ...newRecord, id: docRef.id } as EventAttendance, ...prev]);
+            // Do not manually update state here since the onSnapshot listener will
+            // automatically fetch the new record and update the state.
+
+            // Increment event registrantsCount if they are a walk-in
+            if (isWalkIn) {
+                const eventRef = doc(db, "events", event.id);
+                // Fire and forget update
+                updateDoc(eventRef, {
+                    registrantsCount: increment(1)
+                }).catch(err => console.error("Error incrementing registrantsCount:", err));
+            }
 
             // Clear inputs
             setManualName("");
+            setSearchInput("");
             setSearchQuery("");
             setSearchResults([]);
 
@@ -135,8 +192,18 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
     const removeAttendance = async (id: string) => {
         if (!confirm("Remove this person from attendance?")) return;
         try {
+            const record = attendanceList.find(a => a.id === id);
             await deleteDoc(doc(db, "event_attendance", id));
-            setAttendanceList(prev => prev.filter(a => a.id !== id));
+            // Don't modify attendanceList state here manually since we have a real-time onSnapshot listener
+            // that will automatically update the list when the document is deleted.
+
+            // Decrement registrantsCount if they were a walk-in
+            if (record?.isWalkIn) {
+                const eventRef = doc(db, "events", event.id);
+                updateDoc(eventRef, {
+                    registrantsCount: increment(-1)
+                }).catch(err => console.error("Error decrementing registrantsCount:", err));
+            }
         } catch (error) {
             console.error("Error removing attendance:", error);
             alert("Failed to remove.");
@@ -197,11 +264,16 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400" />
                                     <input
                                         type="text"
-                                        value={searchQuery}
-                                        onChange={(e) => handleSearch(e.target.value)}
+                                        value={searchInput}
+                                        onChange={(e) => setSearchInput(e.target.value)}
                                         placeholder="Search by name..."
-                                        className="w-full pl-9 pr-4 py-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all text-sm"
+                                        className="w-full pl-9 pr-10 py-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all text-sm"
                                     />
+                                    {isSearching && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                            <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Results Dropdown */}

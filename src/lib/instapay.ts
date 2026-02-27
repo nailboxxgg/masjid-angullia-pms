@@ -8,6 +8,7 @@ export interface QRPhTransaction {
     expiresAt: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const generateQRPh = async (amount: number, _description: string): Promise<QRPhTransaction> => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -28,6 +29,7 @@ export const generateQRPh = async (amount: number, _description: string): Promis
     };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const checkPaymentStatus = async (_referenceNumber: string): Promise<'pending' | 'completed' | 'failed'> => {
     // Simulate network check
     await new Promise(resolve => setTimeout(resolve, 1000));
