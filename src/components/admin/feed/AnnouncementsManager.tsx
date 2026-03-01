@@ -133,12 +133,12 @@ export default function AnnouncementsManager() {
                             });
                         }
                     }
-                } catch (err: any) {
+                } catch (err) {
                     console.error("SMS Broadcast Error:", err);
                     setStatusData({
                         success: true,
                         title: "Posted with SMS Error",
-                        message: `Announcement created, but SMS broadcast failed to send. Error: ${err?.message || String(err)}`
+                        message: `Announcement created, but SMS broadcast failed to send. Error: ${err instanceof Error ? err.message : String(err)}`
                     });
                 }
             } else {

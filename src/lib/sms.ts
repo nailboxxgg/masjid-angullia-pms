@@ -376,21 +376,21 @@ export class RisingTideProvider implements SMSProvider {
 
 export class AndroidGatewayProvider implements SMSProvider {
     name = "AndroidGateway";
-    private gatewayUrl: string;
+    private ip: string;
+    private port: string;
 
-    constructor(gatewayUrl: string) {
-        // Ensure trailing slash is removed if present
-        this.gatewayUrl = gatewayUrl.endsWith('/') ? gatewayUrl.slice(0, -1) : gatewayUrl;
+    constructor(ip: string, port: string = "8080") {
+        this.ip = ip;
+        this.port = port;
     }
 
     async send(to: string, message: string): Promise<{ success: boolean; error?: string }> {
         try {
-            const url = `${this.gatewayUrl}/send-sms`;
+            const url = `http://${this.ip}:${this.port}/send-sms`;
             const response = await fetch(url, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "ngrok-skip-browser-warning": "true"
                 },
                 body: JSON.stringify({
                     phone: to,
@@ -457,14 +457,15 @@ export const getSMSProvider = (): SMSProvider => {
     }
 
     if (providerName === "android") {
-        const gatewayUrl = process.env.ANDROID_GATEWAY_URL;
+        const ip = process.env.ANDROID_GATEWAY_IP;
+        const port = process.env.ANDROID_GATEWAY_PORT || "8080";
 
-        if (!gatewayUrl) {
-            console.warn("ANDROID_GATEWAY_URL missing in environment variables, falling back to Mock");
+        if (!ip) {
+            console.warn("ANDROID_GATEWAY_IP missing in environment variables, falling back to Mock");
             return new MockProvider();
         }
 
-        return new AndroidGatewayProvider(gatewayUrl);
+        return new AndroidGatewayProvider(ip, port);
     }
 
     if (providerName === "semaphore") {
