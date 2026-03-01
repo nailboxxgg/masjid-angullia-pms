@@ -2,7 +2,7 @@
 
 import { Donation } from "@/lib/types";
 import { Card } from "@/components/ui/card";
-import { Mail, CheckCircle2, XCircle, AlertCircle, Trash2, Search } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle, Trash2, Search } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface DonationTableProps {

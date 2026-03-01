@@ -98,7 +98,6 @@ export default function AdminAttendancePage() {
                 });
                 alert("Attendance recorded successfully!");
             } else {
-                // @ts-ignore
                 alert(result.message || "Failed to record attendance");
             }
         } catch (error) {

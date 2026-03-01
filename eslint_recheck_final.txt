@@ -1,0 +1,28 @@
+﻿
+> portal@0.1.0 lint
+> eslint --max-warnings 0
+
+
+A:\Projects\masjid-angullia-pms\src\components\ui\OfflineIndicator.tsx
+  14:9  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+A:\Projects\masjid-angullia-pms\src\components\ui\OfflineIndicator.tsx:14:9
+  12 |         // Set initial state on mount after hydration
+  13 |         const currentStatus = !navigator.onLine;
+> 14 |         setIsOffline(currentStatus);
+     |         ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  15 |
+  16 |         const handleOnline = () => {
+  17 |             setIsOffline(false);  react-hooks/set-state-in-effect
+
+A:\Projects\masjid-angullia-pms\src\lib\utils.ts
+  16:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 2 problems (1 error, 1 warning)
+

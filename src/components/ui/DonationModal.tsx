@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check, Copy, Smartphone } from "lucide-react";
+import { X, Copy, Smartphone } from "lucide-react";
 import { QRPhTransaction } from "@/lib/instapay";
 import { generatePaymentQR, verifyPaymentStatus } from "@/app/actions/donations";
 import { useRouter } from "next/navigation";

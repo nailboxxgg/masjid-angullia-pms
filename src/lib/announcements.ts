@@ -104,7 +104,7 @@ export const createAnnouncement = async (announcement: Omit<Announcement, "id" |
     try {
         // Remove undefined fields to prevent Firestore addDoc errors
         const sanitizedData = Object.fromEntries(
-            Object.entries(announcement).filter(([_, value]) => value !== undefined)
+            Object.entries(announcement).filter(([, value]) => value !== undefined)
         );
 
         const docRef = await addDoc(collection(db, COLLECTION_NAME), {

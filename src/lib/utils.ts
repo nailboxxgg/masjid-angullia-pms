@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
 
-export function formatTimeAgo(date: any) {
+export function formatTimeAgo(date: Date | number | string | { seconds: number; nanoseconds?: number } | null | undefined) {
     if (!date) return "";
 
     let d: Date;
@@ -13,7 +13,7 @@ export function formatTimeAgo(date: any) {
         // Handle Firebase Timestamp
         d = new Date(date.seconds * 1000);
     } else {
-        d = new Date(date);
+        d = new Date(date as string | number | Date);
     }
 
     if (isNaN(d.getTime())) return "Invalid Date";
