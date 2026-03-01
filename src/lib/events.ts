@@ -16,6 +16,7 @@ import {
     Unsubscribe
 } from "firebase/firestore";
 import { Event, Registrant } from "./types";
+import { Timestamp } from "firebase/firestore";
 
 const COLLECTION_NAME = "events";
 
@@ -28,10 +29,14 @@ export const getEvents = async (limitCount = 20): Promise<Event[]> => {
         );
         const querySnapshot = await getDocs(q);
 
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        } as Event));
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : (typeof data.createdAt === 'number' ? data.createdAt : Date.now())
+            } as Event;
+        });
     } catch (error) {
         console.error("Error fetching events:", error);
         return [];

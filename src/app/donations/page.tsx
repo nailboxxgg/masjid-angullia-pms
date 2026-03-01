@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Heart, BookOpen, Home, Utensils, QrCode } from "lucide-react";
+import { ArrowLeft, Heart, BookOpen, Home, Utensils } from "lucide-react";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import DonationModal from "@/components/ui/DonationModal";
 import Footer from "@/components/layout/Footer";
@@ -54,7 +54,6 @@ export default function DonationsPage() {
     const router = useRouter();
     const [selectedFund, setSelectedFund] = useState<string | null>(null);
     const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
-    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const [showAdminPassword, setShowAdminPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [loginError, setLoginError] = useState("");
@@ -112,13 +111,6 @@ export default function DonationsPage() {
                         <p className="text-xl text-primary-100 max-w-2xl mx-auto mb-8">
                             &ldquo;The believer&apos;s shade on the Day of Resurrection will be their charity.&rdquo; (Tirmidhi)
                         </p>
-                        <button
-                            onClick={() => setIsQrModalOpen(true)}
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary-900 rounded-full font-bold shadow-lg hover:bg-primary-50 transition-all hover:scale-105"
-                        >
-                            <QrCode className="w-5 h-5" />
-                            Scan to Pay (PayNow)
-                        </button>
                     </AnimationWrapper>
                 </div>
             </section>
@@ -244,51 +236,6 @@ export default function DonationsPage() {
                     </div>
                 </form>
             </Modal>
-
-            {/* QR Code Modal */}
-            <Modal
-                isOpen={isQrModalOpen}
-                onClose={() => setIsQrModalOpen(false)}
-                title="Scan to Donate"
-                className="max-w-sm"
-            >
-                <div className="flex flex-col items-center p-6 text-center space-y-4">
-                    <div className="bg-white p-4 rounded-xl shadow-inner border border-secondary-200">
-                        <div className="relative w-64 h-64 bg-secondary-100 rounded-lg flex items-center justify-center overflow-hidden">
-                            {/* Placeholder for QR Code */}
-                            <Image
-                                src="/images/qr-code.png"
-                                alt="PayNow QR Code"
-                                fill
-                                sizes="256px"
-                                className="object-contain"
-                                onError={(e) => {
-                                    // Fallback if image doesn't exist yet
-                                    e.currentTarget.style.display = 'none';
-                                    e.currentTarget.parentElement?.classList.add('flex', 'flex-col', 'items-center', 'justify-center');
-                                    const span = document.createElement('span');
-                                    span.textContent = 'QR Code Image Missing';
-                                    span.className = 'text-secondary-400 text-sm font-bold';
-                                    e.currentTarget.parentElement?.appendChild(span);
-                                }}
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-bold text-secondary-900 dark:text-white">Majlis Ugama Islam Singapura</h3>
-                        <p className="text-sm text-secondary-500 font-medium">UEN: T08MQ0005C</p>
-                    </div>
-                    <p className="text-sm text-secondary-600 dark:text-secondary-300">
-                        Scan via your banking app to donate directly to Masjid Angullia.
-                    </p>
-                    <button
-                        onClick={() => setIsQrModalOpen(false)}
-                        className="w-full py-3 bg-secondary-100 hover:bg-secondary-200 dark:bg-secondary-800 dark:hover:bg-secondary-700 text-secondary-900 dark:text-white rounded-xl font-bold transition-colors"
-                    >
-                        Close
-                    </button>
-                </div>
-            </Modal>
-        </div >
+        </div>
     );
 }

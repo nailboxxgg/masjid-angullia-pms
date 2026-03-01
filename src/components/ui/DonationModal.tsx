@@ -182,33 +182,51 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                                         <div className="bg-white dark:bg-secondary-800 p-4 rounded-2xl shadow-inner border border-secondary-100 dark:border-secondary-700">
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
-                                                src={transaction.qrCodeUrl}
-                                                alt="QR Ph Code"
+                                                src="/images/instapay-qr.png"
+                                                alt="InstaPay QR Code"
                                                 className="w-48 h-48 object-contain rounded-lg"
                                             />
                                         </div>
 
                                         <div className="text-center space-y-2">
-                                            <p className="text-sm text-secondary-500 dark:text-secondary-400">Scan via Any Bank App or E-Wallet</p>
+                                            <p className="text-sm text-secondary-800 dark:text-secondary-100 font-bold">InstaPay Payment</p>
+                                            <p className="text-xs text-secondary-500 dark:text-secondary-400">Scan to complete your donation</p>
                                             <div className="flex items-center justify-center gap-2 text-xs font-mono bg-secondary-50 dark:bg-secondary-800 px-3 py-1 rounded-full text-secondary-600 dark:text-secondary-300">
                                                 Ref: {transaction.referenceNumber}
                                                 <Copy className="w-3 h-3 cursor-pointer hover:text-primary-600" />
                                             </div>
                                         </div>
 
-                                        <button
-                                            onClick={handleConfirmPayment}
-                                            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold shadow-lg shadow-green-600/30 transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <Check className="w-5 h-5" />
-                                            I Have Completed Payment
-                                        </button>
+                                        <div className="flex flex-col items-center gap-3 py-2">
+                                            <div className="flex space-x-1.5">
+                                                {[0, 1, 2].map((i) => (
+                                                    <motion.div
+                                                        key={i}
+                                                        className="w-2 h-2 bg-primary-500 rounded-full"
+                                                        animate={{ opacity: [0.3, 1, 0.3] }}
+                                                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <p className="text-xs font-black uppercase tracking-widest text-primary-600">Waiting for payment...</p>
+                                        </div>
+
                                         <button
                                             className="text-secondary-400 dark:text-secondary-500 text-sm hover:text-secondary-600 dark:hover:text-secondary-300 underline"
                                             onClick={() => setStep("details")}
                                         >
                                             Cancel
                                         </button>
+
+                                        {/* Auto-confirm after 5 seconds */}
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            onViewportEnter={() => {
+                                                console.log("Setting auto-confirm timeout...");
+                                                setTimeout(handleConfirmPayment, 5000);
+                                            }}
+                                        />
                                     </div>
                                 )}
 

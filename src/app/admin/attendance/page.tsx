@@ -14,7 +14,7 @@ import {
     History as HistoryIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getAttendanceSessions, getTodayDateString } from "@/lib/attendance";
+import { getAttendanceSessions, getTodayDateString, addManualVisitorAttendance } from "@/lib/attendance";
 import { addManualAttendance, getStaffList } from "@/lib/staff";
 import { AttendanceSession, Staff } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -45,8 +45,11 @@ export default function AdminAttendancePage() {
     // Manual Entry State
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
     const [staffList, setStaffList] = useState<Staff[]>([]);
+    const [manualType, setManualType] = useState<'staff' | 'visitor'>('staff');
     const [manualForm, setManualForm] = useState({
         staffId: "",
+        visitorName: "",
+        visitorPhone: "",
         date: getTodayDateString(),
         clockIn: "08:00",
         clockOut: ""
@@ -65,25 +68,38 @@ export default function AdminAttendancePage() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const result = await addManualAttendance(
-                manualForm.staffId,
-                manualForm.date,
-                manualForm.clockIn,
-                manualForm.clockOut || undefined
-            );
+            let result;
+            if (manualType === 'staff') {
+                result = await addManualAttendance(
+                    manualForm.staffId,
+                    manualForm.date,
+                    manualForm.clockIn,
+                    manualForm.clockOut || undefined
+                );
+            } else {
+                result = await addManualVisitorAttendance(
+                    manualForm.visitorName,
+                    manualForm.visitorPhone,
+                    manualForm.date,
+                    manualForm.clockIn
+                );
+            }
 
             if (result.success) {
                 setIsManualModalOpen(false);
                 fetchSessions(); // Refresh list
                 setManualForm({
                     staffId: "",
+                    visitorName: "",
+                    visitorPhone: "",
                     date: getTodayDateString(),
                     clockIn: "08:00",
                     clockOut: ""
                 });
                 alert("Attendance recorded successfully!");
             } else {
-                alert(result.message);
+                // @ts-ignore
+                alert(result.message || "Failed to record attendance");
             }
         } catch (error) {
             console.error(error);
@@ -281,22 +297,77 @@ export default function AdminAttendancePage() {
                 className="max-w-md"
             >
                 <form onSubmit={handleManualSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Staff Member</label>
-                        <select
-                            required
-                            value={manualForm.staffId}
-                            onChange={(e) => setManualForm({ ...manualForm, staffId: e.target.value })}
-                            className="w-full p-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                    {/* Entry Type Toggle */}
+                    <div className="flex p-1 bg-secondary-100 dark:bg-secondary-800 rounded-xl mb-6">
+                        <button
+                            type="button"
+                            onClick={() => setManualType('staff')}
+                            className={cn(
+                                "flex-1 py-2 rounded-lg text-xs font-bold transition-all",
+                                manualType === 'staff'
+                                    ? "bg-white dark:bg-secondary-900 text-primary-600 dark:text-primary-400 shadow-sm"
+                                    : "text-secondary-500"
+                            )}
                         >
-                            <option value="">Select Staff</option>
-                            {staffList.map(staff => (
-                                <option key={staff.id} value={staff.id}>
-                                    {staff.name} ({staff.role})
-                                </option>
-                            ))}
-                        </select>
+                            Staff Entry
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setManualType('visitor')}
+                            className={cn(
+                                "flex-1 py-2 rounded-lg text-xs font-bold transition-all",
+                                manualType === 'visitor'
+                                    ? "bg-white dark:bg-secondary-900 text-primary-600 dark:text-primary-400 shadow-sm"
+                                    : "text-secondary-500"
+                            )}
+                        >
+                            Visitor Entry
+                        </button>
                     </div>
+
+                    {manualType === 'staff' ? (
+                        <div>
+                            <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Staff Member</label>
+                            <select
+                                required
+                                value={manualForm.staffId}
+                                onChange={(e) => setManualForm({ ...manualForm, staffId: e.target.value })}
+                                className="w-full p-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                            >
+                                <option value="">Select Staff</option>
+                                {staffList.map(staff => (
+                                    <option key={staff.id} value={staff.id}>
+                                        {staff.name} ({staff.role})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : (
+                        <>
+                            <div>
+                                <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Visitor Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="Enter full name"
+                                    value={manualForm.visitorName}
+                                    onChange={(e) => setManualForm({ ...manualForm, visitorName: e.target.value })}
+                                    className="w-full p-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Phone Number</label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="09XXXXXXXXX"
+                                    value={manualForm.visitorPhone}
+                                    onChange={(e) => setManualForm({ ...manualForm, visitorPhone: e.target.value })}
+                                    className="w-full p-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                                />
+                            </div>
+                        </>
+                    )}
 
                     <div>
                         <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Date</label>
@@ -311,7 +382,9 @@ export default function AdminAttendancePage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Clock In Time</label>
+                            <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">
+                                {manualType === 'staff' ? 'Clock In Time' : 'Time of Visit'}
+                            </label>
                             <input
                                 type="time"
                                 required
@@ -320,15 +393,17 @@ export default function AdminAttendancePage() {
                                 className="w-full p-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Clock Out Time <span className="text-secondary-400 font-normal text-xs">(Optional)</span></label>
-                            <input
-                                type="time"
-                                value={manualForm.clockOut}
-                                onChange={(e) => setManualForm({ ...manualForm, clockOut: e.target.value })}
-                                className="w-full p-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
-                            />
-                        </div>
+                        {manualType === 'staff' && (
+                            <div>
+                                <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Clock Out Time <span className="text-secondary-400 font-normal text-xs">(Optional)</span></label>
+                                <input
+                                    type="time"
+                                    value={manualForm.clockOut}
+                                    onChange={(e) => setManualForm({ ...manualForm, clockOut: e.target.value })}
+                                    className="w-full p-3 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div className="pt-4 flex justify-end gap-2">

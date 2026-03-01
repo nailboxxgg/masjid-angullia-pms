@@ -5,10 +5,20 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
 
-export function formatTimeAgo(date: string | number | Date) {
+export function formatTimeAgo(date: any) {
     if (!date) return "";
-    const d = new Date(date);
-    const now = typeof window !== 'undefined' ? Date.now() : d.getTime(); // Match on server to avoid 'Just now' mismatch
+
+    let d: Date;
+    if (typeof date === 'object' && date !== null && 'seconds' in date) {
+        // Handle Firebase Timestamp
+        d = new Date(date.seconds * 1000);
+    } else {
+        d = new Date(date);
+    }
+
+    if (isNaN(d.getTime())) return "Invalid Date";
+
+    const now = typeof window !== 'undefined' ? Date.now() : d.getTime();
     const seconds = Math.floor((now - d.getTime()) / 1000);
 
     if (seconds < 60) return 'Just now';

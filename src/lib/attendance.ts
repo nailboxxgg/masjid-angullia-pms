@@ -316,3 +316,31 @@ export const checkRegistryStatus = async (uid: string): Promise<boolean> => {
         return false;
     }
 };
+/**
+ * Record a visitor entry manually by an admin
+ */
+export const addManualVisitorAttendance = async (name: string, phone: string, date: string, time: string) => {
+    try {
+        const [hours, minutes] = time.split(':').map(Number);
+        const entryDate = new Date(date);
+        entryDate.setHours(hours, minutes, 0, 0);
+        const timestamp = entryDate.getTime();
+
+        const attendanceData: Omit<AttendanceRecord, 'id'> = {
+            uid: `visitor_manual_${Date.now()}`,
+            displayName: name,
+            email: "visitor@guest.com",
+            phone: phone || "",
+            type: 'visitor',
+            timestamp: timestamp,
+            date: date,
+            deviceInfo: 'Admin Manual Entry'
+        };
+
+        const docRef = await addDoc(collection(db, ATTENDANCE_COLLECTION), attendanceData);
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        console.error("Error adding manual visitor attendance:", error);
+        return { success: false, message: error instanceof Error ? error.message : "Failed to add visitor record" };
+    }
+};

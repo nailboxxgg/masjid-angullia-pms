@@ -75,7 +75,7 @@ export default function Home() {
         const timeB = b.createdAt || (('date' in b && !isNaN(Date.parse((b as Event).date))) ? Date.parse((b as Event).date) : 0);
         return timeB - timeA;
       });
-      setCombinedUpdates(merged.slice(0, 4));
+      setCombinedUpdates(merged.slice(0, 2));
     };
     fetchUpdates();
 
@@ -267,7 +267,7 @@ export default function Home() {
 
                   {mounted && combinedUpdates.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                      {combinedUpdates.slice(0, 4).map((post: Announcement | Event, idx: number) => (
+                      {combinedUpdates.slice(0, 2).map((post: Announcement | Event, idx: number) => (
                         <AnnouncementCard
                           key={post.id}
                           post={post}

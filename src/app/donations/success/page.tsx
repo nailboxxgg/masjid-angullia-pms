@@ -17,9 +17,9 @@ export default function DonationSuccessPage() {
                     <CheckCircle className="w-12 h-12 text-green-600" />
                 </motion.div>
 
-                <h1 className="text-3xl font-bold font-heading text-gray-900 mb-2">JazakAllah Khair!</h1>
+                <h1 className="text-3xl font-bold font-heading text-gray-900 mb-2">Donation Received!</h1>
                 <p className="text-gray-600 mb-8">
-                    May Allah accept your sadqah and multiply your rewards. Your contribution has been verified.
+                    JazakAllah Khair for your generous support! Your contribution has been successfully processed and will help us serve our community better.
                 </p>
 
                 <div className="space-y-3">
