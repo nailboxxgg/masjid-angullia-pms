@@ -102,8 +102,13 @@ export const getPaginatedAnnouncements = async (
 
 export const createAnnouncement = async (announcement: Omit<Announcement, "id" | "createdAt">): Promise<string | null> => {
     try {
+        // Remove undefined fields to prevent Firestore addDoc errors
+        const sanitizedData = Object.fromEntries(
+            Object.entries(announcement).filter(([_, value]) => value !== undefined)
+        );
+
         const docRef = await addDoc(collection(db, COLLECTION_NAME), {
-            ...announcement,
+            ...sanitizedData,
             createdAt: serverTimestamp()
         });
         return docRef.id;

@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getFeedbacksByType, FeedbackData } from "@/lib/feedback";
-import { getDonationStatsAction } from "@/app/actions/donations";
-import { DonationStats } from "@/lib/donations";
+import { DonationStats, getDonationStats } from "@/lib/donations";
 import { getEvents } from "@/lib/events";
 import { countFamilies } from "@/lib/families";
 import { Event } from "@/lib/types";
@@ -47,7 +46,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const loadDashboardData = async () => {
             const [donationStats, requests, events, familyCount] = await Promise.all([
-                getDonationStatsAction(),
+                getDonationStats(),
                 getFeedbacksByType('Request'),
                 getEvents(5),
                 countFamilies()
@@ -201,9 +200,31 @@ export default function AdminDashboard() {
                             <CardTitle className="text-lg font-bold text-secondary-900 dark:text-white">Financial Trends</CardTitle>
                         </CardHeader>
                         <CardContent className="flex items-center justify-center min-h-[280px]">
-                            <div className="flex flex-col items-center gap-4 opacity-40">
-                                <TrendingUp className="w-16 h-16 text-secondary-300 dark:text-secondary-700" />
-                                <p className="text-secondary-900 dark:text-secondary-200 text-sm font-bold uppercase tracking-widest text-center">Visual analytics<br />Loading dashboard module</p>
+                            <div className="w-full space-y-4">
+                                {Object.keys(stats.breakdown).length === 0 ? (
+                                    <div className="flex flex-col items-center gap-4 opacity-40">
+                                        <TrendingUp className="w-16 h-16 text-secondary-300 dark:text-secondary-700" />
+                                        <p className="text-secondary-900 dark:text-secondary-200 text-sm font-bold uppercase tracking-widest text-center">No transaction records<br />for visual analytics</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4 w-full">
+                                        {Object.entries(stats.breakdown).map(([category, amount]) => (
+                                            <div key={category} className="space-y-2">
+                                                <div className="flex justify-between items-end">
+                                                    <span className="text-xs font-black text-secondary-500 uppercase tracking-widest">{category}</span>
+                                                    <span className="text-sm font-bold text-secondary-900 dark:text-white">₱{amount.toLocaleString()}</span>
+                                                </div>
+                                                <div className="h-2 bg-secondary-100 dark:bg-secondary-800 rounded-full overflow-hidden">
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${(amount / stats.totalCollected) * 100}%` }}
+                                                        className="h-full bg-primary-500"
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </CardContent>
                     </Card>

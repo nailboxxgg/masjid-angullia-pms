@@ -72,8 +72,7 @@ export default function DonationTable({ donations, isLoading, role: _role, onSta
                                     {donation.isAnonymous ? "Anonymous Donor" : donation.donorName}
                                 </p>
                                 <p className="text-[10px] font-bold text-secondary-400 italic flex items-center gap-1.5">
-                                    <Mail className="w-3 h-3" />
-                                    {donation.email || (donation.isAnonymous ? "Identity Hidden" : "No contact info")}
+                                    {donation.isAnonymous ? "Identity Hidden" : "Public Record"}
                                 </p>
                             </div>
                             {donation.status === 'completed' ? (
@@ -160,8 +159,7 @@ export default function DonationTable({ donations, isLoading, role: _role, onSta
                                                 {donation.isAnonymous ? "Anonymous Contributor" : donation.donorName}
                                             </p>
                                             <div className="flex items-center gap-2 text-[10px] font-bold text-secondary-500">
-                                                <Mail className="w-3 h-3 text-secondary-400" />
-                                                {donation.email || "No contact info"}
+                                                Verified Donor
                                             </div>
                                             {donation.message && (
                                                 <div className="text-[10px] text-primary-600 dark:text-primary-400 italic line-clamp-1 border-l-2 border-primary-100 dark:border-primary-900/30 pl-2 mt-1.5 bg-primary-50/20 dark:bg-primary-900/10 py-0.5 rounded-r">

@@ -160,11 +160,6 @@ export default function DonationForm({ className, onSuccess, onCancel }: Donatio
                         placeholder="Your Name (leave blank for anonymous)"
                         className="flex h-11 w-full rounded-md border border-secondary-300 bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                     />
-                    <input
-                        type="email"
-                        placeholder="Email for receipt"
-                        className="flex h-11 w-full rounded-md border border-secondary-300 bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
-                    />
                 </div>
             </div>
 

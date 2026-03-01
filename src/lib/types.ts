@@ -2,8 +2,6 @@ export interface Donation {
     id: string;
     amount: number;
     donorName: string; // 'Anonymous' if isAnonymous is true
-    contactNumber?: string;
-    email?: string;
     type: 'Community Welfare' | 'General Donation' | 'Construction' | 'Education' | 'Other' | 'General';
     date: number; // timestamp
     status: 'pending' | 'completed' | 'failed';

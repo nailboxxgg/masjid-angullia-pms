@@ -61,7 +61,6 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                 await addDonation({
                     amount: transaction.amount,
                     donorName: donorName || "Anonymous",
-                    email: "", // Optional, not collected in this modal version
                     type: donationType,
                     date: Date.now(),
                     status: 'completed',

@@ -374,6 +374,51 @@ export class RisingTideProvider implements SMSProvider {
     }
 }
 
+export class AndroidGatewayProvider implements SMSProvider {
+    name = "AndroidGateway";
+    private ip: string;
+    private port: string;
+
+    constructor(ip: string, port: string = "8080") {
+        this.ip = ip;
+        this.port = port;
+    }
+
+    async send(to: string, message: string): Promise<{ success: boolean; error?: string }> {
+        try {
+            const url = `http://${this.ip}:${this.port}/send-sms`;
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    phone: to,
+                    message: message,
+                }),
+                signal: AbortSignal.timeout(10000),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`Android Gateway Error (${response.status}):`, errorText);
+                return { success: false, error: `Gateway Error ${response.status}: ${errorText}` };
+            }
+
+            const data = await response.json();
+            console.log("Android Gateway Response:", data);
+
+            return { success: true };
+        } catch (error) {
+            console.error("Android Gateway Send Error:", error);
+            if (error instanceof Error && error.name === 'AbortError') {
+                return { success: false, error: "Connection Timeout: Phone took too long to respond. Is it on the same network?" };
+            }
+            return { success: false, error: error instanceof Error ? error.message : "Network error" };
+        }
+    }
+}
+
 export class MockProvider implements SMSProvider {
     name = "Mock";
 
@@ -409,6 +454,18 @@ export const getSMSProvider = (): SMSProvider => {
                 console.error("Error parsing SMS_WEIGHTS, defaulting to first configured provider or mock");
             }
         }
+    }
+
+    if (providerName === "android") {
+        const ip = process.env.ANDROID_GATEWAY_IP;
+        const port = process.env.ANDROID_GATEWAY_PORT || "8080";
+
+        if (!ip) {
+            console.warn("ANDROID_GATEWAY_IP missing in environment variables, falling back to Mock");
+            return new MockProvider();
+        }
+
+        return new AndroidGatewayProvider(ip, port);
     }
 
     if (providerName === "semaphore") {

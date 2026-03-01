@@ -322,7 +322,9 @@ export default function Home() {
                         <Heart className="w-6 h-6 text-pink-500 fill-pink-500 animate-pulse" />
                         Recent Donations
                       </h3>
-
+                      <Link href="/donations" className="text-sm font-bold text-primary-600 hover:text-primary-700 dark:text-primary-400 flex items-center gap-1 group/link">
+                        View Funds <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                      </Link>
                     </div>
 
                     <div className="relative overflow-hidden group/marquee">
@@ -390,7 +392,7 @@ export default function Home() {
                           <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-10 mix-blend-overlay"></div>
                           <div className="relative z-10 flex items-center justify-between">
                             <div className="text-left">
-                              <span className="block text-[10px] font-bold uppercase tracking-widest text-primary-200 mb-0.5">Make an Impact</span>
+                              <span className="block text-[10px] font-bold uppercase tracking-widest text-primary-200 mb-0.5">Quick Contribution</span>
                               <span className="block text-xl font-black font-heading">Donate Now</span>
                             </div>
                             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white/30 transition-colors">

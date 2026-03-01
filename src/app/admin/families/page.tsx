@@ -107,7 +107,7 @@ export default function AdminFamiliesPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto hidden xl:block">
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="bg-secondary-50 dark:bg-secondary-950/50 border-b border-secondary-100 dark:border-secondary-800 font-bold uppercase tracking-widest text-[10px] text-secondary-500">
@@ -188,6 +188,64 @@ export default function AdminFamiliesPage() {
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* Mobile View */}
+                        <div className="xl:hidden p-4 md:p-6 divide-y divide-secondary-100 dark:divide-secondary-800 space-y-5">
+                            {isLoading ? (
+                                Array(3).fill(0).map((_, i) => (
+                                    <div key={i} className="animate-pulse flex flex-col gap-3 py-3">
+                                        <div className="h-4 w-3/4 bg-secondary-100 dark:bg-secondary-800 rounded-lg"></div>
+                                        <div className="h-4 w-1/2 bg-secondary-100 dark:bg-secondary-800 rounded-lg"></div>
+                                    </div>
+                                ))
+                            ) : filteredFamilies.length === 0 ? (
+                                <div className="py-12 text-center text-sm text-secondary-500">
+                                    <Users2 className="w-8 h-8 mx-auto mb-2 opacity-50 text-secondary-400" />
+                                    No family records found.
+                                </div>
+                            ) : (
+                                filteredFamilies.map((family) => (
+                                    <div key={`mobile-${family.id}`} className="pt-5 first:pt-0 flex flex-col gap-4 relative">
+                                        <div className="flex justify-between items-start gap-4">
+                                            <div className="min-w-0">
+                                                <h3 className="font-bold text-secondary-900 dark:text-white text-base truncate pr-2">{family.name}</h3>
+                                                <div className="flex items-center gap-2 mt-1.5 -ml-1">
+                                                    <div className="shrink-0 w-6 h-6 rounded-full bg-secondary-100 dark:bg-secondary-800 flex items-center justify-center text-secondary-900 dark:text-white font-bold text-[10px] ring-1 ring-white dark:ring-secondary-700 shadow-sm ml-1">
+                                                        {family.head?.[0] || 'U'}
+                                                    </div>
+                                                    <span className="text-sm font-bold text-secondary-700 dark:text-secondary-200 truncate">{family.head || "Unknown"}</span>
+                                                </div>
+                                            </div>
+                                            <span className="shrink-0 inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Active
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between text-xs mt-1">
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border border-primary-100 dark:border-primary-800/50 shadow-sm">
+                                                <Users className="w-3.5 h-3.5" />
+                                                {Array.isArray(family.members) ? family.members.length : (family.members || 0)} Member{(Array.isArray(family.members) && family.members.length === 1) || family.members === 1 ? '' : 's'}
+                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleEdit(family)}
+                                                    className="p-2.5 text-secondary-500 hover:text-primary-600 bg-secondary-50 dark:bg-secondary-800/50 dark:text-secondary-400 dark:hover:text-primary-400 rounded-xl transition-all shadow-sm border border-secondary-200 dark:border-secondary-700 hover:border-primary-200 dark:hover:border-primary-800"
+                                                    title="Edit Family"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteClick(family)}
+                                                    className="p-2.5 text-secondary-500 hover:text-red-600 bg-secondary-50 dark:bg-secondary-800/50 dark:text-secondary-400 dark:hover:text-red-400 rounded-xl transition-all shadow-sm border border-secondary-200 dark:border-secondary-700 hover:border-red-200 dark:hover:border-red-800"
+                                                    title="Delete Family"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </CardContent>
                 </Card>

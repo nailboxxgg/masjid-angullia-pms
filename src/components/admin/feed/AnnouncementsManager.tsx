@@ -72,15 +72,18 @@ export default function AnnouncementsManager() {
         }
 
         // 2. Create Announcement in Firestore
-        const success = await createAnnouncement({
+        const announcementData: Omit<Announcement, "id" | "createdAt"> = {
             title: newTitle,
             content: newContent,
             type: newType,
             priority: newPriority,
-            externalUrl: externalUrl,
-            imageUrl,
             date: new Date().toISOString()
-        });
+        };
+
+        if (imageUrl) announcementData.imageUrl = imageUrl;
+        if (externalUrl.trim()) announcementData.externalUrl = externalUrl.trim();
+
+        const success = await createAnnouncement(announcementData);
 
         if (success) {
             // 2. Broadcast SMS if enabled

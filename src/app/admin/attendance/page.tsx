@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
     Clock,
     Calendar,
@@ -19,7 +19,6 @@ import { addManualAttendance, getStaffList } from "@/lib/staff";
 import { AttendanceSession, Staff } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import * as XLSX from "xlsx";
 import Modal from "@/components/ui/modal";
 import { Plus } from "lucide-react";
 import { getSubscribers, Subscriber } from "@/lib/notifications";
@@ -94,7 +93,8 @@ export default function AdminAttendancePage() {
         }
     };
 
-    const handleExport = () => {
+    const handleExport = async () => {
+        const XLSX = await import("xlsx");
         let exportData: Record<string, string | undefined>[] = [];
 
         if (activeTab === 'visitor') {
@@ -168,67 +168,63 @@ export default function AdminAttendancePage() {
     }, [fetchSessions]);
 
     // Filter sessions based on search
-    const filteredRawSessions = sessions.filter(session => {
-        return session.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (session.email && session.email.toLowerCase().includes(searchTerm.toLowerCase()));
-    });
+    const { visitorSessions, finalStaffList } = useMemo(() => {
+        const filteredRawSessions = sessions.filter(session => {
+            return session.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (session.email && session.email.toLowerCase().includes(searchTerm.toLowerCase()));
+        });
 
-    const visitorSessions = filteredRawSessions.filter(s => s.type === 'visitor_log');
-    const staffSessionsRaw = filteredRawSessions.filter(s => s.type === 'staff_session');
+        const vSessions = filteredRawSessions.filter(s => s.type === 'visitor_log');
+        const sSessionsRaw = filteredRawSessions.filter(s => s.type === 'staff_session');
 
-    // Consolidate Staff Sessions
-    const consolidatedStaffSessions = Object.values(staffSessionsRaw.reduce((acc, session) => {
-        const key = session.staffId || session.uid || session.id;
-        if (!acc[key]) {
-            acc[key] = {
-                ...session,
-                totalDurationMs: 0,
-                sessionsCount: 0,
-                latestClockIn: session.clockIn,
-                latestClockOut: session.clockOut,
-                isActive: false
+        // Consolidate Staff Sessions
+        const consolidated = Object.values(sSessionsRaw.reduce((acc, session) => {
+            const key = session.staffId || session.uid || session.id;
+            if (!acc[key]) {
+                acc[key] = {
+                    ...session,
+                    totalDurationMs: 0,
+                    sessionsCount: 0,
+                    latestClockIn: session.clockIn,
+                    latestClockOut: session.clockOut,
+                    isActive: false
+                };
+            }
+
+            const record = acc[key];
+            record.sessionsCount++;
+            if (session.clockIn > record.latestClockIn) record.latestClockIn = session.clockIn;
+            if (session.clockOut && (!record.latestClockOut || session.clockOut > record.latestClockOut)) {
+                record.latestClockOut = session.clockOut;
+            }
+
+            if (session.status === 'active') record.isActive = true;
+
+            if (session.clockOut) {
+                record.totalDurationMs += (session.clockOut - session.clockIn);
+            } else if (session.status === 'active') {
+                record.totalDurationMs += (Date.now() - session.clockIn);
+            }
+
+            return acc;
+        }, {} as Record<string, ConsolidatedStaffSession>));
+
+        const staffList = consolidated.map(staff => {
+            const hours = Math.floor(staff.totalDurationMs / (1000 * 60 * 60));
+            const minutes = Math.floor((staff.totalDurationMs % (1000 * 60 * 60)) / (1000 * 60));
+
+            return {
+                ...staff,
+                displayDuration: staff.isActive ? `On-going (${hours}h ${minutes}m)` : `${hours}h ${minutes}m`,
+                status: (staff.isActive ? 'active' : 'completed') as AttendanceSession['status'],
+                displayTime: staff.isActive
+                    ? `In at ${new Date(staff.latestClockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                    : `Out at ${new Date(staff.latestClockOut || staff.latestClockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
             };
-        }
+        });
 
-        // Aggregate stats
-        const record = acc[key];
-        record.sessionsCount++;
-        if (session.clockIn > record.latestClockIn) record.latestClockIn = session.clockIn;
-        if (session.clockOut && (!record.latestClockOut || session.clockOut > record.latestClockOut)) {
-            record.latestClockOut = session.clockOut;
-        }
-
-        // Status check (if any session is active, user is active)
-        if (session.status === 'active') record.isActive = true;
-
-        // Calculate partial duration
-        if (session.clockOut) {
-            record.totalDurationMs += (session.clockOut - session.clockIn);
-        } else if (session.status === 'active') {
-            // Add time until now for active session? Or just leave it?
-            // Usually we show "On-going" + accumulated past duration
-            record.totalDurationMs += (Date.now() - session.clockIn);
-        }
-
-        return acc;
-    }, {} as Record<string, ConsolidatedStaffSession>));
-
-    const finalStaffList = consolidatedStaffSessions.map(staff => {
-        const hours = Math.floor(staff.totalDurationMs / (1000 * 60 * 60));
-        const minutes = Math.floor((staff.totalDurationMs % (1000 * 60 * 60)) / (1000 * 60));
-
-        return {
-            ...staff,
-            displayDuration: staff.isActive ? `On-going (${hours}h ${minutes}m)` : `${hours}h ${minutes}m`,
-            status: (staff.isActive ? 'active' : 'completed') as AttendanceSession['status'],
-            // For Time column, show First In - Last Out? Or Latest activity?
-            // User asked: "record only the status, time and duration"
-            // Let's show: Latest Activity Time
-            displayTime: staff.isActive
-                ? `In at ${new Date(staff.latestClockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                : `Out at ${new Date(staff.latestClockOut || staff.latestClockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-        };
-    });
+        return { visitorSessions: vSessions, finalStaffList: staffList };
+    }, [sessions, searchTerm]);
 
 
     const displayData = (activeTab === 'visitor' ? visitorSessions : finalStaffList) as (AttendanceSession & Partial<ConsolidatedStaffSession>)[];

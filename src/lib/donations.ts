@@ -12,7 +12,10 @@ import {
     doc,
     setDoc,
     serverTimestamp,
-    getDoc
+    getDoc,
+    getAggregateFromServer,
+    sum,
+    where
 } from "firebase/firestore";
 import { Donation } from "./types";
 
@@ -27,7 +30,7 @@ const mapDonationType = (type: string): Donation['type'] => {
     }
 };
 
-export const getDonations = async (limitCount = 50, includePrivateInfo = false): Promise<Donation[]> => {
+export const getDonations = async (limitCount = 50): Promise<Donation[]> => {
     try {
         const q = query(
             collection(db, COLLECTION_NAME),
@@ -36,37 +39,19 @@ export const getDonations = async (limitCount = 50, includePrivateInfo = false):
         );
         const querySnapshot = await getDocs(q);
 
-        const donationPromises = querySnapshot.docs.map(async (docSnapshot) => {
+        return querySnapshot.docs.map((docSnapshot) => {
             const data = docSnapshot.data();
-            const donation: Donation = {
+            return {
                 id: docSnapshot.id,
                 amount: data.amount,
                 donorName: data.donorName,
                 type: mapDonationType(data.type),
                 date: data.date instanceof Timestamp ? data.date.toMillis() : new Date(data.date).getTime(),
-                email: data.email, // Legacy email if still in main doc
                 isAnonymous: data.isAnonymous,
                 message: data.message,
                 status: data.status || 'completed'
-            };
-
-            // Fetch private info if requested and not already in main document
-            if (includePrivateInfo && !donation.email) {
-                try {
-                    const privateInfo = await getDonationPrivateInfo(docSnapshot.id);
-                    if (privateInfo?.email) {
-                        donation.email = privateInfo.email;
-                    }
-                } catch (error) {
-                    // Silently ignore permission errors for private info
-                    console.log("Could not fetch private info for donation:", docSnapshot.id, error);
-                }
-            }
-
-            return donation;
+            } as Donation;
         });
-
-        return Promise.all(donationPromises);
     } catch (error) {
         console.error("Error fetching donations:", error);
         return [];
@@ -75,42 +60,16 @@ export const getDonations = async (limitCount = 50, includePrivateInfo = false):
 
 export const addDonation = async (donation: Omit<Donation, "id">) => {
     try {
-        const { email, ...publicData } = donation;
-
-        // 1. Create the main document (publicly readable except for restricted fields)
+        // 1. Create the main document
         const docRef = await addDoc(collection(db, COLLECTION_NAME), {
-            ...publicData,
+            ...donation,
             date: Timestamp.fromMillis(donation.date),
             createdAt: Timestamp.now()
         });
 
-        // 2. Save sensitive email to a private sub-collection
-        if (email) {
-            await setDoc(doc(db, COLLECTION_NAME, docRef.id, "private", "info"), {
-                email,
-                updatedAt: serverTimestamp()
-            });
-        }
-
         return docRef.id;
     } catch (error) {
         console.error("Error adding donation:", error);
-        return null;
-    }
-};
-
-/**
- * Fetch sensitive donor information (Admins only via rules)
- */
-export const getDonationPrivateInfo = async (donationId: string): Promise<{ email?: string } | null> => {
-    try {
-        const docSnap = await getDoc(doc(db, COLLECTION_NAME, donationId, "private", "info"));
-        if (docSnap.exists()) {
-            return docSnap.data() as { email?: string };
-        }
-        return null;
-    } catch (error) {
-        console.error("Error fetching private donation info:", error);
         return null;
     }
 };
@@ -136,10 +95,15 @@ export const updateDonationStatus = async (id: string, status: Donation['status'
 };
 
 export const getTotalDonations = async (): Promise<number> => {
-    // In a real app, use aggregation queries or a cloud function counter
-    // For now, client-side sum (prototype)
-    const donations = await getDonations(100);
-    return donations.reduce((sum, d) => sum + d.amount, 0);
+    try {
+        const snapshot = await getAggregateFromServer(collection(db, COLLECTION_NAME), {
+            totalAmount: sum('amount')
+        });
+        return snapshot.data().totalAmount || 0;
+    } catch (error) {
+        console.error("Error getting total donations:", error);
+        return 0;
+    }
 };
 
 export interface DonationStats {
@@ -152,41 +116,53 @@ export interface DonationStats {
 export const getDonationStats = async (): Promise<DonationStats> => {
     try {
         // Fetch recent donations for the list
-        const recentDonations = await getDonations(10, true);
+        const recentDonations = await getDonations(10);
 
-        // Fetch larger set for stats aggregation
-        // TODO: Replace with Firestore Aggregation Queries in production to avoid high read costs
-        const q = query(
-            collection(db, COLLECTION_NAME),
-            orderBy("date", "desc"),
-            limit(500)
-        );
-        const querySnapshot = await getDocs(q);
-        const allDonations = querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                ...data,
-                type: mapDonationType(data.type),
-                date: data.date instanceof Timestamp ? data.date.toMillis() : new Date(data.date).getTime(),
-            } as Donation;
+        const collectionRef = collection(db, COLLECTION_NAME);
+
+        // 1. Total Collected
+        const totalPromise = getAggregateFromServer(collectionRef, {
+            totalAmount: sum('amount')
         });
 
-        const totalCollected = allDonations.reduce((sum, d) => sum + (d.amount || 0), 0);
+        // 2. Monthly Collected
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfMonthTimestamp = Timestamp.fromDate(startOfMonth);
 
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
+        const monthlyQuery = query(collectionRef, where("date", ">=", startOfMonthTimestamp));
+        const monthlyPromise = getAggregateFromServer(monthlyQuery, {
+            monthlyAmount: sum('amount')
+        });
 
-        const monthlyCollected = allDonations
-            .filter(d => {
-                const date = new Date(d.date);
-                return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-            })
-            .reduce((sum, d) => sum + (d.amount || 0), 0);
+        // 3. Breakdown by known types
+        const breakdownTypes = [
+            'Mosque Operations', 'Islamic Education', 'Education', 'Community Meals',
+            'Community Welfare', 'Zakat', 'General Donation', 'Sadaqah',
+            'Construction', 'General', 'Other'
+        ];
+
+        const breakdownPromises = breakdownTypes.map(async (t) => {
+            const q = query(collectionRef, where("type", "==", t));
+            const snap = await getAggregateFromServer(q, { total: sum('amount') });
+            return { type: t, amount: snap.data().total || 0 };
+        });
+
+        const [totalSnap, monthlySnap, ...breakdownResults] = await Promise.all([
+            totalPromise,
+            monthlyPromise,
+            ...breakdownPromises
+        ]);
+
+        const totalCollected = totalSnap.data().totalAmount || 0;
+        const monthlyCollected = monthlySnap.data().monthlyAmount || 0;
 
         const breakdown: Record<string, number> = {};
-        allDonations.forEach(d => {
-            const type = d.type || 'Other';
-            breakdown[type] = (breakdown[type] || 0) + d.amount;
+        breakdownResults.forEach((result) => {
+            if (result.amount > 0) {
+                const mappedType = mapDonationType(result.type);
+                breakdown[mappedType] = (breakdown[mappedType] || 0) + result.amount;
+            }
         });
 
         return {

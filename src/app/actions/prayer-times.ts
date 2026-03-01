@@ -6,48 +6,60 @@ const CITY = "Alaminos";
 const COUNTRY = "Philippines";
 const METHOD = 3; // Muslim World League
 
-export async function fetchPrayerTimes(): Promise<PrayerData | null> {
-    try {
-        const today = new Date();
-        const dateStr = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
+export async function fetchPrayerTimes(retries = 2): Promise<PrayerData | null> {
+    const today = new Date();
+    const dateStr = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
+    const url = `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=${CITY}&country=${COUNTRY}&method=${METHOD}&school=0`;
 
-        // Hide external API key/endpoint details from client
-        const response = await fetch(
-            `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=${CITY}&country=${COUNTRY}&method=${METHOD}&school=0`,
-            { cache: 'no-store' } // Ensure fresh data on server
-        );
+    for (let i = 0; i <= retries; i++) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 seconds timeout
 
-        if (!response.ok) {
-            throw new Error("Failed to fetch prayer times");
-        }
+            const response = await fetch(url, {
+                cache: 'no-store',
+                signal: controller.signal
+            });
 
-        const data = await response.json();
-        const timings = data.data.timings;
-        const hijri = data.data.date.hijri;
+            clearTimeout(timeoutId);
 
-        return {
-            timings: {
-                Fajr: timings.Fajr,
-                Sunrise: timings.Sunrise,
-                Dhuhr: timings.Dhuhr,
-                Asr: timings.Asr,
-                Maghrib: timings.Maghrib,
-                Isha: timings.Isha
-            },
-            date: {
-                readable: data.data.date.readable,
-                hijri: {
-                    day: hijri.day,
-                    month: {
-                        en: hijri.month.en,
-                        ar: hijri.month.ar
-                    },
-                    year: hijri.year
-                }
+            if (!response.ok) {
+                throw new Error(`Failed to fetch prayer times: ${response.status} ${response.statusText}`);
             }
-        };
-    } catch (error) {
-        console.error("Server Action Error: fetchPrayerTimes", error);
-        return null;
+
+            const data = await response.json();
+            const timings = data.data.timings;
+            const hijri = data.data.date.hijri;
+
+            return {
+                timings: {
+                    Fajr: timings.Fajr,
+                    Sunrise: timings.Sunrise,
+                    Dhuhr: timings.Dhuhr,
+                    Asr: timings.Asr,
+                    Maghrib: timings.Maghrib,
+                    Isha: timings.Isha
+                },
+                date: {
+                    readable: data.data.date.readable,
+                    hijri: {
+                        day: hijri.day,
+                        month: {
+                            en: hijri.month.en,
+                            ar: hijri.month.ar
+                        },
+                        year: hijri.year
+                    }
+                }
+            };
+        } catch (error) {
+            if (i === retries) {
+                console.error("Server Action Error: fetchPrayerTimes (All retries failed)", error instanceof Error ? error.message : String(error));
+                return null;
+            }
+            // Wait 1 second before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
     }
+    return null;
 }

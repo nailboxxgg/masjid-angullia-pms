@@ -84,7 +84,7 @@ export default function FinancesPage() {
         // For now, we are patching specific recent donations, but let's assume we want a fuller list for the table
         // or just use what stats gave us if we want to be fast.
         // But the table has pagination/search, so let's fetch a bit more for the table part.
-        const fullList = await getDonations(100, true);
+        const fullList = await getDonations(100);
 
         setStats(statsData);
         setDonations(fullList);
@@ -96,8 +96,7 @@ export default function FinancesPage() {
     }, []);
 
     const filteredDonations = donations.filter(donation => {
-        const matchesSearch = (donation.donorName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (donation.email || "").toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = (donation.donorName || "").toLowerCase().includes(searchTerm.toLowerCase());
         const matchesType = typeFilter === 'All' || donation.type === typeFilter;
         return matchesSearch && matchesType;
     });
@@ -111,7 +110,6 @@ export default function FinancesPage() {
         const exportData = filteredDonations.map(d => ({
             Date: new Date(d.date).toLocaleDateString(),
             Donor: d.isAnonymous ? "Anonymous" : d.donorName,
-            Email: d.email || "",
             Amount: d.amount,
             Type: d.type,
             Status: d.status,
