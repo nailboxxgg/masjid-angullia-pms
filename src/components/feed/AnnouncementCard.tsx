@@ -45,7 +45,7 @@ export default function AnnouncementCard({ post, delay = 0, onClick }: Announcem
                                     </span>
                                     <ShieldCheck className="w-3 h-3 text-primary-500 fill-primary-500" />
                                 </div>
-                                <span className="text-[10px] text-secondary-400 dark:text-secondary-500 flex items-center gap-1">
+                                <span suppressHydrationWarning className="text-[10px] text-secondary-400 dark:text-secondary-500 flex items-center gap-1">
                                     <Clock className="w-2.5 h-2.5" /> {formatTimeAgo(createdAt)}
                                 </span>
                             </div>

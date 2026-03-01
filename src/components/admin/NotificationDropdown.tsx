@@ -121,7 +121,7 @@ export default function NotificationDropdown({
                                                     <p className="text-sm font-bold text-secondary-900 dark:text-white truncate">
                                                         {notification.senderName}
                                                     </p>
-                                                    <span className="text-[10px] text-secondary-400 dark:text-secondary-500 shrink-0 font-medium">
+                                                    <span suppressHydrationWarning className="text-[10px] text-secondary-400 dark:text-secondary-500 shrink-0 font-medium">
                                                         {formatTimeAgo(notification.createdAt)}
                                                     </span>
                                                 </div>

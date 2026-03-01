@@ -263,6 +263,7 @@ export default function AdminAttendancePage() {
                     <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-900 dark:text-secondary-200" />
                         <input
+                            suppressHydrationWarning
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
@@ -371,6 +372,7 @@ export default function AdminAttendancePage() {
                     <div>
                         <label className="block text-sm font-bold text-secondary-700 dark:text-secondary-300 mb-1">Date</label>
                         <input
+                            suppressHydrationWarning
                             type="date"
                             required
                             value={manualForm.date}

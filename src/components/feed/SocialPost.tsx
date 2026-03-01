@@ -86,7 +86,7 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
                                 </h4>
                                 <ShieldCheck className="w-3.5 h-3.5 text-primary-500 fill-primary-500 shrink-0" />
                             </div>
-                            <p className="text-[10px] md:text-xs text-secondary-500 dark:text-secondary-400 mt-1 flex items-center gap-1">
+                            <p suppressHydrationWarning className="text-[10px] md:text-xs text-secondary-500 dark:text-secondary-400 mt-1 flex items-center gap-1">
                                 {formatTimeAgo(post.createdAt || (isEvent ? Date.parse((post as Event).date) : (post as Announcement).date))} • <Clock className="w-3 h-3" />
                             </p>
                         </div>
@@ -213,7 +213,7 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
                                     <div className="bg-secondary-100 dark:bg-secondary-800/80 rounded-2xl px-3 py-2 max-w-[85%]">
                                         <p className="text-xs font-bold text-secondary-900 dark:text-secondary-100 mb-0.5">{cmt.userName}</p>
                                         <p className="text-sm text-secondary-700 dark:text-secondary-300 leading-relaxed">{cmt.content}</p>
-                                        <p className="text-[10px] text-secondary-400 mt-1">{formatTimeAgo(cmt.createdAt)}</p>
+                                        <p suppressHydrationWarning className="text-[10px] text-secondary-400 mt-1">{formatTimeAgo(cmt.createdAt)}</p>
                                     </div>
                                 </div>
                             ))}

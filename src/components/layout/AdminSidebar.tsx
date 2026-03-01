@@ -3,7 +3,7 @@
 import { clockOut } from "@/lib/attendance";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "@/components/ui/modal";
 import {
     LayoutDashboard,
@@ -48,6 +48,12 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     const pathname = usePathname();
     const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
     const { unreadCount } = useNotifications();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setMounted(true);
+    }, []);
 
     // Auto-redirect if trying to access blocked route in sidebar logic? 
     // Handled by layout.tsx already.
@@ -81,7 +87,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
             <motion.div
                 initial={false}
                 animate={{
-                    x: isOpen ? 0 : (typeof window !== 'undefined' && window.innerWidth < 768 ? -256 : 0),
+                    x: isOpen ? 0 : (mounted && window.innerWidth < 768 ? -256 : 0),
                     opacity: 1
                 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}

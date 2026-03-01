@@ -390,6 +390,7 @@ export class AndroidGatewayProvider implements SMSProvider {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "ngrok-skip-browser-warning": "true"
                 },
                 body: JSON.stringify({
                     phone: to,

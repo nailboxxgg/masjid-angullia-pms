@@ -119,7 +119,7 @@ export default function AdminRequestsPage() {
                                                 <span className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-[10px] font-black uppercase tracking-widest">
                                                     New
                                                 </span>
-                                                <span className="text-xs font-semibold text-secondary-400 flex items-center gap-1">
+                                                <span suppressHydrationWarning className="text-xs font-semibold text-secondary-400 flex items-center gap-1">
                                                     <Clock className="w-3 h-3" />
                                                     {formatTimeAgo(request.createdAt ?? 0)}
                                                 </span>
