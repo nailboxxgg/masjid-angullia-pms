@@ -376,17 +376,16 @@ export class RisingTideProvider implements SMSProvider {
 
 export class AndroidGatewayProvider implements SMSProvider {
     name = "AndroidGateway";
-    private ip: string;
-    private port: string;
+    private gatewayUrl: string;
 
-    constructor(ip: string, port: string = "8080") {
-        this.ip = ip;
-        this.port = port;
+    constructor(gatewayUrl: string) {
+        // Ensure trailing slash is removed if present
+        this.gatewayUrl = gatewayUrl.endsWith('/') ? gatewayUrl.slice(0, -1) : gatewayUrl;
     }
 
     async send(to: string, message: string): Promise<{ success: boolean; error?: string }> {
         try {
-            const url = `http://${this.ip}:${this.port}/send-sms`;
+            const url = `${this.gatewayUrl}/send-sms`;
             const response = await fetch(url, {
                 method: "POST",
                 headers: {
@@ -457,15 +456,14 @@ export const getSMSProvider = (): SMSProvider => {
     }
 
     if (providerName === "android") {
-        const ip = process.env.ANDROID_GATEWAY_IP;
-        const port = process.env.ANDROID_GATEWAY_PORT || "8080";
+        const gatewayUrl = process.env.ANDROID_GATEWAY_URL;
 
-        if (!ip) {
-            console.warn("ANDROID_GATEWAY_IP missing in environment variables, falling back to Mock");
+        if (!gatewayUrl) {
+            console.warn("ANDROID_GATEWAY_URL missing in environment variables, falling back to Mock");
             return new MockProvider();
         }
 
-        return new AndroidGatewayProvider(ip, port);
+        return new AndroidGatewayProvider(gatewayUrl);
     }
 
     if (providerName === "semaphore") {
