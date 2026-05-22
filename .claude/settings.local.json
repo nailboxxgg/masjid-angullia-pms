@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm uninstall *)",
+      "WebSearch",
+      "Bash(npm ls *)",
+      "Bash(npm audit *)",
+      "Bash(npm test *)"
+    ]
+  }
+}

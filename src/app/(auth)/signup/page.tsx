@@ -130,6 +130,15 @@ export default function SignupPage() {
                             </form>
 
                             <div className="pt-4 border-t border-slate-100">
+                                <p className="text-sm text-slate-500 mb-3">
+                                    Looking for a personal community account?
+                                </p>
+                                <Link
+                                    href="/members/signup"
+                                    className="mb-5 inline-flex w-full items-center justify-center rounded-xl bg-primary-50 px-4 py-3 text-sm font-bold text-primary-700 hover:bg-primary-100"
+                                >
+                                    Create Member Account
+                                </Link>
                                 <p className="text-sm text-slate-500 italic mb-3">Family account creation must be done via administration.</p>
                                 <button
                                     onClick={() => setIsFeedbackOpen(true)}

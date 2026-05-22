@@ -31,6 +31,27 @@ export function formatTimeAgo(date: Date | number | string | { seconds: number; 
     return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
 }
 
+export function formatCurrency(amount: number): string {
+    return `\u20b1${amount.toLocaleString("en-PH")}`;
+}
+
+export function formatMaskedCurrency(amount: number): string {
+    const formatted = Math.max(0, Math.floor(amount)).toLocaleString("en-PH");
+    const firstDigitIndex = formatted.search(/\d/);
+
+    if (firstDigitIndex === -1) return "\u20b1x";
+
+    const masked = formatted
+        .split("")
+        .map((char, index) => {
+            if (!/\d/.test(char)) return char;
+            return index === firstDigitIndex ? char : "x";
+        })
+        .join("");
+
+    return `\u20b1${masked}`;
+}
+
 /**
  * Normalizes an 11-digit PH phone number (starting with 0) to +63 format
  */

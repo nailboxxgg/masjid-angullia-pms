@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-import { LockKeyhole, Menu, X, Bell, Calendar, MessageSquare, Users, Home, Heart } from "lucide-react";
+import { LockKeyhole, Menu, X, Bell, Calendar, MessageSquare, Users, Home, Heart, UserRound } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -56,8 +56,9 @@ export default function Navbar() {
                         <div className="relative w-8 h-8 group-hover:scale-110 transition-transform duration-300">
                             <Image
                                 src="/logo.png"
-                                alt="Masid Angullia Logo"
+                                alt="Masjid Angullia Logo"
                                 fill
+                                sizes="32px"
                                 className="object-contain dark:brightness-110"
                             />
                         </div>
@@ -93,6 +94,14 @@ export default function Navbar() {
                             >
                                 Register Family
                             </button>
+
+                            <Link
+                                href="/members"
+                                className="p-2.5 rounded-xl text-secondary-600 hover:text-primary-600 dark:text-secondary-300 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all"
+                                title="Member Account"
+                            >
+                                <UserRound className="w-5 h-5" />
+                            </Link>
 
                             <button
                                 onClick={() => window.dispatchEvent(new CustomEvent('open-login-modal'))}
@@ -162,6 +171,14 @@ export default function Navbar() {
                             </button>
 
                             <div className="grid grid-cols-2 gap-3">
+                                <Link
+                                    href="/members"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center justify-center gap-2 px-4 py-4 rounded-2xl bg-primary-600 text-white font-bold text-sm"
+                                >
+                                    <UserRound className="w-4 h-4" />
+                                    Member
+                                </Link>
                                 <button
                                     onClick={() => {
                                         setIsMenuOpen(false);
@@ -172,7 +189,7 @@ export default function Navbar() {
                                     <LockKeyhole className="w-4 h-4" />
                                     Admin Portal
                                 </button>
-                                <div className="flex items-center justify-center py-4 rounded-2xl bg-secondary-100 dark:bg-secondary-800">
+                                <div className="col-span-2 flex items-center justify-center py-4 rounded-2xl bg-secondary-100 dark:bg-secondary-800">
                                     <ThemeToggle />
                                     <span className="ml-2 text-sm font-bold text-secondary-600 dark:text-secondary-400">Appearance</span>
                                 </div>

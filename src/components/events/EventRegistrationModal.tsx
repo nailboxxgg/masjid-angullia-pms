@@ -1,12 +1,14 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "@/components/ui/modal";
 import { registerForEvent } from "@/lib/events";
 import { Loader2, CheckCircle, Calendar, MapPin, Clock } from "lucide-react";
 import { Event } from "@/lib/types";
 import { normalizePhoneNumber } from "@/lib/utils";
+import { auth } from "@/lib/firebase";
+import { getMemberProfile } from "@/lib/members";
 
 interface EventRegistrationModalProps {
     isOpen: boolean;
@@ -20,6 +22,24 @@ export default function EventRegistrationModal({ isOpen, onClose, event }: Event
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState("");
+    const [memberId, setMemberId] = useState<string | undefined>();
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const currentUser = auth.currentUser;
+        if (!currentUser) return;
+
+        getMemberProfile(currentUser.uid)
+            .then((profile) => {
+                if (!profile) return;
+                setMemberId(profile.uid);
+                setName((current) => current || profile.displayName);
+                setEmail((current) => current || profile.email);
+                setContact((current) => current || profile.phone || "");
+            })
+            .catch((error) => console.error("Failed to prefill member event registration:", error));
+    }, [isOpen]);
 
     const isPastEvent = event ? new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0)) : false;
 
@@ -33,7 +53,8 @@ export default function EventRegistrationModal({ isOpen, onClose, event }: Event
         const result = await registerForEvent(event.id, {
             name,
             contactNumber: normalizePhoneNumber(contact),
-            email
+            email,
+            memberId,
         });
 
         if (result.success) {

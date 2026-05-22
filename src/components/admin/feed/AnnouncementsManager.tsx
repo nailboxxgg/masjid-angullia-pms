@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Announcement } from "@/lib/types";
 import { getAnnouncements, createAnnouncement, deleteAnnouncement } from "@/lib/announcements";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Megaphone, Plus, Trash2, CheckCircle, AlertCircle, ImagePlus, X } from "lucide-react";
+import { LockKeyhole, Megaphone, Plus, Trash2, CheckCircle, AlertCircle, ImagePlus, X } from "lucide-react";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import { cn } from "@/lib/utils";
 import Modal from "@/components/ui/modal"; // Re-using existing Modal component
@@ -37,6 +37,7 @@ export default function AnnouncementsManager() {
     const [newContent, setNewContent] = useState("");
     const [newType, setNewType] = useState<Announcement['type']>("General");
     const [newPriority, setNewPriority] = useState<Announcement['priority']>("normal");
+    const [newAudience, setNewAudience] = useState<NonNullable<Announcement['audience']>>("public");
     const [externalUrl, setExternalUrl] = useState("");
     const [sendSMS, setSendSMS] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -51,7 +52,7 @@ export default function AnnouncementsManager() {
 
     const loadAnnouncements = async () => {
         setIsLoading(true);
-        const data = await getAnnouncements();
+        const data = await getAnnouncements(20, true);
         setAnnouncements(data);
         setIsLoading(false);
     };
@@ -77,6 +78,7 @@ export default function AnnouncementsManager() {
             content: newContent,
             type: newType,
             priority: newPriority,
+            audience: newAudience,
             date: new Date().toISOString()
         };
 
@@ -160,6 +162,7 @@ export default function AnnouncementsManager() {
             setNewContent("");
             setNewType("General");
             setNewPriority("normal");
+            setNewAudience("public");
             setExternalUrl("");
             setSendSMS(false);
             setImageFile(null);
@@ -189,7 +192,8 @@ export default function AnnouncementsManager() {
         setAnnouncements(prev => prev.filter(a => a.id !== id));
         setIsDeleteModalOpen(false);
 
-        const success = await deleteAnnouncement(id);
+        const announcement = announcements.find((item) => item.id === id);
+        const success = await deleteAnnouncement(id, announcement?.audience);
         if (!success) {
             alert("Failed to delete. Please refresh.");
             loadAnnouncements();
@@ -249,6 +253,35 @@ export default function AnnouncementsManager() {
                                             <option value="normal">Normal</option>
                                             <option value="high">High</option>
                                         </select>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-secondary-900 dark:text-secondary-200">Audience</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewAudience("public")}
+                                            className={cn(
+                                                "rounded-lg border px-3 py-2 text-sm font-bold transition-colors",
+                                                newAudience === "public"
+                                                    ? "border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300"
+                                                    : "border-secondary-200 bg-secondary-50 text-secondary-700 dark:border-secondary-700 dark:bg-secondary-800 dark:text-secondary-200"
+                                            )}
+                                        >
+                                            Public
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewAudience("members")}
+                                            className={cn(
+                                                "rounded-lg border px-3 py-2 text-sm font-bold transition-colors",
+                                                newAudience === "members"
+                                                    ? "border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300"
+                                                    : "border-secondary-200 bg-secondary-50 text-secondary-700 dark:border-secondary-700 dark:bg-secondary-800 dark:text-secondary-200"
+                                            )}
+                                        >
+                                            Members
+                                        </button>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
@@ -339,11 +372,17 @@ export default function AnnouncementsManager() {
                                         <div className="flex justify-between items-start">
                                             <div>
                                                 <h3 className="font-bold text-secondary-900 dark:text-secondary-100">{item.title}</h3>
-                                                <div className="flex items-center gap-2 text-xs font-semibold text-secondary-900 dark:text-secondary-200 mt-1">
+                                                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-secondary-900 dark:text-secondary-200 mt-1">
                                                     <span className={cn("px-2 py-0.5 rounded-full border bg-secondary-50 dark:bg-secondary-800", getTypeColor(item.type))}>
                                                         {item.type}
                                                     </span>
                                                     <span>•</span>
+                                                    {item.audience === "members" && (
+                                                        <span className="inline-flex items-center gap-1 rounded-full border border-primary-200 bg-primary-50 px-2 py-0.5 text-primary-700 dark:border-primary-900/50 dark:bg-primary-950/30 dark:text-primary-300">
+                                                            <LockKeyhole className="h-3 w-3" />
+                                                            Members
+                                                        </span>
+                                                    )}
                                                     <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                                                 </div>
                                             </div>

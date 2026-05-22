@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Building, QrCode, ExternalLink } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { createSource } from "@/lib/paymongo"; // We just created this
 
 interface DonationFormProps {
@@ -12,16 +12,23 @@ interface DonationFormProps {
 }
 
 const AMOUNTS = [100, 500, 1000, 5000];
+const MAX_DONATION_AMOUNT = 100000;
 
 export default function DonationForm({ className, onSuccess, onCancel }: DonationFormProps) {
     const [amount, setAmount] = useState<number | "">("");
     const [method, setMethod] = useState<"gcash" | "paymaya" | "bpi" | "bdo" | "qr">("gcash");
     const [loading, setLoading] = useState(false);
+    const [amountError, setAmountError] = useState("");
 
     const handleDonate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!amount) return;
+        if (Number(amount) > MAX_DONATION_AMOUNT) {
+            setAmountError(`The maximum donation amount is ${formatCurrency(MAX_DONATION_AMOUNT)}.`);
+            return;
+        }
 
+        setAmountError("");
         setLoading(true);
         try {
             // Mock integration
@@ -51,7 +58,10 @@ export default function DonationForm({ className, onSuccess, onCancel }: Donatio
                         <button
                             key={amt}
                             type="button"
-                            onClick={() => setAmount(amt)}
+                            onClick={() => {
+                                setAmount(amt);
+                                setAmountError("");
+                            }}
                             className={cn(
                                 "py-2 rounded-md text-sm font-medium border transition-all",
                                 amount === amt
@@ -67,12 +77,21 @@ export default function DonationForm({ className, onSuccess, onCancel }: Donatio
                     <span className="absolute left-3 top-2.5 text-secondary-500 font-medium">₱</span>
                     <input
                         type="number"
+                        min="1"
+                        max={MAX_DONATION_AMOUNT}
                         value={amount}
-                        onChange={(e) => setAmount(Number(e.target.value))}
+                        onChange={(e) => {
+                            setAmount(Number(e.target.value));
+                            setAmountError("");
+                        }}
                         placeholder="Enter custom amount"
                         className="flex h-11 w-full rounded-md border border-secondary-300 bg-white pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 text-base"
                     />
                 </div>
+                <p className="text-xs font-medium text-secondary-500">Maximum donation: {formatCurrency(MAX_DONATION_AMOUNT)}</p>
+                {amountError && (
+                    <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-600">{amountError}</p>
+                )}
             </div>
 
             <div className="space-y-3">

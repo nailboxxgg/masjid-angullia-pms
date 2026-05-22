@@ -11,6 +11,7 @@ import { doc, getDoc, setDoc, collection, query, where, limit, getDocs } from "f
 import { getAnnouncements } from "@/lib/announcements";
 import type { Announcement } from "@/lib/types";
 import PrayerTimesWidget from "@/components/PrayerTimesWidget";
+import MoonPhaseWidget from "@/components/MoonPhaseWidget";
 import { auth, db } from "@/lib/firebase";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
@@ -21,7 +22,7 @@ import { getDonations } from "@/lib/donations";
 import EventRegistrationModal from "@/components/events/EventRegistrationModal";
 import SubscriptionModal from "@/components/ui/SubscriptionModal";
 import DonationModal from "@/components/ui/DonationModal";
-import { cn, formatTimeAgo } from "@/lib/utils";
+import { cn, formatMaskedCurrency, formatTimeAgo } from "@/lib/utils";
 import { motion } from "framer-motion";
 import SocialPost from "@/components/feed/SocialPost";
 import ImageModal from "@/components/ui/ImageModal";
@@ -216,6 +217,10 @@ export default function Home() {
             <PrayerTimesWidget />
           </AnimationWrapper>
 
+          <AnimationWrapper animation="reveal" delay={0.5} duration={1} withScroll={false} className="w-full max-w-3xl">
+            <MoonPhaseWidget />
+          </AnimationWrapper>
+
           {/* Attendance Quick Access Button */}
 
         </div>
@@ -373,7 +378,7 @@ export default function Home() {
                                   </div>
                                 </div>
                                 <div className="flex justify-between items-end mt-1">
-                                  <span className="font-bold text-secondary-900 dark:text-secondary-100 text-sm">₱{donation.amount.toLocaleString()}</span>
+                                  <span className="font-bold text-secondary-900 dark:text-secondary-100 text-sm">{formatMaskedCurrency(donation.amount)}</span>
                                   <span suppressHydrationWarning className="text-[10px] text-secondary-400 dark:text-secondary-500 group-hover:text-secondary-300 dark:group-hover:text-secondary-700 transition-colors">{formatTimeAgo(donation.date)}</span>
                                 </div>
                               </div>
@@ -389,7 +394,7 @@ export default function Home() {
                           onClick={() => setIsDonationModalOpen(true)}
                           className="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 p-4 text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-600/30"
                         >
-                          <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-10 mix-blend-overlay"></div>
+                          <div className="absolute inset-0 bg-[url('/images/prayer2.png')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
                           <div className="relative z-10 flex items-center justify-between">
                             <div className="text-left">
                               <span className="block text-[10px] font-bold uppercase tracking-widest text-primary-200 mb-0.5">Quick Contribution</span>
@@ -428,7 +433,7 @@ export default function Home() {
 
       {/* SMS Subscription Section */}
       < section className="py-12 bg-primary-900 text-white relative overflow-hidden" >
-        <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-10 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-[url('/images/prayer2.png')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
         <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left max-w-2xl">
             <h2 className="text-3xl font-bold font-heading mb-3">Stay Connected with Masjid Update</h2>

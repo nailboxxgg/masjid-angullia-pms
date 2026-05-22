@@ -20,32 +20,45 @@ import {
 import { Announcement, Comment } from "./types";
 
 const COLLECTION_NAME = "announcements";
+const MEMBER_COLLECTION_NAME = "member_announcements";
 
-export const getAnnouncements = async (limitCount = 10): Promise<Announcement[]> => {
+const mapAnnouncement = (docSnapshot: QueryDocumentSnapshot<DocumentData>, audience: Announcement["audience"]): Announcement => {
+    const data = docSnapshot.data();
+    return {
+        id: docSnapshot.id,
+        title: data.title,
+        content: data.content,
+        date: data.date,
+        type: data.type,
+        priority: data.priority,
+        audience,
+        externalUrl: data.externalUrl,
+        imageUrl: data.imageUrl,
+        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : (typeof data.createdAt === "number" ? data.createdAt : Date.now()),
+        likes: data.likes || [],
+        comments: data.comments || []
+    } as Announcement;
+};
+
+export const getAnnouncements = async (limitCount = 10, includeMemberOnly = false): Promise<Announcement[]> => {
     try {
-        const q = query(
+        const publicQuery = query(
             collection(db, COLLECTION_NAME),
             orderBy("createdAt", "desc"),
             limit(limitCount)
         );
-        const querySnapshot = await getDocs(q);
+        const publicSnapshotPromise = getDocs(publicQuery);
+        const memberSnapshotPromise = includeMemberOnly
+            ? getDocs(query(collection(db, MEMBER_COLLECTION_NAME), orderBy("createdAt", "desc"), limit(limitCount)))
+            : Promise.resolve(null);
 
-        return querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                title: data.title,
-                content: data.content,
-                date: data.date,
-                type: data.type,
-                priority: data.priority,
-                externalUrl: data.externalUrl,
-                imageUrl: data.imageUrl,
-                createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : Date.now(),
-                likes: data.likes || [],
-                comments: data.comments || []
-            } as Announcement;
-        });
+        const [publicSnapshot, memberSnapshot] = await Promise.all([publicSnapshotPromise, memberSnapshotPromise]);
+        const publicAnnouncements = publicSnapshot.docs.map(doc => mapAnnouncement(doc, "public"));
+        const memberAnnouncements = memberSnapshot?.docs.map(doc => mapAnnouncement(doc, "members")) || [];
+
+        return [...publicAnnouncements, ...memberAnnouncements]
+            .sort((a, b) => b.createdAt - a.createdAt)
+            .slice(0, limitCount);
     } catch (error) {
         console.error("Error fetching announcements:", error);
         return [];
@@ -76,22 +89,7 @@ export const getPaginatedAnnouncements = async (
         const querySnapshot = await getDocs(q);
         const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
 
-        const data = querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                title: data.title,
-                content: data.content,
-                date: data.date,
-                type: data.type,
-                priority: data.priority,
-                externalUrl: data.externalUrl,
-                imageUrl: data.imageUrl,
-                createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : (data.createdAt || Date.now()),
-                likes: data.likes || [],
-                comments: data.comments || []
-            } as Announcement;
-        });
+        const data = querySnapshot.docs.map(doc => mapAnnouncement(doc, "public"));
 
         return { data, lastDoc };
     } catch (error) {
@@ -102,12 +100,14 @@ export const getPaginatedAnnouncements = async (
 
 export const createAnnouncement = async (announcement: Omit<Announcement, "id" | "createdAt">): Promise<string | null> => {
     try {
+        const { audience = "public", ...announcementFields } = announcement;
         // Remove undefined fields to prevent Firestore addDoc errors
         const sanitizedData = Object.fromEntries(
-            Object.entries(announcement).filter(([, value]) => value !== undefined)
+            Object.entries(announcementFields).filter(([, value]) => value !== undefined)
         );
+        const collectionName = audience === "members" ? MEMBER_COLLECTION_NAME : COLLECTION_NAME;
 
-        const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+        const docRef = await addDoc(collection(db, collectionName), {
             ...sanitizedData,
             createdAt: serverTimestamp()
         });
@@ -118,18 +118,25 @@ export const createAnnouncement = async (announcement: Omit<Announcement, "id" |
     }
 };
 
-export const deleteAnnouncement = async (id: string): Promise<boolean> => {
+export const deleteAnnouncement = async (id: string, audience: Announcement["audience"] = "public"): Promise<boolean> => {
     try {
-        await deleteDoc(doc(db, COLLECTION_NAME, id));
+        const collectionName = audience === "members" ? MEMBER_COLLECTION_NAME : COLLECTION_NAME;
+        await deleteDoc(doc(db, collectionName, id));
         return true;
     } catch (error) {
         console.error("Error deleting announcement:", error);
         return false;
     }
 };
-export const toggleLikeAnnouncement = async (announcementId: string, userId: string, isLiked: boolean): Promise<boolean> => {
+export const toggleLikeAnnouncement = async (
+    announcementId: string,
+    userId: string,
+    isLiked: boolean,
+    audience: Announcement["audience"] = "public"
+): Promise<boolean> => {
     try {
-        const docRef = doc(db, COLLECTION_NAME, announcementId);
+        const collectionName = audience === "members" ? MEMBER_COLLECTION_NAME : COLLECTION_NAME;
+        const docRef = doc(db, collectionName, announcementId);
         await updateDoc(docRef, {
             likes: isLiked ? arrayRemove(userId) : arrayUnion(userId)
         });
@@ -140,9 +147,14 @@ export const toggleLikeAnnouncement = async (announcementId: string, userId: str
     }
 };
 
-export const addCommentToAnnouncement = async (announcementId: string, comment: Omit<Comment, "id">): Promise<Comment | null> => {
+export const addCommentToAnnouncement = async (
+    announcementId: string,
+    comment: Omit<Comment, "id">,
+    audience: Announcement["audience"] = "public"
+): Promise<Comment | null> => {
     try {
-        const docRef = doc(db, COLLECTION_NAME, announcementId);
+        const collectionName = audience === "members" ? MEMBER_COLLECTION_NAME : COLLECTION_NAME;
+        const docRef = doc(db, collectionName, announcementId);
         const newComment: Comment = {
             ...comment,
             id: Math.random().toString(36).substr(2, 9) // Simple ID generation for comments

@@ -1,31 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CloudOff, Wifi } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function OfflineIndicator() {
-    const [isOffline, setIsOffline] = useState(() => {
-        if (typeof navigator !== 'undefined') return !navigator.onLine;
-        return false;
-    });
+    const [isOnline, setIsOnline] = useState(true);
     const [showReconnected, setShowReconnected] = useState(false);
+    const isOffline = !isOnline;
 
     useEffect(() => {
         const handleOnline = () => {
-            setIsOffline(false);
+            setIsOnline(true);
             setShowReconnected(true);
             setTimeout(() => setShowReconnected(false), 3000);
         };
         const handleOffline = () => {
-            setIsOffline(true);
+            setIsOnline(false);
             setShowReconnected(false);
         };
+
+        const syncStatusId = window.setTimeout(() => setIsOnline(navigator.onLine), 0);
 
         window.addEventListener("online", handleOnline);
         window.addEventListener("offline", handleOffline);
 
         return () => {
+            window.clearTimeout(syncStatusId);
             window.removeEventListener("online", handleOnline);
             window.removeEventListener("offline", handleOffline);
         };

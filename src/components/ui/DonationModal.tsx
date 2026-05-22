@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Copy, Smartphone } from "lucide-react";
@@ -10,6 +10,9 @@ import { useRouter } from "next/navigation";
 
 import { addDonation } from "@/lib/donations";
 import { Donation } from "@/lib/types";
+import { auth } from "@/lib/firebase";
+import { getMemberProfile } from "@/lib/members";
+import { formatCurrency } from "@/lib/utils";
 
 interface DonationModalProps {
     isOpen: boolean;
@@ -17,20 +20,46 @@ interface DonationModalProps {
     fundName: string;
 }
 
+const MAX_DONATION_AMOUNT = 100000;
+
 export default function DonationModal({ isOpen, onClose, fundName }: DonationModalProps) {
     const router = useRouter();
     const [step, setStep] = useState<"details" | "loading" | "qr" | "verifying">("details");
     const [amount, setAmount] = useState<string>("");
     const [donorName, setDonorName] = useState("");
+    const [amountError, setAmountError] = useState("");
     const [transaction, setTransaction] = useState<QRPhTransaction | null>(null);
+    const [member, setMember] = useState<{ uid: string; email: string; displayName: string } | null>(null);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const currentUser = auth.currentUser;
+        if (!currentUser) return;
+
+        getMemberProfile(currentUser.uid)
+            .then((profile) => {
+                if (!profile) return;
+                setMember({ uid: profile.uid, email: profile.email, displayName: profile.displayName });
+                setDonorName((current) => current || profile.displayName);
+            })
+            .catch((error) => console.error("Failed to load member donation details:", error));
+    }, [isOpen]);
 
     const handleGenerateQR = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!amount || isNaN(Number(amount))) return;
+        const donationAmount = Number(amount);
 
+        if (!amount || isNaN(donationAmount)) return;
+        if (donationAmount > MAX_DONATION_AMOUNT) {
+            setAmountError(`The maximum donation amount is ${formatCurrency(MAX_DONATION_AMOUNT)}.`);
+            return;
+        }
+
+        setAmountError("");
         setStep("loading");
         try {
-            const result = await generatePaymentQR(Number(amount), `Donation to ${fundName}`);
+            const result = await generatePaymentQR(donationAmount, `Donation to ${fundName}`);
             setTransaction(result);
             setStep("qr");
         } catch (error) {
@@ -67,7 +96,9 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                     paymentMethod: 'qr_ph',
                     referenceNumber: transaction.referenceNumber,
                     isAnonymous: !donorName,
-                    message: `Donation to ${fundName}`
+                    message: `Donation to ${fundName}`,
+                    memberId: member?.uid,
+                    donorEmail: member?.email,
                 });
 
                 try {
@@ -128,11 +159,23 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
                                                     type="number"
                                                     required
                                                     min="1"
+                                                    max={MAX_DONATION_AMOUNT}
                                                     value={amount}
-                                                    onChange={(e) => setAmount(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setAmount(e.target.value);
+                                                        setAmountError("");
+                                                    }}
                                                     className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg font-semibold text-secondary-800 dark:text-secondary-100 placeholder:text-secondary-400 dark:placeholder:text-secondary-500"
                                                     placeholder="0.00"
                                                 />
+                                                <p className="mt-1 text-xs font-medium text-secondary-500 dark:text-secondary-400">
+                                                    Maximum donation: {formatCurrency(MAX_DONATION_AMOUNT)}
+                                                </p>
+                                                {amountError && (
+                                                    <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-600 dark:bg-red-950/30 dark:text-red-300">
+                                                        {amountError}
+                                                    </p>
+                                                )}
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1">Name (Optional)</label>

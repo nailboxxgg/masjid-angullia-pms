@@ -3,8 +3,14 @@
 import { QRPhTransaction } from "@/lib/instapay";
 import { getDonationStats } from "@/lib/donations";
 
+const MAX_DONATION_AMOUNT = 100000;
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function generatePaymentQR(amount: number, _description: string): Promise<QRPhTransaction> {
+    if (!Number.isFinite(amount) || amount < 1 || amount > MAX_DONATION_AMOUNT) {
+        throw new Error("Donation amount must be between 1 and 100000.");
+    }
+
     // Simulate server-side processing delay
     await new Promise(resolve => setTimeout(resolve, 500));
 

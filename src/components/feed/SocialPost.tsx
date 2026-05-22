@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ShieldCheck, Clock, MoreHorizontal, ThumbsUp, MessageCircle, Send, Calendar } from "lucide-react";
+import { ShieldCheck, Clock, MoreHorizontal, ThumbsUp, MessageCircle, Send, Calendar, LockKeyhole } from "lucide-react";
 import { Announcement, Comment, Event } from "@/lib/types";
 import { formatTimeAgo, cn } from "@/lib/utils";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
@@ -40,7 +40,7 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
         const newLikedState = !isLiked;
         setLikes(prev => newLikedState ? [...prev, userId] : prev.filter(id => id !== userId));
 
-        await toggleLikeAnnouncement(post.id, userId, !newLikedState);
+        await toggleLikeAnnouncement(post.id, userId, !newLikedState, !isEvent ? (post as Announcement).audience : "public");
     };
 
     const handleComment = async (e: React.FormEvent) => {
@@ -55,7 +55,7 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
             createdAt: Date.now()
         };
 
-        const addedComment = await addCommentToAnnouncement(post.id, commentData);
+        const addedComment = await addCommentToAnnouncement(post.id, commentData, !isEvent ? (post as Announcement).audience : "public");
         if (addedComment) {
             setComments(prev => [...prev, addedComment]);
             setNewComment("");
@@ -91,9 +91,16 @@ export default function SocialPost({ post, delay = 0, currentUser = null }: Soci
                             </p>
                         </div>
                     </div>
-                    <button className="text-secondary-400 dark:text-secondary-500 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors p-1 shrink-0">
-                        <MoreHorizontal className="w-5 h-5" />
-                    </button>
+                    {!isEvent && (post as Announcement).audience === "members" ? (
+                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-50 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-primary-700 dark:bg-primary-950/30 dark:text-primary-300">
+                            <LockKeyhole className="h-3 w-3" />
+                            Members
+                        </span>
+                    ) : (
+                        <button className="text-secondary-400 dark:text-secondary-500 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors p-1 shrink-0">
+                            <MoreHorizontal className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
 
                 {/* Post Body - Clickable if External URL exists */}

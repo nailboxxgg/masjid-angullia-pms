@@ -6,6 +6,16 @@ service cloud.firestore {
     function isAuthenticated() {
       return request.auth != null;
     }
+
+    function isSelf(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/staff/$(request.auth.uid))
+        && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.role == "admin";
+    }
     
     // -- Admin & Staff Collections --
     // Only authenticated users (admins/staff) can read/write data here.
@@ -15,8 +25,10 @@ service cloud.firestore {
     match /staff/{document=**} {
       allow read, write: if isAuthenticated();
     }
-    match /users/{document=**} {
-      allow read, write: if isAuthenticated();
+    match /users/{userId} {
+      allow create: if isSelf(userId) && request.resource.data.role == "member";
+      allow read, update: if isSelf(userId) || isAuthenticated();
+      allow delete: if isAuthenticated();
     }
     match /admin_presence/{document=**} { allow read, write: if isAuthenticated(); }
 
@@ -30,6 +42,9 @@ service cloud.firestore {
     match /announcements/{document=**} {
       allow read: if true;
       allow write: if isAuthenticated();
+    }
+    match /member_announcements/{document=**} {
+      allow read, write: if isAuthenticated();
     }
 
     // -- Donations (Public Read, Private Emails) --
@@ -63,7 +78,13 @@ service cloud.firestore {
     match /attendance_sessions/{document=**} { allow read, write: if isAuthenticated(); }
     match /event_registrants/{document=**} { 
       allow create: if true;
-      allow read, write: if isAuthenticated(); 
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.memberId == request.auth.uid);
+      allow update, delete: if isAuthenticated(); 
+    }
+    match /member_requests/{requestId} {
+      allow create: if isAuthenticated() && request.resource.data.memberId == request.auth.uid;
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.memberId == request.auth.uid);
+      allow update, delete: if isAuthenticated();
     }
     match /event_attendance/{document=**} { allow read, write: if isAuthenticated(); }
     match /attendance_logs/{document=**} { allow read, write: if isAuthenticated(); }

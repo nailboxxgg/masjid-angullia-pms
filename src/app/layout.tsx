@@ -23,11 +23,23 @@ const scheherazade = Scheherazade_New({
 });
 
 import GlobalModals from "@/components/layout/GlobalModals";
+import type { Viewport } from "next";
+
+export const viewport: Viewport = {
+  themeColor: "#020617",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Masjid Angullia Portal",
   description: "Comprehensive management system for our community",
-  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Masjid Angullia Portal",
+  },
 };
 
 export default function RootLayout({

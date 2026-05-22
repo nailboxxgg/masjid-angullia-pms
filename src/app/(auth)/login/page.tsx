@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Footer from "@/components/layout/Footer";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
+import { getMemberProfile } from "@/lib/members";
 
 function LoginForm() {
     const router = useRouter();
@@ -61,17 +62,31 @@ function LoginForm() {
                 if (!staffSnapshot.empty) {
                     loginEmail = staffSnapshot.docs[0].data().email;
                 } else {
-                    // Check families collection
-                    const familiesRef = collection(db, "families");
-                    const qFam = query(familiesRef, where("phoneNumber", "==", identifier), limit(1));
-                    const famSnapshot = await getDocs(qFam);
+                    // Check member accounts first, then family records for legacy data
+                    const usersRef = collection(db, "users");
+                    const qUsers = query(usersRef, where("phone", "==", identifier), limit(1));
+                    const usersSnapshot = await getDocs(qUsers);
 
-                    if (famSnapshot.empty) {
+                    if (!usersSnapshot.empty) {
+                        loginEmail = usersSnapshot.docs[0].data().email;
+                    } else {
+                        const familiesRef = collection(db, "families");
+                        const qFam = query(familiesRef, where("phone", "==", identifier), limit(1));
+                        const famSnapshot = await getDocs(qFam);
+
+                        if (famSnapshot.empty) {
+                            setError("No account found with this phone number.");
+                            setLoading(false);
+                            return;
+                        }
+                        loginEmail = famSnapshot.docs[0].data().email;
+                    }
+
+                    if (!loginEmail) {
                         setError("No account found with this phone number.");
                         setLoading(false);
                         return;
                     }
-                    loginEmail = famSnapshot.docs[0].data().email;
                 }
             } catch (err) {
                 console.error("Phone resolution error:", err);
@@ -136,8 +151,8 @@ function LoginForm() {
                 }
             }
 
-            // Default redirect for families
-            router.push("/");
+            const memberProfile = await getMemberProfile(user.uid);
+            router.push(memberProfile ? "/members" : "/");
         } catch (err: unknown) {
             console.error(err);
             // Fallback for network/navigation errors
@@ -171,7 +186,7 @@ function LoginForm() {
                             Sign in to your account
                         </h2>
                         <p className="mt-2 text-sm text-slate-600">
-                            Or <Link href="/signup" className="font-medium text-primary-600 hover:text-primary-500">register a new family account</Link>
+                            Or <Link href="/members/signup" className="font-medium text-primary-600 hover:text-primary-500">create a member account</Link>
                         </p>
                     </div>
 

@@ -9,6 +9,8 @@ export interface Donation {
     referenceNumber?: string;
     isAnonymous: boolean; // Replaces isHidden
     message?: string; // Intended use or dedication
+    memberId?: string;
+    donorEmail?: string;
 }
 
 export interface Comment {
@@ -26,6 +28,7 @@ export interface Announcement {
     date: string; // ISO string or display string
     type: 'General' | 'Event' | 'Urgent' | 'Fundraising';
     priority: 'low' | 'normal' | 'high';
+    audience?: 'public' | 'members';
     externalUrl?: string;
     imageUrl?: string;
     createdAt: number;
@@ -69,6 +72,39 @@ export interface Family {
         dailyDonationSummary?: boolean;
     };
     status?: 'active' | 'pending';
+}
+
+export interface MemberProfile {
+    id: string;
+    uid: string;
+    displayName: string;
+    email: string;
+    phone?: string;
+    address?: string;
+    familyId?: string;
+    familyName?: string;
+    membershipStatus: 'active' | 'pending' | 'suspended';
+    notificationPreferences: {
+        announcements: boolean;
+        events: boolean;
+        donations: boolean;
+        prayerTimes: boolean;
+    };
+    createdAt: number;
+    updatedAt?: number;
+}
+
+export interface MemberServiceRequest {
+    id: string;
+    memberId: string;
+    memberName: string;
+    memberEmail: string;
+    type: 'General Inquiry' | 'Religious Service' | 'Facility Booking' | 'Welfare Support' | 'Class Registration';
+    subject: string;
+    message: string;
+    status: 'pending' | 'in_review' | 'resolved' | 'cancelled';
+    createdAt: number;
+    updatedAt?: number;
 }
 
 export interface Staff {
@@ -122,6 +158,7 @@ export interface Registrant {
     contactNumber: string;
     createdAt: number;
     status: 'pending' | 'accepted' | 'attended' | 'rejected';
+    memberId?: string;
 }
 
 export interface EventAttendance {
