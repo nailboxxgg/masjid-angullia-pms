@@ -9,8 +9,7 @@ interface FooterProps {
     onFeedbackClick?: () => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export default function Footer({ onAdminClick: _onAdminClick, onFeedbackClick }: FooterProps) {
+export default function Footer({ onAdminClick, onFeedbackClick }: FooterProps) {
     const [isSubModalOpen, setIsSubModalOpen] = useState(false);
 
     return (
@@ -27,6 +26,18 @@ export default function Footer({ onAdminClick: _onAdminClick, onFeedbackClick }:
                         <h4 className="text-white font-bold mb-4">Quick Links</h4>
                         <div className="flex flex-col gap-2 items-center md:items-start">
                             <Link href="/donations" className="hover:text-primary-400 transition-colors">Donate</Link>
+                            <button
+                                onClick={() => {
+                                    if (onAdminClick) {
+                                        onAdminClick();
+                                    } else {
+                                        window.dispatchEvent(new CustomEvent('open-login-modal'));
+                                    }
+                                }}
+                                className="text-center md:text-left hover:text-primary-400 transition-colors focus:outline-none"
+                            >
+                                Admin Portal
+                            </button>
                             <button
                                 onClick={() => {
                                     if (onFeedbackClick) {

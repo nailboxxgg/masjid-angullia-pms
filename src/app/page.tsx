@@ -6,13 +6,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { ArrowRight, MapPin, Heart, Lock, Smartphone, Eye, EyeOff, ZoomIn, Zap } from "lucide-react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc, setDoc, collection, query, where, limit, getDocs } from "firebase/firestore";
 import { getAnnouncements } from "@/lib/announcements";
 import type { Announcement } from "@/lib/types";
 import PrayerTimesWidget from "@/components/PrayerTimesWidget";
 import MoonPhaseWidget from "@/components/MoonPhaseWidget";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
 import { getEvents } from "@/lib/events";
@@ -29,6 +27,7 @@ import ImageModal from "@/components/ui/ImageModal";
 import FamilyRegistrationModal from "@/components/families/FamilyRegistrationModal";
 import AnnouncementCard from "@/components/feed/AnnouncementCard";
 import { clockIn } from "@/lib/attendance";
+import { authenticateAdminAccount } from "@/lib/admin-auth";
 
 const emptySubscribe = () => () => { };
 
@@ -117,43 +116,8 @@ export default function Home() {
     const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const { user } = await authenticateAdminAccount(email, password);
       const uid = user.uid;
-
-      // Check user role from the dedicated STAFF collection
-      let userDoc = await getDoc(doc(db, "staff", uid));
-
-      // Resiliency: If not found by UID, try looking up by email (legacy ID)
-      if (!userDoc.exists()) {
-        const staffRef = collection(db, "staff");
-        const qEmail = query(staffRef, where("email", "==", email.toLowerCase()), limit(1));
-        const emailSnapshot = await getDocs(qEmail);
-        if (!emailSnapshot.empty) {
-          userDoc = emailSnapshot.docs[0];
-        }
-      }
-
-      if (!userDoc.exists()) {
-        // Not in staff collection, check if they are the super admin seed
-        if (email !== process.env.NEXT_PUBLIC_ADMIN_SEED_EMAIL) {
-          throw new Error(`Access denied. No admin account found with this email.`);
-        }
-      }
-
-      // Auto-setup seed admin in staff collection if not present
-      if (email === process.env.NEXT_PUBLIC_ADMIN_SEED_EMAIL) {
-        if (!userDoc.exists() || userDoc.data()?.role !== 'admin') {
-          await setDoc(doc(db, "staff", uid), {
-            email: email,
-            role: 'admin',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            name: "Super Admin",
-            uid: uid
-          }, { merge: true });
-        }
-      }
 
       // Perform Clock In
       try {

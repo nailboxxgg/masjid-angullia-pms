@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc, collection, query, where, getDocs, limit, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
+import { getAdminStaffDoc } from "@/lib/admin-auth";
 
 interface AdminContextType {
     user: User | null;
@@ -24,44 +24,17 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
-                setUser(currentUser);
                 try {
-                    let staffDoc = await getDoc(doc(db, "staff", currentUser.uid));
+                    const staffDoc = await getAdminStaffDoc(currentUser.uid, currentUser.email);
 
-                    // Resiliency: If not found by UID, try looking up by email (legacy ID)
-                    if (!staffDoc.exists() && currentUser.email) {
-                        const email = currentUser.email.toLowerCase();
-                        const staffRef = collection(db, "staff");
-                        const qEmail = query(staffRef, where("email", "==", email), limit(1));
-                        const emailSnapshot = await getDocs(qEmail);
-
-                        if (!emailSnapshot.empty) {
-                            const legacyDoc = emailSnapshot.docs[0];
-                            const staffData = legacyDoc.data();
-
-                            // Auto-migrate to UID-based document
-                            const newRef = doc(db, "staff", currentUser.uid);
-                            await setDoc(newRef, {
-                                ...staffData,
-                                uid: currentUser.uid,
-                                updatedAt: serverTimestamp()
-                            }, { merge: true });
-
-                            // Delete legacy email-named document if it was the ID
-                            if (legacyDoc.id === email) {
-                                await deleteDoc(legacyDoc.ref);
-                            }
-
-                            staffDoc = await getDoc(newRef);
-                        }
-                    }
-
-                    if (!staffDoc.exists()) {
-                        // Not in staff collection — unauthorized
+                    if (!staffDoc.exists() || staffDoc.data().role !== "admin") {
                         setUser(null);
+                    } else {
+                        setUser(currentUser);
                     }
                 } catch (error) {
                     console.error("Error fetching staff doc:", error);
+                    setUser(null);
                 }
             } else {
                 setUser(null);

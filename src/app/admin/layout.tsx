@@ -26,7 +26,7 @@ function AdminLayoutContent({
 
         if (!loading) {
             if (!user) {
-                router.push("/");
+                router.push("/login");
             } else {
                 // User is authorized
                 stopHeartbeat = startPresenceHeartbeat();
@@ -42,7 +42,7 @@ function AdminLayoutContent({
             timeoutId = setTimeout(async () => {
                 await goOffline(); // Clear presence status
                 await auth.signOut();
-                router.push("/");
+                router.push("/login");
             }, INACTIVITY_LIMIT);
         };
 

@@ -3,15 +3,16 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { collection, query, where, getDocs, limit, getDoc, doc } from "firebase/firestore";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Footer from "@/components/layout/Footer";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { getMemberProfile } from "@/lib/members";
+import { getAdminStaffDoc } from "@/lib/admin-auth";
 
 function LoginForm() {
     const router = useRouter();
@@ -102,33 +103,7 @@ function LoginForm() {
             clearProgress(); // Success: clear persistence
 
             // Check if user is staff/admin/volunteer
-            const staffDoc = await getDoc(doc(db, "staff", user.uid));
-
-            // Resiliency: If not found by UID, try looking up by email (legacy ID)
-            if (!staffDoc.exists()) {
-                const staffRef = collection(db, "staff");
-                const qEmail = query(staffRef, where("email", "==", loginEmail.toLowerCase()), limit(1));
-                const emailSnapshot = await getDocs(qEmail);
-                if (!emailSnapshot.empty) {
-                    const staffData = emailSnapshot.docs[0].data();
-                    const role = staffData.role;
-
-                    if (role === 'admin') {
-                        try {
-                            router.push("/admin");
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        } catch (_navError) {
-                            window.location.href = "/admin";
-                        }
-                        return;
-                    } else if (['staff', 'volunteer', 'employee'].includes(role)) {
-                        await auth.signOut();
-                        setError("Access restricted. Staff and Volunteers must use the ID-based Attendance Station.");
-                        setLoading(false);
-                        return;
-                    }
-                }
-            }
+            const staffDoc = await getAdminStaffDoc(user.uid, user.email || loginEmail);
 
             if (staffDoc.exists()) {
                 const role = staffDoc.data().role;
@@ -152,7 +127,13 @@ function LoginForm() {
             }
 
             const memberProfile = await getMemberProfile(user.uid);
-            router.push(memberProfile ? "/members" : "/");
+            if (!memberProfile) {
+                await auth.signOut();
+                setError("No member account found. Please create a member account first.");
+                return;
+            }
+
+            router.push("/");
         } catch (err: unknown) {
             console.error(err);
             // Fallback for network/navigation errors
@@ -169,15 +150,7 @@ function LoginForm() {
     return (
         <div className="min-h-screen flex flex-col bg-slate-50 transition-colors duration-300">
             {/* Top Navigation */}
-            <div className="p-4 sm:p-6 flex items-center justify-start max-w-7xl mx-auto w-full">
-                <Link
-                    href="/"
-                    className="group inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-secondary-600 font-medium hover:bg-secondary-50 transition-all shadow-sm"
-                >
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                    <span>Back to Home</span>
-                </Link>
-            </div>
+            <div className="p-4 sm:p-6 flex items-center justify-start max-w-7xl mx-auto w-full" />
 
             <main className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100">

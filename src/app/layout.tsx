@@ -5,6 +5,7 @@ import NavbarWrapper from "@/components/layout/NavbarWrapper";
 import OfflineIndicator from "@/components/ui/OfflineIndicator";
 import { ThemeProvider } from "@/components/theme-provider";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import SiteAuthGate from "@/components/layout/SiteAuthGate";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -59,12 +60,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ServiceWorkerRegistration />
-          <NavbarWrapper />
-          <OfflineIndicator />
-          <GlobalModals />
-          <main className="min-h-screen flex flex-col bg-secondary-50 text-secondary-900 dark:bg-secondary-950 dark:text-secondary-100 transition-colors duration-300">
-            {children}
-          </main>
+          <SiteAuthGate>
+            <NavbarWrapper />
+            <OfflineIndicator />
+            <GlobalModals />
+            <main className="min-h-screen flex flex-col bg-secondary-50 text-secondary-900 dark:bg-secondary-950 dark:text-secondary-100 transition-colors duration-300">
+              {children}
+            </main>
+          </SiteAuthGate>
         </ThemeProvider>
       </body>
     </html>

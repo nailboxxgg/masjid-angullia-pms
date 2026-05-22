@@ -8,10 +8,9 @@ import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import DonationModal from "@/components/ui/DonationModal";
 import Footer from "@/components/layout/Footer";
 import dynamic from "next/dynamic";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { ShieldCheck, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { authenticateAdminAccount } from "@/lib/admin-auth";
 
 const Modal = dynamic(() => import("@/components/ui/modal"), { ssr: false });
 
@@ -68,7 +67,7 @@ export default function DonationsPage() {
         const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            await authenticateAdminAccount(email, password);
             try {
                 router.push("/admin");
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -82,7 +81,7 @@ export default function DonationsPage() {
                 window.location.href = "/admin";
                 return;
             }
-            setLoginError("Invalid admin credentials.");
+            setLoginError(errMsg || "Invalid admin credentials.");
         } finally {
             setIsLoading(false);
         }

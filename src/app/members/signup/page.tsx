@@ -35,7 +35,7 @@ export default function MemberSignupPage() {
                 address,
             });
             setStatus("success");
-            setTimeout(() => router.push("/members"), 1200);
+            setTimeout(() => router.push("/"), 1200);
         } catch (err) {
             console.error("Member signup failed:", err);
             setError(err instanceof Error ? err.message : "Failed to create member account.");
