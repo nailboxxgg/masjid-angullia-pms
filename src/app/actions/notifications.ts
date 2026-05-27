@@ -5,11 +5,16 @@ import { MemberNotification, MemberNotificationType } from "@/lib/types";
 
 const COLLECTION = "notifications";
 
-// Helper to convert Firestore timestamp/number to milliseconds
-const toMillis = (value: any): number => {
+const toMillis = (value: unknown): number => {
     if (!value) return Date.now();
-    if (typeof value.toMillis === "function") return value.toMillis();
-    if (value._seconds) return value._seconds * 1000;
+    if (typeof value === "object") {
+        if ("toMillis" in value && typeof (value as { toMillis: unknown }).toMillis === "function") {
+            return (value as { toMillis: () => number }).toMillis();
+        }
+        if ("_seconds" in value && typeof (value as { _seconds: unknown })._seconds === "number") {
+            return (value as { _seconds: number })._seconds * 1000;
+        }
+    }
     if (typeof value === "number") return value;
     return Date.now();
 };

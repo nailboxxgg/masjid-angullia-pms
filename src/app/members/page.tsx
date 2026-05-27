@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 import {
     CalendarCheck,
     CheckCircle2,
@@ -31,7 +31,6 @@ import { Donation, Event, MemberServiceRequest, Registrant } from "@/lib/types";
 
 export default function MembersDashboardPage() {
     const { user, profile } = useMember();
-    const router = useRouter();
     const [registrations, setRegistrations] = useState<Registrant[]>([]);
     const [donations, setDonations] = useState<Donation[]>([]);
     const [requests, setRequests] = useState<MemberServiceRequest[]>([]);
@@ -70,7 +69,7 @@ export default function MembersDashboardPage() {
         }).catch((error) => {
             console.error("Failed to load member dashboard:", error);
         });
-    }, [user]);
+    }, [user, profile]);
 
     const totalDonations = donations
         .filter((donation) => donation.status === "completed")

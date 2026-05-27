@@ -21,8 +21,8 @@ import { useMember } from "@/contexts/MemberContext";
 import { updateMemberProfile } from "@/lib/members";
 import { normalizePhoneNumber } from "@/lib/utils";
 import { auth } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { MemberProfile } from "@/lib/types";
 
 export default function MemberProfilePage() {
     const { user, profile, refreshProfile } = useMember();
@@ -163,7 +163,7 @@ function MemberProfileForm({
     refreshProfile,
 }: {
     userId?: string;
-    profile: any;
+    profile: MemberProfile;
     refreshProfile: () => Promise<void>;
 }) {
     const [displayName, setDisplayName] = useState(profile.displayName);

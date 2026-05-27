@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Users, Search, Loader2, Link as LinkIcon, CheckCircle2, UserCheck, Phone, MapPin } from "lucide-react";
 import { useMember } from "@/contexts/MemberContext";
 import { getFamilyById, searchFamilies } from "@/lib/families";
@@ -18,7 +18,7 @@ export default function FamilyLinkingPage() {
     const [submittingId, setSubmittingId] = useState<string | null>(null);
     const [feedback, setFeedback] = useState("");
 
-    const loadFamilyData = async () => {
+    const loadFamilyData = useCallback(async () => {
         if (!user || !profile) return;
         setLoading(true);
         try {
@@ -35,11 +35,11 @@ export default function FamilyLinkingPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user, profile]);
 
     useEffect(() => {
         loadFamilyData();
-    }, [user, profile]);
+    }, [loadFamilyData]);
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();

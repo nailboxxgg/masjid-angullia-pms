@@ -71,7 +71,7 @@ export default function MemberNotificationsPage() {
         } finally {
             setLoading(false);
         }
-    }, [user]);
+    }, [user, profile]);
 
     useEffect(() => {
         load();

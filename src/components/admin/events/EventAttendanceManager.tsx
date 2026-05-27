@@ -216,7 +216,6 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
                 name,
                 ...(uid ? { uid } : {}),
                 status: 'present' as const,
-                // eslint-disable-next-line react-hooks/purity
                 timestamp: Date.now(),
                 recordedBy: adminUid,
                 isWalkIn

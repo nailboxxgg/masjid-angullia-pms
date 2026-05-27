@@ -9,23 +9,15 @@ import AnimationWrapper from "@/components/ui/AnimationWrapper";
 import Footer from "@/components/layout/Footer";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import EventRegistrationModal from "@/components/events/EventRegistrationModal";
 import Navbar from "@/components/layout/Navbar";
-import { auth } from "@/lib/firebase";
+import EventRegistrationModal from "@/components/events/EventRegistrationModal";
 
 export default function EventsPage() {
     const [events, setEvents] = useState<Event[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            setIsLoggedIn(!!user);
-        });
-        return () => unsubscribe();
-    }, []);
 
     useEffect(() => {
         setIsLoading(true);
