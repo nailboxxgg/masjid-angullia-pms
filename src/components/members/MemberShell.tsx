@@ -117,31 +117,6 @@ export default function MemberShell({
                 </aside>
 
                 <div className="min-w-0 flex-1">
-                    <div className="mb-5 grid grid-cols-2 gap-2 rounded-xl border border-secondary-200 bg-white p-2 shadow-sm dark:border-secondary-800 dark:bg-secondary-900 sm:grid-cols-3 xl:grid-cols-7 lg:hidden">
-                        {MEMBER_LINKS.map((link) => {
-                            const isNotifications = link.href === "/members/notifications";
-                            return (
-                                <Link
-                                    key={link.href}
-                                    href={link.href}
-                                    className={cn(
-                                        "relative flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold",
-                                        pathname === link.href
-                                            ? "bg-primary-600 text-white"
-                                            : "text-secondary-600 dark:text-secondary-300"
-                                    )}
-                                >
-                                    <link.icon className="h-4 w-4" />
-                                    <span className="hidden sm:inline">{link.label}</span>
-                                    {isNotifications && unreadNotifications > 0 && (
-                                        <span className="absolute -right-1 -top-1 inline-flex min-w-[1.1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white">
-                                            {unreadNotifications > 99 ? "99+" : unreadNotifications}
-                                        </span>
-                                    )}
-                                </Link>
-                            );
-                        })}
-                    </div>
                     <MembershipStatusBanner profile={profile} />
                     {children}
                 </div>
