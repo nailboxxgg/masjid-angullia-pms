@@ -27,7 +27,7 @@ import ImageModal from "@/components/ui/ImageModal";
 import FamilyRegistrationModal from "@/components/families/FamilyRegistrationModal";
 import AnnouncementCard from "@/components/feed/AnnouncementCard";
 import { clockIn } from "@/lib/attendance";
-import { authenticateAdminAccount } from "@/lib/admin-auth";
+import { authenticateAdminAccount, verifyCurrentAdminAccount } from "@/lib/admin-auth";
 
 const emptySubscribe = () => () => { };
 
@@ -87,9 +87,20 @@ export default function Home() {
     const handleOpenRegistration = () => setIsFamilyRegistrationOpen(true);
     window.addEventListener('open-family-registration-modal', handleOpenRegistration);
 
-    // Auth Listener
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    // Auth Listener with PWA auto-redirection
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       setCurrentUser(user);
+      if (user) {
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in window.navigator && (window.navigator as { standalone?: boolean }).standalone);
+        if (isPWA) {
+          try {
+            await verifyCurrentAdminAccount(user);
+            router.push("/admin");
+          } catch {
+            router.push("/members");
+          }
+        }
+      }
     });
 
     return () => {
@@ -97,14 +108,7 @@ export default function Home() {
       window.removeEventListener('open-family-registration-modal', handleOpenRegistration);
       unsubscribe();
     };
-  }, []);
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleRegister = (event: Event) => {
-    setSelectedEvent(event);
-    setIsEventRegistrationOpen(true);
-  };
-
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
