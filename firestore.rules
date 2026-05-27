@@ -26,9 +26,11 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
     match /users/{userId} {
-      allow create: if isSelf(userId) && request.resource.data.role == "member";
-      allow read, update: if isSelf(userId) || isAuthenticated();
-      allow delete: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow get: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
     }
     match /admin_presence/{document=**} { allow read, write: if isAuthenticated(); }
 

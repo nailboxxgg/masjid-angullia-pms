@@ -8,9 +8,8 @@ import { getEvents } from "@/lib/events";
 import { countFamilies } from "@/lib/families";
 import { Event } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, Calendar, DollarSign, TrendingUp, AlertCircle } from "lucide-react";
+import { Users, FileText, Calendar, DollarSign, TrendingUp, AlertCircle, Wifi, Battery, User, Home, Settings, ChevronRight, MessageSquareText, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
-
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState<DonationStats>({
@@ -23,6 +22,7 @@ export default function AdminDashboard() {
     const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
     const [recentRequests, setRecentRequests] = useState<FeedbackData[]>([]);
     const [totalFamilies, setTotalFamilies] = useState(0);
+    const [time, setTime] = useState("");
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -62,174 +62,308 @@ export default function AdminDashboard() {
         loadDashboardData();
     }, []);
 
+    useEffect(() => {
+        // Simple real-time clock for the PWA header
+        const updateClock = () => {
+            const now = new Date();
+            setTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        };
+        updateClock();
+        const interval = setInterval(updateClock, 60000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const pwaShortcuts = [
+        { label: "Families", href: "/admin/families", icon: Users, bg: "bg-teal-500 text-white" },
+        { label: "Events", href: "/admin/events", icon: Calendar, bg: "bg-purple-500 text-white" },
+        { label: "Finances", href: "/admin/finances", icon: DollarSign, bg: "bg-amber-500 text-white" },
+        { label: "Feedback", href: "/admin/feedback", icon: MessageSquareText, bg: "bg-blue-500 text-white" },
+        { label: "Requests", href: "/admin/requests", icon: FileText, bg: "bg-emerald-500 text-white" },
+        { label: "Staff", href: "/admin/staff", icon: ShieldCheck, bg: "bg-indigo-500 text-white" },
+        { label: "Members", href: "/admin/members", icon: User, bg: "bg-orange-500 text-white" },
+        { label: "Settings", href: "/admin/settings", icon: Settings, bg: "bg-slate-500 text-white" },
+    ];
+
     return (
-        <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="space-y-8"
-        >
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <motion.div variants={itemVariants}>
-                    <h1 className="text-4xl font-black tracking-tighter text-secondary-900 dark:text-white uppercase">
-                        Admin Dashboard
-                    </h1>
-                    <p className="text-secondary-500 dark:text-secondary-400 mt-1 font-medium italic text-lg">Welcome back. Monitoring masjid operations and progress.</p>
-                </motion.div>
-                <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                    <Link href="/admin/families" className="flex-1 lg:flex-none inline-flex items-center justify-center rounded-2xl text-[10px] font-black uppercase tracking-widest bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-50 dark:hover:bg-secondary-800 h-12 px-6 shadow-sm transition-all hover:shadow-md">
-                        <Users className="mr-2 h-4 w-4 text-primary-500" /> Register Family
-                    </Link>
-                    <Link href="/admin/events/new" className="flex-1 lg:flex-none inline-flex items-center justify-center rounded-2xl text-[10px] font-black uppercase tracking-widest bg-primary-600 dark:bg-primary-700 text-white hover:bg-primary-700 dark:hover:bg-primary-800 h-12 px-6 shadow-xl shadow-primary-500/20 transition-all hover:scale-105 active:scale-95">
-                        <Calendar className="mr-2 h-4 w-4" /> Create Event
-                    </Link>
-                </motion.div>
-            </div>
+        <div>
+            {/* MOBILE PROGRESSIVE WEB APP LAYOUT */}
+            <div className="block md:hidden min-h-screen bg-secondary-50 dark:bg-secondary-950 pb-20">
+                {/* 1. Header (Dynamic Clock + Battery/Status + User Profile) */}
+                <header className="flex items-center justify-between px-5 py-4 bg-white dark:bg-secondary-900 border-b border-secondary-100 dark:border-secondary-800">
+                    <div className="text-sm font-black text-secondary-900 dark:text-white">
+                        {time || "8:16"}
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Wifi className="w-4 h-4 text-secondary-600 dark:text-secondary-400" />
+                        <Battery className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
+                        <Link href="/admin/settings" className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary-900 text-white hover:opacity-90">
+                            <User className="w-4 h-4" />
+                        </Link>
+                    </div>
+                </header>
 
-            {/* Metric Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <motion.div variants={itemVariants} whileHover="hover">
-                    <Card className="border-none shadow-sm hover:shadow-2xl transition-all h-full bg-white dark:bg-secondary-900 rounded-3xl overflow-hidden relative group">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-primary-500 opacity-80 group-hover:w-1.5 transition-all" />
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">Total Families</CardTitle>
-                            <div className="p-2.5 bg-primary-50 dark:bg-primary-900/20 rounded-xl ring-1 ring-primary-500/10 group-hover:rotate-12 transition-transform">
-                                <Users className="h-4 w-4 text-primary-500" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-4xl font-black text-secondary-900 dark:text-white tracking-tighter tabular-nums">{totalFamilies}</div>
-                            <div className="flex items-center mt-2">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-black bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/30">
-                                    <TrendingUp className="w-3 h-3 mr-1" /> ACTIVE REACH
+                {/* 2. Brand Promotional Banner Card */}
+                <div className="p-4">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-primary-700 to-indigo-800 p-5 text-white shadow-lg">
+                        <div className="max-w-[70%] space-y-2">
+                            <span className="inline-block px-2.5 py-0.5 rounded-full bg-primary-500/30 text-[10px] font-black uppercase tracking-wider">Admin Control</span>
+                            <h2 className="text-lg font-black leading-tight">Manage the Community</h2>
+                            <p className="text-xs text-primary-100 font-medium">Review pending requests, track donations, and organize events from anywhere.</p>
+                        </div>
+                        <div className="absolute right-[-10px] bottom-[-15px] opacity-25 text-8xl pointer-events-none">
+                            🛡️
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. PWA Shortcuts Grid (2x4) */}
+                <div className="px-4 py-2">
+                    <div className="grid grid-cols-4 gap-y-5 gap-x-3 bg-white dark:bg-secondary-900 p-5 rounded-2xl border border-secondary-100 dark:border-secondary-800 shadow-sm">
+                        {pwaShortcuts.map((item) => (
+                            <Link key={item.label} href={item.href} className="flex flex-col items-center text-center space-y-2">
+                                <div className={`flex items-center justify-center w-12 h-12 rounded-xl shadow-md ${item.bg}`}>
+                                    <item.icon className="w-5 h-5" />
+                                </div>
+                                <span className="text-[10px] font-black text-secondary-800 dark:text-secondary-200 tracking-tight leading-none uppercase">
+                                    {item.label}
                                 </span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
 
-                <motion.div variants={itemVariants} whileHover="hover">
-                    <Card className="border-none shadow-sm hover:shadow-2xl transition-all h-full bg-white dark:bg-secondary-900 rounded-3xl overflow-hidden relative group">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-80 group-hover:w-1.5 transition-all" />
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">New Messages</CardTitle>
-                            <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-xl ring-1 ring-blue-500/10 group-hover:rotate-12 transition-transform">
-                                <FileText className="h-4 w-4 text-blue-500" />
+                {/* 4. Quick Stats Bar */}
+                <div className="p-4">
+                    <div className="flex items-center justify-between bg-white dark:bg-secondary-900 p-4 rounded-xl border border-secondary-100 dark:border-secondary-800 shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <TrendingUp className="w-5 h-5 text-primary-600" />
+                            <div>
+                                <p className="text-xs font-black text-secondary-800 dark:text-secondary-100 uppercase tracking-wider">Monthly Snap</p>
+                                <p className="text-[11px] text-secondary-400 font-medium">Community Fund Progress</p>
                             </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-4xl font-black text-secondary-900 dark:text-white tracking-tighter tabular-nums">{pendingRequests.length}</div>
-                            <p className="text-[9px] font-black text-secondary-400 mt-2 uppercase tracking-[0.2em]">Awaiting Review</p>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-primary-50 dark:bg-primary-950/30 border border-primary-100 dark:border-primary-900/30 rounded-full text-[10px] font-bold text-primary-700 dark:text-primary-300">
+                            <DollarSign className="w-3 h-3" />
+                            ₱{stats.monthlyCollected.toLocaleString()}
+                        </div>
+                    </div>
+                </div>
 
-                <motion.div variants={itemVariants} whileHover="hover">
-                    <Card className="border-none shadow-sm hover:shadow-2xl transition-all h-full bg-white dark:bg-secondary-900 rounded-3xl overflow-hidden relative group">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-80 group-hover:w-1.5 transition-all" />
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">Monthly Snap</CardTitle>
-                            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl ring-1 ring-emerald-500/10 group-hover:rotate-12 transition-transform">
-                                <DollarSign className="h-4 w-4 text-emerald-500" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-4xl font-black text-secondary-900 dark:text-white tracking-tighter tabular-nums">₱{stats.monthlyCollected.toLocaleString()}</div>
-                            <div className="flex items-center mt-2">
-                                <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">Community Fund</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
-                <motion.div variants={itemVariants} whileHover="hover">
-                    <Card className="border-none shadow-sm hover:shadow-2xl transition-all h-full bg-white dark:bg-secondary-900 rounded-3xl overflow-hidden relative group">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 opacity-80 group-hover:w-1.5 transition-all" />
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">Live Events</CardTitle>
-                            <div className="p-2.5 bg-amber-50 dark:bg-amber-900/20 rounded-xl ring-1 ring-amber-500/10 group-hover:rotate-12 transition-transform">
-                                <Calendar className="h-4 w-4 text-amber-500" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-4xl font-black text-secondary-900 dark:text-white tracking-tighter tabular-nums">{upcomingEvents.length}</div>
-                            <p className="text-[9px] font-black text-secondary-400 mt-2 uppercase tracking-widest truncate">Next: {upcomingEvents[0]?.title || 'None'}</p>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            </div>
-
-            {/* Action Sections */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <motion.div variants={itemVariants}>
-                    <Card className="shadow-lg transition-all bg-white dark:bg-secondary-900 rounded-2xl border-secondary-100 dark:border-secondary-800 overflow-hidden h-full">
-                        <CardHeader className="bg-secondary-50/50 dark:bg-secondary-800/30 border-b border-secondary-100 dark:border-secondary-800">
-                            <CardTitle className="text-lg font-bold flex items-center gap-2 text-secondary-900 dark:text-white">
-                                <AlertCircle className="w-5 h-5 text-primary-500" />
-                                Recent Inbox Activity
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <div className="space-y-4">
-                                {recentRequests.length === 0 ? (
-                                    <div className="text-center py-10 opacity-60 italic font-medium">No recent requests.</div>
-                                ) : (
-                                    recentRequests.map((req) => (
-                                        <div key={req.id} className="flex items-center justify-between p-4 rounded-xl border border-secondary-50 dark:border-secondary-800 bg-secondary-50/30 dark:bg-white/5 hover:border-primary-200 dark:hover:border-primary-900/30 transition-all group">
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="font-bold text-sm truncate text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors uppercase tracking-tight">{req.message}</h4>
-                                                <p className="text-xs font-bold text-secondary-900 dark:text-secondary-200 mt-0.5 opacity-60">From: {req.name}</p>
+                {/* 5. Timeline Feed (Recent Requests) */}
+                <div className="px-4 pb-6">
+                    <div className="bg-white dark:bg-secondary-900 rounded-2xl border border-secondary-100 dark:border-secondary-800 p-5 shadow-sm space-y-4">
+                        <h3 className="text-xs font-black uppercase tracking-widest text-secondary-400">Recent Inbox</h3>
+                        {recentRequests.length === 0 ? (
+                            <p className="text-xs text-secondary-400 text-center py-4">No recent messages.</p>
+                        ) : (
+                            <div className="divide-y divide-secondary-100 dark:divide-secondary-800">
+                                {recentRequests.map((req) => (
+                                    <Link key={req.id} href="/admin/feedback" className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0 hover:bg-secondary-50/50">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-400">
+                                                <FileText className="w-4 h-4" />
                                             </div>
-                                            <Link href="/admin/feedback" className="ml-4 px-4 py-2 text-xs font-bold rounded-lg bg-secondary-900 text-white hover:bg-black dark:bg-white dark:text-secondary-900 dark:hover:bg-secondary-100 shadow-sm transition-all hover:scale-105 shrink-0">
-                                                Review
-                                            </Link>
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-black text-secondary-900 dark:text-white truncate">{req.message}</p>
+                                                <p className="text-[10px] text-secondary-400 truncate">From: {req.name}</p>
+                                            </div>
                                         </div>
-                                    ))
-                                )}
+                                        <ChevronRight className="w-4 h-4 text-secondary-300 shrink-0" />
+                                    </Link>
+                                ))}
                             </div>
-                            <div className="mt-6 pt-6 border-t border-secondary-100 dark:border-secondary-800 text-center">
-                                <Link href="/admin/feedback" className="text-sm font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline underline-offset-4">Open All Messages</Link>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+                        )}
+                    </div>
+                </div>
 
-                <motion.div variants={itemVariants}>
-                    <Card className="shadow-lg transition-all bg-white dark:bg-secondary-900 rounded-2xl border-secondary-100 dark:border-secondary-800 overflow-hidden h-full">
-                        <CardHeader className="bg-secondary-50/50 dark:bg-secondary-800/30 border-b border-secondary-100 dark:border-secondary-800">
-                            <CardTitle className="text-lg font-bold text-secondary-900 dark:text-white">Financial Trends</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex items-center justify-center min-h-[280px]">
-                            <div className="w-full space-y-4">
-                                {Object.keys(stats.breakdown).length === 0 ? (
-                                    <div className="flex flex-col items-center gap-4 opacity-40">
-                                        <TrendingUp className="w-16 h-16 text-secondary-300 dark:text-secondary-700" />
-                                        <p className="text-secondary-900 dark:text-secondary-200 text-sm font-bold uppercase tracking-widest text-center">No transaction records<br />for visual analytics</p>
+                {/* 6. Sticky PWA Bottom Navigation Tab Bar */}
+                <nav className="fixed bottom-0 inset-x-0 bg-white dark:bg-secondary-900 border-t border-secondary-200 dark:border-secondary-800 px-6 py-2.5 flex items-center justify-between shadow-2xl z-50">
+                    <Link href="/admin" className="flex flex-col items-center text-primary-600 dark:text-primary-400">
+                        <Home className="w-5 h-5" />
+                        <span className="text-[9px] font-black uppercase tracking-widest mt-1">Home</span>
+                    </Link>
+                    <Link href="/admin/families" className="flex flex-col items-center text-secondary-400 hover:text-secondary-600 dark:hover:text-white">
+                        <Users className="w-5 h-5" />
+                        <span className="text-[9px] font-black uppercase tracking-widest mt-1">Families</span>
+                    </Link>
+                    <Link href="/admin/settings" className="flex flex-col items-center text-secondary-400 hover:text-secondary-600 dark:hover:text-white">
+                        <Settings className="w-5 h-5" />
+                        <span className="text-[9px] font-black uppercase tracking-widest mt-1">Settings</span>
+                    </Link>
+                </nav>
+            </div>
+
+            {/* STANDARD DESKTOP VIEWPORT LAYOUT */}
+            <div className="hidden md:block space-y-6">
+                <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="space-y-8"
+                >
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <motion.div variants={itemVariants}>
+                            <h1 className="text-4xl font-black tracking-tighter text-secondary-900 dark:text-white uppercase">
+                                Admin Dashboard
+                            </h1>
+                            <p className="text-secondary-500 dark:text-secondary-400 mt-1 font-medium italic text-lg">Welcome back. Monitoring masjid operations and progress.</p>
+                        </motion.div>
+                        <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                            <Link href="/admin/families" className="flex-1 lg:flex-none inline-flex items-center justify-center rounded-2xl text-[10px] font-black uppercase tracking-widest bg-white dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-50 dark:hover:bg-secondary-800 h-12 px-6 shadow-sm transition-all hover:shadow-md">
+                                <Users className="mr-2 h-4 w-4 text-primary-500" /> Register Family
+                            </Link>
+                            <Link href="/admin/events/new" className="flex-1 lg:flex-none inline-flex items-center justify-center rounded-2xl text-[10px] font-black uppercase tracking-widest bg-primary-600 dark:bg-primary-700 text-white hover:bg-primary-700 dark:hover:bg-primary-800 h-12 px-6 shadow-xl shadow-primary-500/20 transition-all hover:scale-105 active:scale-95">
+                                <Calendar className="mr-2 h-4 w-4" /> Create Event
+                            </Link>
+                        </motion.div>
+                    </div>
+
+                    {/* Metric Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <motion.div variants={itemVariants} whileHover="hover">
+                            <Card className="border-none shadow-sm hover:shadow-2xl transition-all h-full bg-white dark:bg-secondary-900 rounded-3xl overflow-hidden relative group">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-primary-500 opacity-80 group-hover:w-1.5 transition-all" />
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">Total Families</CardTitle>
+                                    <div className="p-2.5 bg-primary-50 dark:bg-primary-900/20 rounded-xl ring-1 ring-primary-500/10 group-hover:rotate-12 transition-transform">
+                                        <Users className="h-4 w-4 text-primary-500" />
                                     </div>
-                                ) : (
-                                    <div className="space-y-4 w-full">
-                                        {Object.entries(stats.breakdown).map(([category, amount]) => (
-                                            <div key={category} className="space-y-2">
-                                                <div className="flex justify-between items-end">
-                                                    <span className="text-xs font-black text-secondary-500 uppercase tracking-widest">{category}</span>
-                                                    <span className="text-sm font-bold text-secondary-900 dark:text-white">₱{amount.toLocaleString()}</span>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-4xl font-black text-secondary-900 dark:text-white tracking-tighter tabular-nums">{totalFamilies}</div>
+                                    <div className="flex items-center mt-2">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-black bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/30">
+                                            <TrendingUp className="w-3 h-3 mr-1" /> ACTIVE REACH
+                                        </span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+
+                        <motion.div variants={itemVariants} whileHover="hover">
+                            <Card className="border-none shadow-sm hover:shadow-2xl transition-all h-full bg-white dark:bg-secondary-900 rounded-3xl overflow-hidden relative group">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-80 group-hover:w-1.5 transition-all" />
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">New Messages</CardTitle>
+                                    <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-xl ring-1 ring-blue-500/10 group-hover:rotate-12 transition-transform">
+                                        <FileText className="h-4 w-4 text-blue-500" />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-4xl font-black text-secondary-900 dark:text-white tracking-tighter tabular-nums">{pendingRequests.length}</div>
+                                    <p className="text-[9px] font-black text-secondary-400 mt-2 uppercase tracking-[0.2em]">Awaiting Review</p>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+
+                        <motion.div variants={itemVariants} whileHover="hover">
+                            <Card className="border-none shadow-sm hover:shadow-2xl transition-all h-full bg-white dark:bg-secondary-900 rounded-3xl overflow-hidden relative group">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-80 group-hover:w-1.5 transition-all" />
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">Monthly Snap</CardTitle>
+                                    <div className="p-2.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl ring-1 ring-emerald-500/10 group-hover:rotate-12 transition-transform">
+                                        <DollarSign className="h-4 w-4 text-emerald-500" />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-4xl font-black text-secondary-900 dark:text-white tracking-tighter tabular-nums">₱{stats.monthlyCollected.toLocaleString()}</div>
+                                    <div className="flex items-center mt-2">
+                                        <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">Community Fund</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+
+                        <motion.div variants={itemVariants} whileHover="hover">
+                            <Card className="border-none shadow-sm hover:shadow-2xl transition-all h-full bg-white dark:bg-secondary-900 rounded-3xl overflow-hidden relative group">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 opacity-80 group-hover:w-1.5 transition-all" />
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-[10px] font-black text-secondary-500 uppercase tracking-widest">Live Events</CardTitle>
+                                    <div className="p-2.5 bg-amber-50 dark:bg-amber-900/20 rounded-xl ring-1 ring-amber-500/10 group-hover:rotate-12 transition-transform">
+                                        <Calendar className="h-4 w-4 text-amber-500" />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-4xl font-black text-secondary-900 dark:text-white tracking-tighter tabular-nums">{upcomingEvents.length}</div>
+                                    <p className="text-[9px] font-black text-secondary-400 mt-2 uppercase tracking-widest truncate">Next: {upcomingEvents[0]?.title || 'None'}</p>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </div>
+
+                    {/* Action Sections */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <motion.div variants={itemVariants}>
+                            <Card className="shadow-lg transition-all bg-white dark:bg-secondary-900 rounded-2xl border-secondary-100 dark:border-secondary-800 overflow-hidden h-full">
+                                <CardHeader className="bg-secondary-50/50 dark:bg-secondary-800/30 border-b border-secondary-100 dark:border-secondary-800">
+                                    <CardTitle className="text-lg font-bold flex items-center gap-2 text-secondary-900 dark:text-white">
+                                        <AlertCircle className="w-5 h-5 text-primary-500" />
+                                        Recent Inbox Activity
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-6">
+                                    <div className="space-y-4">
+                                        {recentRequests.length === 0 ? (
+                                            <div className="text-center py-10 opacity-60 italic font-medium">No recent requests.</div>
+                                        ) : (
+                                            recentRequests.map((req) => (
+                                                <div key={req.id} className="flex items-center justify-between p-4 rounded-xl border border-secondary-50 dark:border-secondary-800 bg-secondary-50/30 dark:bg-white/5 hover:border-primary-200 dark:hover:border-primary-900/30 transition-all group">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-bold text-sm truncate text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors uppercase tracking-tight">{req.message}</h4>
+                                                        <p className="text-xs font-bold text-secondary-900 dark:text-secondary-200 mt-0.5 opacity-60">From: {req.name}</p>
+                                                    </div>
+                                                    <Link href="/admin/feedback" className="ml-4 px-4 py-2 text-xs font-bold rounded-lg bg-secondary-900 text-white hover:bg-black dark:bg-white dark:text-secondary-900 dark:hover:bg-secondary-100 shadow-sm transition-all hover:scale-105 shrink-0">
+                                                        Review
+                                                    </Link>
                                                 </div>
-                                                <div className="h-2 bg-secondary-100 dark:bg-secondary-800 rounded-full overflow-hidden">
-                                                    <motion.div
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${(amount / stats.totalCollected) * 100}%` }}
-                                                        className="h-full bg-primary-500"
-                                                    />
-                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                    <div className="mt-6 pt-6 border-t border-secondary-100 dark:border-secondary-800 text-center">
+                                        <Link href="/admin/feedback" className="text-sm font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline underline-offset-4">Open All Messages</Link>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+
+                        <motion.div variants={itemVariants}>
+                            <Card className="shadow-lg transition-all bg-white dark:bg-secondary-900 rounded-2xl border-secondary-100 dark:border-secondary-800 overflow-hidden h-full">
+                                <CardHeader className="bg-secondary-50/50 dark:bg-secondary-800/30 border-b border-secondary-100 dark:border-secondary-800">
+                                    <CardTitle className="text-lg font-bold text-secondary-900 dark:text-white">Financial Trends</CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex items-center justify-center min-h-[280px]">
+                                    <div className="w-full space-y-4">
+                                        {Object.keys(stats.breakdown).length === 0 ? (
+                                            <div className="flex flex-col items-center gap-4 opacity-40">
+                                                <TrendingUp className="w-16 h-16 text-secondary-300 dark:text-secondary-700" />
+                                                <p className="text-secondary-900 dark:text-secondary-200 text-sm font-bold uppercase tracking-widest text-center">No transaction records<br />for visual analytics</p>
                                             </div>
-                                        ))}
+                                        ) : (
+                                            <div className="space-y-4 w-full">
+                                                {Object.entries(stats.breakdown).map(([category, amount]) => (
+                                                    <div key={category} className="space-y-2">
+                                                        <div className="flex justify-between items-end">
+                                                            <span className="text-xs font-black text-secondary-500 uppercase tracking-widest">{category}</span>
+                                                            <span className="text-sm font-bold text-secondary-900 dark:text-white">₱{amount.toLocaleString()}</span>
+                                                        </div>
+                                                        <div className="h-2 bg-secondary-100 dark:bg-secondary-800 rounded-full overflow-hidden">
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${(amount / stats.totalCollected) * 100}%` }}
+                                                                className="h-full bg-primary-500"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </div>
                 </motion.div>
             </div>
-        </motion.div>
+        </div>
     );
 }
