@@ -4,8 +4,6 @@ import {
     doc,
     getDoc,
     getDocs,
-    limit,
-    orderBy,
     query,
     serverTimestamp,
     setDoc,
@@ -13,8 +11,10 @@ import {
     updateDoc,
     where,
     addDoc,
+    runTransaction,
 } from "firebase/firestore";
 import { Donation, MemberProfile, MemberServiceRequest, Registrant } from "./types";
+import { createMemberNotification } from "./member-notifications";
 
 const USERS_COLLECTION = "users";
 const REQUESTS_COLLECTION = "member_requests";
@@ -44,7 +44,7 @@ export const createMemberProfile = async (
         address: profile.address || "",
         familyId: profile.familyId || "",
         familyName: profile.familyName || "",
-        membershipStatus: profile.membershipStatus || "active",
+        membershipStatus: profile.membershipStatus || "pending",
         notificationPreferences: profile.notificationPreferences || defaultNotificationPreferences,
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -77,6 +77,9 @@ export const getMemberProfile = async (uid: string): Promise<MemberProfile | nul
         familyId: data.familyId || "",
         familyName: data.familyName || "",
         membershipStatus: data.membershipStatus || "active",
+        statusReason: data.statusReason || "",
+        statusUpdatedAt: data.statusUpdatedAt ? toMillis(data.statusUpdatedAt) : undefined,
+        statusUpdatedBy: data.statusUpdatedBy || undefined,
         notificationPreferences: {
             ...defaultNotificationPreferences,
             ...(data.notificationPreferences || {}),
@@ -102,33 +105,106 @@ export const updateMemberProfile = async (uid: string, updates: Partial<MemberPr
 export const getMemberEventRegistrations = async (uid: string): Promise<Registrant[]> => {
     const q = query(
         collection(db, "event_registrants"),
-        where("memberId", "==", uid),
-        orderBy("createdAt", "desc"),
-        limit(50)
+        where("memberId", "==", uid)
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((docSnapshot) => ({
-        id: docSnapshot.id,
-        ...docSnapshot.data(),
-    } as Registrant));
+    return snapshot.docs
+        .map((docSnapshot) => {
+            const data = docSnapshot.data();
+            return {
+                id: docSnapshot.id,
+                ...data,
+                createdAt: toMillis(data.createdAt),
+            } as Registrant;
+        })
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, 50);
+};
+
+export const cancelMemberEventRegistration = async (uid: string, registrationId: string) => {
+    const registrationRef = doc(db, "event_registrants", registrationId);
+
+    await runTransaction(db, async (transaction) => {
+        const registrationSnapshot = await transaction.get(registrationRef);
+
+        if (!registrationSnapshot.exists()) {
+            throw new Error("Registration was not found.");
+        }
+
+        const registration = registrationSnapshot.data() as Registrant;
+
+        if (registration.memberId !== uid) {
+            throw new Error("You can only cancel your own event registration.");
+        }
+
+        if (registration.status === "attended") {
+            throw new Error("Attended registrations cannot be cancelled.");
+        }
+
+        const eventRef = doc(db, "events", registration.eventId);
+        const eventSnapshot = await transaction.get(eventRef);
+
+        transaction.delete(registrationRef);
+
+        if (eventSnapshot.exists()) {
+            const eventData = eventSnapshot.data();
+            transaction.update(eventRef, {
+                registrantsCount: Math.max(0, (eventData.registrantsCount || 0) - 1),
+            });
+        }
+    });
+};
+
+export const updateMemberEventRegistration = async (
+    uid: string,
+    registrationId: string,
+    updates: { name: string; contactNumber: string; email: string }
+) => {
+    const registrationRef = doc(db, "event_registrants", registrationId);
+
+    await runTransaction(db, async (transaction) => {
+        const registrationSnapshot = await transaction.get(registrationRef);
+
+        if (!registrationSnapshot.exists()) {
+            throw new Error("Registration was not found.");
+        }
+
+        const registration = registrationSnapshot.data() as Registrant;
+
+        if (registration.memberId !== uid) {
+            throw new Error("You can only update your own event registration.");
+        }
+
+        if (registration.status === "attended") {
+            throw new Error("Attended registrations cannot be updated.");
+        }
+
+        transaction.update(registrationRef, {
+            name: updates.name,
+            contactNumber: updates.contactNumber,
+            email: updates.email,
+            updatedAt: Date.now()
+        });
+    });
 };
 
 export const getMemberDonations = async (uid: string): Promise<Donation[]> => {
     const q = query(
         collection(db, "donations"),
-        where("memberId", "==", uid),
-        orderBy("date", "desc"),
-        limit(50)
+        where("memberId", "==", uid)
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((docSnapshot) => {
-        const data = docSnapshot.data();
-        return {
-            id: docSnapshot.id,
-            ...data,
-            date: toMillis(data.date),
-        } as Donation;
-    });
+    return snapshot.docs
+        .map((docSnapshot) => {
+            const data = docSnapshot.data();
+            return {
+                id: docSnapshot.id,
+                ...data,
+                date: toMillis(data.date),
+            } as Donation;
+        })
+        .sort((a, b) => b.date - a.date)
+        .slice(0, 50);
 };
 
 export const createMemberServiceRequest = async (
@@ -137,33 +213,46 @@ export const createMemberServiceRequest = async (
     const docRef = await addDoc(collection(db, REQUESTS_COLLECTION), {
         ...request,
         status: "pending",
+        adminReply: "",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
     });
+
+    await createMemberNotification({
+        memberId: request.memberId,
+        type: "request_update",
+        title: "Request submitted",
+        body: `Your ${request.type} request "${request.subject}" was received and is pending review.`,
+        link: "/members/requests",
+    });
+
     return docRef.id;
 };
 
 export const getMemberServiceRequests = async (uid: string): Promise<MemberServiceRequest[]> => {
     const q = query(
         collection(db, REQUESTS_COLLECTION),
-        where("memberId", "==", uid),
-        orderBy("createdAt", "desc"),
-        limit(50)
+        where("memberId", "==", uid)
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((docSnapshot) => {
-        const data = docSnapshot.data();
-        return {
-            id: docSnapshot.id,
-            memberId: data.memberId,
-            memberName: data.memberName,
-            memberEmail: data.memberEmail,
-            type: data.type,
-            subject: data.subject,
+    return snapshot.docs
+        .map((docSnapshot) => {
+            const data = docSnapshot.data();
+            return {
+                id: docSnapshot.id,
+                memberId: data.memberId,
+                memberName: data.memberName,
+                memberEmail: data.memberEmail,
+                type: data.type,
+                subject: data.subject,
             message: data.message,
             status: data.status || "pending",
+            adminReply: data.adminReply || "",
+            repliedAt: data.repliedAt ? toMillis(data.repliedAt) : undefined,
             createdAt: toMillis(data.createdAt),
             updatedAt: data.updatedAt ? toMillis(data.updatedAt) : undefined,
         } as MemberServiceRequest;
-    });
+        })
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, 50);
 };

@@ -49,6 +49,10 @@ export interface Event {
     capacity?: number;
     category?: string;
     createdAt?: number;
+    membersOnly?: boolean;
+    memberReservedSlots?: number;
+    memberEarlyAccessUntil?: string; // ISO datetime; before this, only members can register
+    volunteerPositionsAvailable?: boolean;
 }
 
 export interface FamilyMember {
@@ -84,12 +88,34 @@ export interface MemberProfile {
     familyId?: string;
     familyName?: string;
     membershipStatus: 'active' | 'pending' | 'suspended';
+    statusReason?: string;
+    statusUpdatedAt?: number;
+    statusUpdatedBy?: string;
     notificationPreferences: {
         announcements: boolean;
         events: boolean;
         donations: boolean;
         prayerTimes: boolean;
     };
+    donationPreferences?: {
+        defaultFund?: string;
+        defaultIsAnonymous?: boolean;
+        name?: string;
+        email?: string;
+        phone?: string;
+    };
+    createdAt: number;
+    updatedAt?: number;
+}
+
+export interface VolunteerRegistration {
+    id: string;
+    eventId: string;
+    memberId: string;
+    memberName: string;
+    memberEmail: string;
+    notes?: string;
+    status: 'registered' | 'checked_in' | 'completed' | 'cancelled';
     createdAt: number;
     updatedAt?: number;
 }
@@ -99,10 +125,12 @@ export interface MemberServiceRequest {
     memberId: string;
     memberName: string;
     memberEmail: string;
-    type: 'General Inquiry' | 'Religious Service' | 'Facility Booking' | 'Welfare Support' | 'Class Registration';
+    type: 'General Inquiry' | 'Religious Service' | 'Welfare Support' | 'Family Link';
     subject: string;
     message: string;
     status: 'pending' | 'in_review' | 'resolved' | 'cancelled';
+    adminReply?: string;
+    repliedAt?: number;
     createdAt: number;
     updatedAt?: number;
 }
@@ -159,6 +187,26 @@ export interface Registrant {
     createdAt: number;
     status: 'pending' | 'accepted' | 'attended' | 'rejected';
     memberId?: string;
+}
+
+export type MemberNotificationType =
+    | 'event_registration'
+    | 'event_reminder'
+    | 'request_update'
+    | 'request_reply'
+    | 'announcement'
+    | 'membership_status'
+    | 'system';
+
+export interface MemberNotification {
+    id: string;
+    memberId: string;
+    type: MemberNotificationType;
+    title: string;
+    body: string;
+    link?: string;
+    read: boolean;
+    createdAt: number;
 }
 
 export interface EventAttendance {

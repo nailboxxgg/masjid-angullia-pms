@@ -17,7 +17,7 @@ import {
     updateDoc,
     increment
 } from "firebase/firestore";
-import { Check, Search, Trash2, UserPlus, Globe, ArrowRight } from "lucide-react";
+import { Check, Search, Trash2, UserPlus, Globe, ArrowRight, QrCode, CheckCircle2 } from "lucide-react";
 
 interface EventAttendanceManagerProps {
     event: Event;
@@ -28,6 +28,65 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
     const [attendanceList, setAttendanceList] = useState<EventAttendance[]>([]);
     const [registrants, setRegistrants] = useState<Registrant[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Scan Check-in State
+    const [scanInput, setScanInput] = useState("");
+    const [checkInSuccess, setCheckInSuccess] = useState<string | null>(null);
+    const [checkInError, setCheckInError] = useState<string | null>(null);
+    const [isCheckingIn, setIsCheckingIn] = useState(false);
+
+    const handleScanCheckIn = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const registrantId = scanInput.trim();
+        if (!registrantId) return;
+
+        setIsCheckingIn(true);
+        setCheckInSuccess(null);
+        setCheckInError(null);
+
+        try {
+            // Find registrant in local state list first
+            const matchedRegistrant = registrants.find(r => r.id === registrantId);
+
+            if (!matchedRegistrant) {
+                // If not found in local list, double check firestore doc
+                const { getDoc, doc } = await import("firebase/firestore");
+                const regDocRef = doc(db, "event_registrants", registrantId);
+                const regDocSnap = await getDoc(regDocRef);
+
+                if (!regDocSnap.exists()) {
+                    throw new Error("Invalid entry pass. No registration found for this ID.");
+                }
+
+                const regData = regDocSnap.data() as Registrant;
+                if (regData.eventId !== event.id) {
+                    throw new Error("This registration is for a different event.");
+                }
+
+                // Mark them in attendance using Firestore
+                await addToAttendance(regData.name, undefined, registrantId);
+                setCheckInSuccess(`Assalamu alaikum, ${regData.name} checked in successfully!`);
+            } else {
+                // Mark them using local list details
+                await addToAttendance(matchedRegistrant.name, undefined, registrantId);
+                setCheckInSuccess(`Assalamu alaikum, ${matchedRegistrant.name} checked in successfully!`);
+            }
+
+            // Update registration status to 'attended'
+            const { doc, updateDoc } = await import("firebase/firestore");
+            const registrantRef = doc(db, "event_registrants", registrantId);
+            await updateDoc(registrantRef, { status: "attended" });
+
+            setScanInput("");
+            setTimeout(() => setCheckInSuccess(null), 5000);
+        } catch (err: unknown) {
+            console.error("Check-in error:", err);
+            setCheckInError(err instanceof Error ? err.message : "Failed to verify entry pass.");
+            setTimeout(() => setCheckInError(null), 5000);
+        } finally {
+            setIsCheckingIn(false);
+        }
+    };
 
     // Search State
     const [searchInput, setSearchInput] = useState("");
@@ -249,6 +308,58 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
                             </div>
                         </div>
                     )}
+
+                    {/* QR Scan Check-In Card */}
+                    <div>
+                        <h3 className="font-bold text-secondary-900 dark:text-white flex items-center gap-2 mb-4">
+                            <QrCode className="w-5 h-5 text-primary-500" />
+                            Scan Entry Pass
+                        </h3>
+
+                        <div className="bg-white dark:bg-secondary-900 p-4 rounded-xl border border-secondary-200 dark:border-secondary-800 shadow-sm space-y-4">
+                            <form onSubmit={handleScanCheckIn} className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-secondary-500 block">
+                                        Scan QR Pass or Enter Registration ID
+                                    </label>
+                                    <div className="relative">
+                                        <QrCode className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400" />
+                                        <input
+                                            required
+                                            type="text"
+                                            value={scanInput}
+                                            onChange={(e) => setScanInput(e.target.value)}
+                                            placeholder="Click here & scan QR or paste Registration ID..."
+                                            className="w-full pl-9 pr-24 py-2 rounded-lg border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all text-sm font-mono"
+                                            disabled={isCheckingIn}
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={isCheckingIn || !scanInput.trim()}
+                                            className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 rounded-md font-bold text-xs uppercase tracking-wider disabled:opacity-50 transition-opacity"
+                                        >
+                                            {isCheckingIn ? "Verifying..." : "Verify"}
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            {/* Status Indicators */}
+                            {checkInSuccess && (
+                                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-bold border border-emerald-100 dark:border-emerald-900/30 flex items-center gap-2 animate-scale-in">
+                                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                    <span>{checkInSuccess}</span>
+                                </div>
+                            )}
+
+                            {checkInError && (
+                                <div className="p-3 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 rounded-lg text-xs font-bold border border-red-100 dark:border-red-900/30 flex items-center gap-2 animate-scale-in">
+                                    <span className="shrink-0 text-red-600 dark:text-red-400">⚠️</span>
+                                    <span>{checkInError}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     <div>
                         <h3 className="font-bold text-secondary-900 dark:text-white flex items-center gap-2 mb-4">

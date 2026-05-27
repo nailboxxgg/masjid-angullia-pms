@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import Modal from "@/components/ui/modal";
 import { registerForEvent } from "@/lib/events";
-import { Loader2, CheckCircle, Calendar, MapPin, Clock } from "lucide-react";
+import { Loader2, CheckCircle, Calendar, MapPin, Clock, Users } from "lucide-react";
 import { Event } from "@/lib/types";
 import { normalizePhoneNumber } from "@/lib/utils";
 import { auth } from "@/lib/firebase";
@@ -23,6 +23,7 @@ export default function EventRegistrationModal({ isOpen, onClose, event }: Event
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState("");
     const [memberId, setMemberId] = useState<string | undefined>();
+    const [memberStatus, setMemberStatus] = useState<"active" | "pending" | "suspended" | undefined>();
 
     useEffect(() => {
         if (!isOpen) return;
@@ -33,7 +34,10 @@ export default function EventRegistrationModal({ isOpen, onClose, event }: Event
         getMemberProfile(currentUser.uid)
             .then((profile) => {
                 if (!profile) return;
-                setMemberId(profile.uid);
+                setMemberStatus(profile.membershipStatus);
+                if (profile.membershipStatus === "active") {
+                    setMemberId(profile.uid);
+                }
                 setName((current) => current || profile.displayName);
                 setEmail((current) => current || profile.email);
                 setContact((current) => current || profile.phone || "");
@@ -76,6 +80,14 @@ export default function EventRegistrationModal({ isOpen, onClose, event }: Event
         onClose();
     };
 
+    const isMembersOnlyBlock = event?.membersOnly && !memberId;
+    const isPublicSlotsFullBlock = !memberId && event && event.memberReservedSlots &&
+        (event.registrantsCount || 0) >= ((event.capacity || 0) - (event.memberReservedSlots || 0));
+    const isStatusBlock = memberStatus && memberStatus !== "active";
+    const earlyAccessDate = event?.memberEarlyAccessUntil ? new Date(event.memberEarlyAccessUntil) : null;
+    const isEarlyAccessActive = !!earlyAccessDate && !Number.isNaN(earlyAccessDate.getTime()) && earlyAccessDate > new Date();
+    const isEarlyAccessBlock = isEarlyAccessActive && !memberId;
+
     if (!event) return null;
 
     return (
@@ -117,8 +129,108 @@ export default function EventRegistrationModal({ isOpen, onClose, event }: Event
                         Close
                     </button>
                 </div>
+            ) : isStatusBlock ? (
+                <div className="text-center py-6 space-y-4">
+                    <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100 dark:border-amber-900/30">
+                        <Clock className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-secondary-900 dark:text-white">
+                        {memberStatus === "pending" ? "Awaiting Approval" : "Membership Suspended"}
+                    </h3>
+                    <p className="text-secondary-600 dark:text-secondary-400 text-sm leading-relaxed max-w-sm mx-auto">
+                        {memberStatus === "pending"
+                            ? "Event registration unlocks once an admin approves your membership. Check back soon."
+                            : "Event registration is paused while your membership is suspended. Please contact the masjid office for help."}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={handleClose}
+                        className="w-full py-2.5 border border-secondary-200 dark:border-secondary-700 hover:bg-secondary-50 dark:hover:bg-secondary-800 text-secondary-700 dark:text-secondary-200 rounded-lg font-bold transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
+            ) : isEarlyAccessBlock ? (
+                <div className="text-center py-6 space-y-4">
+                    <div className="w-16 h-16 bg-primary-50 dark:bg-primary-950/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary-100 dark:border-primary-900/30">
+                        <Clock className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-secondary-900 dark:text-white">Members Get Early Access</h3>
+                    <p className="text-secondary-600 dark:text-secondary-400 text-sm leading-relaxed max-w-sm mx-auto">
+                        Public registration opens <strong>{earlyAccessDate?.toLocaleString()}</strong>. Sign in as a member to register now.
+                    </p>
+                    <div className="flex flex-col gap-2 pt-4">
+                        <a
+                            href="/login"
+                            className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold transition-colors block text-center"
+                        >
+                            Sign In as Member
+                        </a>
+                        <button
+                            type="button"
+                            onClick={handleClose}
+                            className="w-full py-2.5 border border-secondary-200 dark:border-secondary-700 hover:bg-secondary-50 dark:hover:bg-secondary-800 text-secondary-700 dark:text-secondary-200 rounded-lg font-bold transition-colors block text-center"
+                        >
+                            Remind Me Later
+                        </button>
+                    </div>
+                </div>
+            ) : isMembersOnlyBlock ? (
+                <div className="text-center py-6 space-y-4">
+                    <div className="w-16 h-16 bg-primary-50 dark:bg-primary-950/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary-100 dark:border-primary-900/30">
+                        <Users className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-secondary-900 dark:text-white">Members Only</h3>
+                    <p className="text-secondary-600 dark:text-secondary-400 text-sm leading-relaxed max-w-sm mx-auto">
+                        This event is reserved exclusively for registered members of Masjid Angullia. Please sign in to register.
+                    </p>
+                    <div className="flex flex-col gap-2 pt-4">
+                        <a
+                            href="/login"
+                            className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold transition-colors block text-center"
+                        >
+                            Sign In as Member
+                        </a>
+                        <a
+                            href="/signup"
+                            className="w-full py-2.5 border border-secondary-200 dark:border-secondary-700 hover:bg-secondary-50 dark:hover:bg-secondary-800 text-secondary-700 dark:text-secondary-200 rounded-lg font-bold transition-colors block text-center"
+                        >
+                            Create Member Account
+                        </a>
+                    </div>
+                </div>
+            ) : isPublicSlotsFullBlock ? (
+                <div className="text-center py-6 space-y-4">
+                    <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100 dark:border-amber-900/30">
+                        <Users className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-secondary-900 dark:text-white">Public Slots Full</h3>
+                    <p className="text-secondary-600 dark:text-secondary-400 text-sm leading-relaxed max-w-sm mx-auto">
+                        Public registration slots are fully booked. The remaining slots are reserved for members. Please sign in to register.
+                    </p>
+                    <div className="flex flex-col gap-2 pt-4">
+                        <a
+                            href="/login"
+                            className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold transition-colors block text-center"
+                        >
+                            Sign In as Member
+                        </a>
+                        <button
+                            type="button"
+                            onClick={handleClose}
+                            className="w-full py-2.5 border border-secondary-200 dark:border-secondary-700 hover:bg-secondary-50 dark:hover:bg-secondary-800 text-secondary-700 dark:text-secondary-200 rounded-lg font-bold transition-colors block text-center"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
             ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {isEarlyAccessActive && memberId && (
+                        <div className="rounded-lg border border-primary-200 bg-primary-50 px-3 py-2 text-xs font-bold text-primary-700 dark:border-primary-900/40 dark:bg-primary-950/20 dark:text-primary-200">
+                            Members-only early access — public registration opens {earlyAccessDate?.toLocaleString()}.
+                        </div>
+                    )}
                     {/* Event Summary */}
                     <div className="bg-secondary-50 p-4 rounded-lg border border-secondary-100 mb-4">
                         <h4 className="font-bold text-secondary-900 mb-2">{event.title}</h4>

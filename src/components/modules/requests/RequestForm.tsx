@@ -57,7 +57,6 @@ export default function RequestForm({ onSuccess, onCancel, className }: RequestF
                     <select className="flex h-10 w-full rounded-md border border-secondary-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option>Financial Assistance (Zakat)</option>
                         <option>Marriage Certificate</option>
-                        <option>Facility Booking</option>
                         <option>Counseling / Advice</option>
                         <option>Funeral Services</option>
                         <option>Other</option>

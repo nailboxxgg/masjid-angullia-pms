@@ -5,6 +5,7 @@ import {
     addDoc,
     updateDoc,
     getDocs,
+    getDoc,
     doc,
     query,
     where,
@@ -17,6 +18,7 @@ import {
 } from "firebase/firestore";
 import { Event, Registrant } from "./types";
 import { Timestamp } from "firebase/firestore";
+import { createMemberNotification } from "./member-notifications";
 
 const COLLECTION_NAME = "events";
 
@@ -40,6 +42,22 @@ export const getEvents = async (limitCount = 20): Promise<Event[]> => {
     } catch (error) {
         console.error("Error fetching events:", error);
         return [];
+    }
+};
+
+export const getEventById = async (id: string): Promise<Event | null> => {
+    try {
+        const docSnap = await getDoc(doc(db, COLLECTION_NAME, id));
+        if (!docSnap.exists()) return null;
+        const data = docSnap.data();
+        return {
+            id: docSnap.id,
+            ...data,
+            createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : (typeof data.createdAt === 'number' ? data.createdAt : Date.now())
+        } as Event;
+    } catch (error) {
+        console.error("Error fetching event by ID:", error);
+        return null;
     }
 };
 
@@ -91,6 +109,8 @@ export const registerForEvent = async (eventId: string, details: Omit<Registrant
     try {
         const eventRef = doc(db, COLLECTION_NAME, eventId);
         const registrantsRef = collection(db, "event_registrants");
+        let eventTitleForNotice = "";
+        let eventDateForNotice = "";
 
         // Run as transaction to ensure capacity isn't exceeded and count is accurate
         await runTransaction(db, async (transaction) => {
@@ -100,11 +120,34 @@ export const registerForEvent = async (eventId: string, details: Omit<Registrant
             }
 
             const eventData = eventDoc.data() as Event;
+            eventTitleForNotice = eventData.title || "the event";
+            eventDateForNotice = eventData.date || "";
 
             // Automatic Closure Check (Server-side)
             const eventDate = new Date(eventData.date);
             if (eventDate < new Date()) {
                 throw new Error("Registration has closed for this event.");
+            }
+
+            // Member-Only Check
+            if (eventData.membersOnly && !details.memberId) {
+                throw new Error("This event is reserved exclusively for registered members.");
+            }
+
+            // Member Early Access Window
+            if (!details.memberId && eventData.memberEarlyAccessUntil) {
+                const cutoff = new Date(eventData.memberEarlyAccessUntil);
+                if (!Number.isNaN(cutoff.getTime()) && cutoff > new Date()) {
+                    throw new Error(`Members get early access until ${cutoff.toLocaleString()}. Public registration opens after that.`);
+                }
+            }
+
+            // Member Reserved Slots Check
+            if (eventData.memberReservedSlots && !details.memberId) {
+                const publicCapacity = (eventData.capacity || 0) - (eventData.memberReservedSlots || 0);
+                if ((eventData.registrantsCount || 0) >= publicCapacity) {
+                    throw new Error("Public registration is full. The remaining slots are reserved for members.");
+                }
             }
 
             if (eventData.capacity && eventData.registrantsCount >= eventData.capacity) {
@@ -120,7 +163,7 @@ export const registerForEvent = async (eventId: string, details: Omit<Registrant
                 eventId,
                 ...details,
                 createdAt: Date.now(),
-                status: 'pending'
+                status: details.memberId ? 'accepted' : 'pending'
             });
 
             // Increment count
@@ -128,6 +171,16 @@ export const registerForEvent = async (eventId: string, details: Omit<Registrant
                 registrantsCount: (eventData.registrantsCount || 0) + 1
             });
         });
+
+        if (details.memberId) {
+            await createMemberNotification({
+                memberId: details.memberId,
+                type: "event_registration",
+                title: "Event registration confirmed",
+                body: `You are confirmed for ${eventTitleForNotice}${eventDateForNotice ? ` on ${eventDateForNotice}` : ""}.`,
+                link: "/members/events",
+            });
+        }
 
         return { success: true };
     } catch (error: unknown) {

@@ -10,7 +10,8 @@ import {
     where,
     doc,
     deleteDoc,
-    updateDoc
+    updateDoc,
+    getDoc
 } from "firebase/firestore";
 import { Family } from "./types";
 
@@ -116,5 +117,41 @@ export const deleteFamily = async (id: string) => {
     } catch (error) {
         console.error("Error deleting family:", error);
         return false;
+    }
+};
+
+export const getFamilyById = async (id: string): Promise<Family | null> => {
+    try {
+        const docSnap = await getDoc(doc(db, COLLECTION_NAME, id));
+        if (!docSnap.exists()) return null;
+        const data = docSnap.data();
+        return {
+            id: docSnap.id,
+            name: data.name,
+            head: data.head,
+            members: data.members,
+            phone: data.phone,
+            address: data.address,
+            createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toMillis() : (data.createdAt || Date.now())
+        } as Family;
+    } catch (error) {
+        console.error("Error getting family by ID:", error);
+        return null;
+    }
+};
+
+export const searchFamilies = async (queryText: string): Promise<Family[]> => {
+    try {
+        const allFamilies = await getFamilies(1000);
+        const term = queryText.toLowerCase().trim();
+        if (!term) return [];
+        return allFamilies.filter(family => 
+            family.name.toLowerCase().includes(term) ||
+            family.head.toLowerCase().includes(term) ||
+            family.phone.includes(term)
+        );
+    } catch (error) {
+        console.error("Error searching families:", error);
+        return [];
     }
 };

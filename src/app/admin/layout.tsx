@@ -7,9 +7,7 @@ import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import NavigationGuard from "@/components/admin/NavigationGuard";
 import { startPresenceHeartbeat, goOffline } from "@/lib/presence";
-
 import { motion } from "framer-motion";
-
 import { AdminProvider, useAdmin } from "@/contexts/AdminContext";
 
 function AdminLayoutContent({
@@ -22,12 +20,31 @@ function AdminLayoutContent({
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        // Dynamically inject Admin PWA manifest link
+        const existing = document.querySelector("link[rel='manifest']");
+        if (existing) existing.remove();
+
+        const link = document.createElement("link");
+        link.rel = "manifest";
+        link.href = "/api/manifest/admin";
+        document.head.appendChild(link);
+
+        // Register custom high-performance Service Worker
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js").catch((err) => {
+                console.error("Admin SW registration failed:", err);
+            });
+        }
+    }, []);
+
+    useEffect(() => {
         let stopHeartbeat: (() => void) | undefined;
 
         if (!loading) {
             if (!user) {
                 router.push("/login");
-            } else {
                 // User is authorized
                 stopHeartbeat = startPresenceHeartbeat();
             }

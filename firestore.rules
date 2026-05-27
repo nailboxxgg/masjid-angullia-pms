@@ -86,6 +86,22 @@ service cloud.firestore {
       allow read: if isAdmin() || (isAuthenticated() && resource.data.memberId == request.auth.uid);
       allow update, delete: if isAuthenticated();
     }
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated()
+        && (isAdmin() || resource.data.memberId == request.auth.uid);
+      allow create: if isAuthenticated()
+        && request.resource.data.memberId is string
+        && request.resource.data.title is string;
+      allow update: if isAuthenticated() && (
+        isAdmin() ||
+        (
+          resource.data.memberId == request.auth.uid
+          && request.resource.data.memberId == resource.data.memberId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+        )
+      );
+      allow delete: if isAdmin();
+    }
     match /event_attendance/{document=**} { allow read, write: if isAuthenticated(); }
     match /attendance_logs/{document=**} { allow read, write: if isAuthenticated(); }
     match /sessions/{document=**} { allow read, write: if isAuthenticated(); }

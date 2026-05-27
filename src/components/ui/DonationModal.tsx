@@ -41,7 +41,13 @@ export default function DonationModal({ isOpen, onClose, fundName }: DonationMod
             .then((profile) => {
                 if (!profile) return;
                 setMember({ uid: profile.uid, email: profile.email, displayName: profile.displayName });
-                setDonorName((current) => current || profile.displayName);
+                
+                const prefs = profile.donationPreferences;
+                if (prefs) {
+                    setDonorName(prefs.defaultIsAnonymous ? "" : (prefs.name || profile.displayName));
+                } else {
+                    setDonorName((current) => current || profile.displayName);
+                }
             })
             .catch((error) => console.error("Failed to load member donation details:", error));
     }, [isOpen]);

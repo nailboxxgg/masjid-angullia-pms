@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Send } from "lucide-react";
+import { MessageSquareReply, Send } from "lucide-react";
 import { useMember } from "@/contexts/MemberContext";
 import { createMemberServiceRequest, getMemberServiceRequests } from "@/lib/members";
 import { MemberServiceRequest } from "@/lib/types";
@@ -9,10 +9,16 @@ import { MemberServiceRequest } from "@/lib/types";
 const requestTypes: MemberServiceRequest["type"][] = [
     "General Inquiry",
     "Religious Service",
-    "Facility Booking",
     "Welfare Support",
-    "Class Registration",
+    "Family Link",
 ];
+
+const statusStyles: Record<MemberServiceRequest["status"], string> = {
+    pending: "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300",
+    in_review: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300",
+    resolved: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300",
+    cancelled: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300",
+};
 
 export default function MemberRequestsPage() {
     const { user, profile } = useMember();
@@ -36,6 +42,10 @@ export default function MemberRequestsPage() {
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         if (!user || !profile) return;
+        if (profile.membershipStatus !== "active") {
+            setStatus("error");
+            return;
+        }
 
         setStatus("submitting");
         try {
@@ -76,11 +86,25 @@ export default function MemberRequestsPage() {
                                     <p className="font-black text-secondary-900 dark:text-white">{request.subject}</p>
                                     <p className="text-sm text-secondary-500">{request.type}</p>
                                 </div>
-                                <span className="rounded-full bg-secondary-100 px-3 py-1 text-xs font-black uppercase tracking-widest text-secondary-600 dark:bg-secondary-800 dark:text-secondary-300">
+                                <span className={`rounded-full px-3 py-1 text-xs font-black uppercase tracking-widest ${statusStyles[request.status]}`}>
                                     {request.status.replace("_", " ")}
                                 </span>
                             </div>
                             <p className="mt-3 text-sm text-secondary-600 dark:text-secondary-400">{request.message}</p>
+                            {request.adminReply && (
+                                <div className="mt-4 rounded-xl border border-primary-100 bg-primary-50 p-4 dark:border-primary-900/50 dark:bg-primary-950/20">
+                                    <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary-700 dark:text-primary-300">
+                                        <MessageSquareReply className="h-4 w-4" />
+                                        Admin Reply
+                                    </div>
+                                    <p className="mt-2 whitespace-pre-wrap text-sm font-medium text-secondary-700 dark:text-secondary-200">{request.adminReply}</p>
+                                    {request.repliedAt && (
+                                        <p className="mt-2 text-xs font-bold text-secondary-400">
+                                            {new Date(request.repliedAt).toLocaleDateString()}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -88,28 +112,36 @@ export default function MemberRequestsPage() {
 
             <form onSubmit={handleSubmit} className="rounded-xl border border-secondary-200 bg-white p-6 shadow-sm dark:border-secondary-800 dark:bg-secondary-900">
                 <h2 className="text-lg font-black text-secondary-900 dark:text-white">New Request</h2>
-                <div className="mt-5 space-y-4">
-                    <label className="space-y-2 block">
-                        <span className="text-xs font-bold uppercase tracking-widest text-secondary-500">Type</span>
-                        <select value={type} onChange={(e) => setType(e.target.value as MemberServiceRequest["type"])} className="w-full rounded-lg border border-secondary-200 bg-secondary-50 px-4 py-3 text-sm font-medium outline-none focus:border-primary-500 dark:border-secondary-700 dark:bg-secondary-950">
-                            {requestTypes.map((requestType) => <option key={requestType}>{requestType}</option>)}
-                        </select>
-                    </label>
-                    <label className="space-y-2 block">
-                        <span className="text-xs font-bold uppercase tracking-widest text-secondary-500">Subject</span>
-                        <input required value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full rounded-lg border border-secondary-200 bg-secondary-50 px-4 py-3 text-sm font-medium outline-none focus:border-primary-500 dark:border-secondary-700 dark:bg-secondary-950" />
-                    </label>
-                    <label className="space-y-2 block">
-                        <span className="text-xs font-bold uppercase tracking-widest text-secondary-500">Message</span>
-                        <textarea required value={message} onChange={(e) => setMessage(e.target.value)} className="h-32 w-full resize-none rounded-lg border border-secondary-200 bg-secondary-50 px-4 py-3 text-sm font-medium outline-none focus:border-primary-500 dark:border-secondary-700 dark:bg-secondary-950" />
-                    </label>
-                    {status === "error" && <p className="rounded-lg bg-red-50 p-3 text-sm font-bold text-red-600">Request failed. Please try again.</p>}
-                    {status === "success" && <p className="rounded-lg bg-emerald-50 p-3 text-sm font-bold text-emerald-700">Request submitted.</p>}
-                    <button disabled={status === "submitting"} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-5 py-3 text-sm font-black text-white hover:bg-primary-700 disabled:opacity-60">
-                        <Send className="h-4 w-4" />
-                        {status === "submitting" ? "Submitting..." : "Submit Request"}
-                    </button>
-                </div>
+                {profile && profile.membershipStatus !== "active" ? (
+                    <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+                        {profile.membershipStatus === "pending"
+                            ? "Submitting requests opens up once an admin approves your membership."
+                            : "Your membership is suspended. Please reach out to the masjid office to restore access."}
+                    </div>
+                ) : (
+                    <div className="mt-5 space-y-4">
+                        <label className="space-y-2 block">
+                            <span className="text-xs font-bold uppercase tracking-widest text-secondary-500">Type</span>
+                            <select value={type} onChange={(e) => setType(e.target.value as MemberServiceRequest["type"])} className="w-full rounded-lg border border-secondary-200 bg-secondary-50 px-4 py-3 text-sm font-medium outline-none focus:border-primary-500 dark:border-secondary-700 dark:bg-secondary-950">
+                                {requestTypes.map((requestType) => <option key={requestType}>{requestType}</option>)}
+                            </select>
+                        </label>
+                        <label className="space-y-2 block">
+                            <span className="text-xs font-bold uppercase tracking-widest text-secondary-500">Subject</span>
+                            <input required value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full rounded-lg border border-secondary-200 bg-secondary-50 px-4 py-3 text-sm font-medium outline-none focus:border-primary-500 dark:border-secondary-700 dark:bg-secondary-950" />
+                        </label>
+                        <label className="space-y-2 block">
+                            <span className="text-xs font-bold uppercase tracking-widest text-secondary-500">Message</span>
+                            <textarea required value={message} onChange={(e) => setMessage(e.target.value)} className="h-32 w-full resize-none rounded-lg border border-secondary-200 bg-secondary-50 px-4 py-3 text-sm font-medium outline-none focus:border-primary-500 dark:border-secondary-700 dark:bg-secondary-950" />
+                        </label>
+                        {status === "error" && <p className="rounded-lg bg-red-50 p-3 text-sm font-bold text-red-600">Request failed. Please try again.</p>}
+                        {status === "success" && <p className="rounded-lg bg-emerald-50 p-3 text-sm font-bold text-emerald-700">Request submitted.</p>}
+                        <button disabled={status === "submitting"} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-5 py-3 text-sm font-black text-white hover:bg-primary-700 disabled:opacity-60">
+                            <Send className="h-4 w-4" />
+                            {status === "submitting" ? "Submitting..." : "Submit Request"}
+                        </button>
+                    </div>
+                )}
             </form>
         </div>
     );

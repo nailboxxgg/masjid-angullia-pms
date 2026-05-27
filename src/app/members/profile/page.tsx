@@ -28,6 +28,13 @@ function MemberProfileForm({
     const [address, setAddress] = useState(profile.address || "");
     const [familyName, setFamilyName] = useState(profile.familyName || "");
     const [preferences, setPreferences] = useState(profile.notificationPreferences);
+    const [donationPref, setDonationPref] = useState(profile.donationPreferences || {
+        defaultFund: "",
+        defaultIsAnonymous: false,
+        name: profile.displayName,
+        email: profile.email,
+        phone: profile.phone || "",
+    });
     const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
     const handleSubmit = async (event: React.FormEvent) => {
@@ -42,6 +49,7 @@ function MemberProfileForm({
                 address,
                 familyName,
                 notificationPreferences: preferences,
+                donationPreferences: donationPref,
             });
             await refreshProfile();
             setStatus("saved");
@@ -78,6 +86,57 @@ function MemberProfileForm({
                     <label className="space-y-2 md:col-span-2">
                         <span className="text-xs font-bold uppercase tracking-widest text-secondary-500">Address</span>
                         <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="h-28 w-full resize-none rounded-lg border border-secondary-200 bg-secondary-50 px-4 py-3 text-sm font-medium outline-none focus:border-primary-500 dark:border-secondary-700 dark:bg-secondary-950" />
+                    </label>
+                </div>
+            </section>
+
+            <section className="rounded-xl border border-secondary-200 bg-white p-6 shadow-sm dark:border-secondary-800 dark:bg-secondary-900">
+                <h2 className="text-lg font-black text-secondary-900 dark:text-white">Donation Preferences</h2>
+                <p className="mt-1 text-sm text-secondary-500 dark:text-secondary-400">Save your default settings to pre-fill future donations.</p>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                    <label className="space-y-2">
+                        <span className="text-xs font-bold uppercase tracking-widest text-secondary-500">Preferred Fund</span>
+                        <select
+                            value={donationPref.defaultFund || ""}
+                            onChange={(e) => setDonationPref({ ...donationPref, defaultFund: e.target.value })}
+                            className="w-full rounded-lg border border-secondary-200 bg-secondary-50 px-4 py-3 text-sm font-medium outline-none focus:border-primary-500 dark:border-secondary-700 dark:bg-secondary-950"
+                        >
+                            <option value="">None / Select Fund</option>
+                            <option value="General Fund">General Fund</option>
+                            <option value="Education Fund">Education Fund</option>
+                            <option value="Mosque Upkeep & Construction">Mosque Upkeep & Construction</option>
+                            <option value="Community Welfare">Community Welfare</option>
+                        </select>
+                    </label>
+                    <label className="flex items-center justify-between rounded-lg border border-secondary-200 p-4 dark:border-secondary-800 md:col-span-2">
+                        <div>
+                            <span className="text-sm font-bold text-secondary-700 dark:text-secondary-200 block">Donate Anonymously by Default</span>
+                            <span className="text-xs text-secondary-400">Your donor identity will be masked on public displays.</span>
+                        </div>
+                        <input
+                            type="checkbox"
+                            checked={donationPref.defaultIsAnonymous || false}
+                            onChange={(e) => setDonationPref({ ...donationPref, defaultIsAnonymous: e.target.checked })}
+                            className="h-5 w-5 accent-primary-600"
+                        />
+                    </label>
+                    <label className="space-y-2">
+                        <span className="text-xs font-bold uppercase tracking-widest text-secondary-500">Default Donor Name</span>
+                        <input
+                            value={donationPref.name || ""}
+                            onChange={(e) => setDonationPref({ ...donationPref, name: e.target.value })}
+                            className="w-full rounded-lg border border-secondary-200 bg-secondary-50 px-4 py-3 text-sm font-medium outline-none focus:border-primary-500 dark:border-secondary-700 dark:bg-secondary-950"
+                            placeholder="Full Name"
+                        />
+                    </label>
+                    <label className="space-y-2">
+                        <span className="text-xs font-bold uppercase tracking-widest text-secondary-500">Default Email</span>
+                        <input
+                            value={donationPref.email || ""}
+                            onChange={(e) => setDonationPref({ ...donationPref, email: e.target.value })}
+                            className="w-full rounded-lg border border-secondary-200 bg-secondary-50 px-4 py-3 text-sm font-medium outline-none focus:border-primary-500 dark:border-secondary-700 dark:bg-secondary-950"
+                            placeholder="Email Address"
+                        />
                     </label>
                 </div>
             </section>

@@ -56,8 +56,20 @@ export default function AnnouncementCard({ post, delay = 0, onClick }: Announcem
                             </div>
                         )}
                         {isEvent && (
-                            <div className="flex items-center gap-1 bg-primary-500/10 text-primary-600 dark:text-primary-400 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider">
-                                <Calendar className="w-2.5 h-2.5" /> Event
+                            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                <div className="flex items-center gap-1 bg-primary-500/10 text-primary-600 dark:text-primary-400 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider">
+                                    <Calendar className="w-2.5 h-2.5" /> Event
+                                </div>
+                                {(post as Event).membersOnly && (
+                                    <div className="flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider">
+                                        👑 Members Only
+                                    </div>
+                                )}
+                                {!(post as Event).membersOnly && (post as Event).memberReservedSlots && ((post as Event).registrantsCount || 0) >= (((post as Event).capacity || 0) - ((post as Event).memberReservedSlots || 0)) && ((post as Event).registrantsCount || 0) < ((post as Event).capacity || 0) && (
+                                    <div className="flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider">
+                                        🔒 Member Slots
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

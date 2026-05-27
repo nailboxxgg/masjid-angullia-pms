@@ -13,6 +13,16 @@ import EventAttendanceManager from "@/components/admin/events/EventAttendanceMan
 import { useAdmin } from "@/contexts/AdminContext";
 import { cn } from "@/lib/utils";
 
+const toDatetimeLocal = (value?: string): string => {
+    if (!value) return "";
+    // Already in datetime-local format from a previous keystroke.
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return value;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
 export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const router = useRouter();
@@ -89,11 +99,21 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                 console.log(`Image converted: ${((imageUrl?.length || 0) / 1024).toFixed(1)} KB`);
             }
 
+            const earlyAccessRaw = formData.memberEarlyAccessUntil || "";
+            const earlyAccessIso = !formData.membersOnly && earlyAccessRaw
+                ? (earlyAccessRaw.includes("T") && earlyAccessRaw.length <= 16
+                    ? new Date(earlyAccessRaw).toISOString()
+                    : earlyAccessRaw)
+                : "";
+
             const updates = {
                 ...formData,
                 imageUrl,
                 // Ensure number types
                 capacity: formData.capacity ? Number(formData.capacity) : 0,
+                membersOnly: formData.membersOnly || false,
+                memberReservedSlots: formData.membersOnly ? 0 : (formData.memberReservedSlots ? Number(formData.memberReservedSlots) : 0),
+                memberEarlyAccessUntil: earlyAccessIso,
             };
 
             await updateDoc(doc(db, "events", id), updates);
@@ -252,6 +272,52 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                                     className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                                 />
                             </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="flex items-center gap-3 bg-secondary-50 dark:bg-secondary-800/40 p-4 rounded-xl border border-secondary-100 dark:border-secondary-800">
+                                <input
+                                    type="checkbox"
+                                    id="membersOnly"
+                                    checked={formData.membersOnly || false}
+                                    onChange={e => {
+                                        handleInputChange('membersOnly', e.target.checked);
+                                        if (e.target.checked) handleInputChange('memberReservedSlots', 0);
+                                    }}
+                                    className="w-5 h-5 rounded text-primary-600 focus:ring-primary-500 border-gray-300"
+                                />
+                                <label htmlFor="membersOnly" className="text-sm font-bold text-secondary-900 dark:text-white select-none">
+                                    Restrict to Members Only
+                                </label>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-secondary-900 dark:text-white">Member Reserved Slots</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    disabled={formData.membersOnly}
+                                    value={formData.memberReservedSlots !== undefined ? formData.memberReservedSlots : ''}
+                                    onChange={e => handleInputChange('memberReservedSlots', e.target.value)}
+                                    placeholder={formData.membersOnly ? "N/A (Members Only)" : "e.g. 10"}
+                                    className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all disabled:opacity-50"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-secondary-900 dark:text-white">Members Early Access Until</label>
+                            <input
+                                type="datetime-local"
+                                disabled={formData.membersOnly}
+                                value={toDatetimeLocal(formData.memberEarlyAccessUntil)}
+                                onChange={e => handleInputChange('memberEarlyAccessUntil', e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all disabled:opacity-50"
+                            />
+                            <p className="text-xs text-secondary-500">
+                                {formData.membersOnly
+                                    ? "N/A while Members Only is enabled."
+                                    : "Before this time only signed-in members can register. Leave blank to disable."}
+                            </p>
                         </div>
 
                         <div className="flex items-center gap-3">

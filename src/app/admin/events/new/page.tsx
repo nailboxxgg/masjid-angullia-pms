@@ -33,6 +33,9 @@ export default function NewEventPage() {
     const [capacity, setCapacity] = useState("");
     const [category, setCategory] = useState("General");
     const [registrationOpen, setRegistrationOpen] = useState(true);
+    const [membersOnly, setMembersOnly] = useState(false);
+    const [memberReservedSlots, setMemberReservedSlots] = useState("");
+    const [memberEarlyAccessUntil, setMemberEarlyAccessUntil] = useState("");
 
     // Image State
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -134,7 +137,10 @@ export default function NewEventPage() {
                 registrationOpen,
                 capacity: capacity ? parseInt(capacity) : 0,
                 imageUrl,
-                createdAt: Date.now()
+                createdAt: Date.now(),
+                membersOnly,
+                memberReservedSlots: memberReservedSlots ? parseInt(memberReservedSlots) : 0,
+                memberEarlyAccessUntil: !membersOnly && memberEarlyAccessUntil ? new Date(memberEarlyAccessUntil).toISOString() : "",
             };
 
             console.log("Submitting event data:", eventData);
@@ -351,6 +357,52 @@ export default function NewEventPage() {
                                 className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                             />
                         </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="flex items-center gap-3 bg-secondary-50 dark:bg-secondary-800/40 p-4 rounded-xl border border-secondary-100 dark:border-secondary-800">
+                            <input
+                                type="checkbox"
+                                id="membersOnly"
+                                checked={membersOnly}
+                                onChange={e => {
+                                    setMembersOnly(e.target.checked);
+                                    if (e.target.checked) setMemberReservedSlots("");
+                                }}
+                                className="w-5 h-5 rounded text-primary-600 focus:ring-primary-500 border-gray-300"
+                            />
+                            <label htmlFor="membersOnly" className="text-sm font-bold text-secondary-900 dark:text-white select-none">
+                                Restrict to Members Only
+                            </label>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-secondary-900 dark:text-white">Member Reserved Slots</label>
+                            <input
+                                type="number"
+                                min="0"
+                                disabled={membersOnly}
+                                value={memberReservedSlots}
+                                onChange={e => setMemberReservedSlots(e.target.value)}
+                                placeholder={membersOnly ? "N/A (Members Only)" : "e.g. 10"}
+                                className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all disabled:opacity-50"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold text-secondary-900 dark:text-white">Members Early Access Until</label>
+                        <input
+                            type="datetime-local"
+                            disabled={membersOnly}
+                            value={memberEarlyAccessUntil}
+                            onChange={e => setMemberEarlyAccessUntil(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-800 focus:ring-2 focus:ring-primary-500 outline-none transition-all disabled:opacity-50"
+                        />
+                        <p className="text-xs text-secondary-500">
+                            {membersOnly
+                                ? "N/A while Members Only is enabled."
+                                : "Before this time only signed-in members can register. Leave blank to disable."}
+                        </p>
                     </div>
 
                     <div className="flex items-center gap-3">

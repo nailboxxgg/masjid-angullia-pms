@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { getAdminStaffDoc } from "@/lib/admin-auth";
+import { verifyCurrentAdminAccount } from "@/lib/admin-auth";
 
 interface AdminContextType {
     user: User | null;
@@ -25,15 +25,10 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
                 try {
-                    const staffDoc = await getAdminStaffDoc(currentUser.uid, currentUser.email);
-
-                    if (!staffDoc.exists() || staffDoc.data().role !== "admin") {
-                        setUser(null);
-                    } else {
-                        setUser(currentUser);
-                    }
+                    await verifyCurrentAdminAccount(currentUser);
+                    setUser(currentUser);
                 } catch (error) {
-                    console.error("Error fetching staff doc:", error);
+                    console.error("Error verifying admin account:", error);
                     setUser(null);
                 }
             } else {

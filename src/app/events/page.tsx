@@ -11,12 +11,21 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import EventRegistrationModal from "@/components/events/EventRegistrationModal";
 import Navbar from "@/components/layout/Navbar";
+import { auth } from "@/lib/firebase";
 
 export default function EventsPage() {
     const [events, setEvents] = useState<Event[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            setIsLoggedIn(!!user);
+        });
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         setIsLoading(true);
@@ -76,10 +85,25 @@ export default function EventsPage() {
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                        <div className="absolute top-4 left-4 flex gap-2">
+                                        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
                                             <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold text-white uppercase tracking-wider border border-white/20">
                                                 {event.category || "General"}
                                             </span>
+                                            {event.membersOnly && (
+                                                <span className="px-3 py-1 bg-amber-500/90 backdrop-blur-md rounded-full text-[10px] font-black text-white uppercase tracking-wider border border-amber-400/30">
+                                                    👑 Members Only
+                                                </span>
+                                            )}
+                                            {!event.membersOnly && event.memberReservedSlots && (event.registrantsCount || 0) >= ((event.capacity || 0) - (event.memberReservedSlots || 0)) && (event.registrantsCount || 0) < (event.capacity || 0) && (
+                                                <span className="px-3 py-1 bg-emerald-600/90 backdrop-blur-md rounded-full text-[10px] font-black text-white uppercase tracking-wider border border-emerald-400/30">
+                                                    🔒 Member Slots Left
+                                                </span>
+                                            )}
+                                            {!event.membersOnly && event.memberEarlyAccessUntil && new Date(event.memberEarlyAccessUntil) > new Date() && (
+                                                <span className="px-3 py-1 bg-primary-600/90 backdrop-blur-md rounded-full text-[10px] font-black text-white uppercase tracking-wider border border-primary-400/30">
+                                                    ⏳ Members Early Access
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="absolute bottom-4 left-4 right-4">
                                             <h3 className="text-xl font-bold text-white leading-tight line-clamp-2">{event.title}</h3>
