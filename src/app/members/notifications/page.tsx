@@ -55,13 +55,13 @@ const formatRelative = (timestamp: number): string => {
 };
 
 export default function MemberNotificationsPage() {
-    const { user } = useMember();
+    const { user, profile } = useMember();
     const [notifications, setNotifications] = useState<MemberNotification[]>([]);
     const [loading, setLoading] = useState(true);
     const [marking, setMarking] = useState(false);
 
     const load = useCallback(async () => {
-        if (!user) return;
+        if (!user || !profile) return;
         setLoading(true);
         try {
             const data = await getMemberNotifications(user.uid);

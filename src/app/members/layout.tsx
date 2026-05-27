@@ -22,9 +22,6 @@ function MemberLayoutContent({ children }: { children: React.ReactNode }) {
         if (typeof window === "undefined") return;
 
         // Dynamically inject Member PWA manifest link
-        const existing = document.querySelector("link[rel='manifest']");
-        if (existing) existing.remove();
-
         const link = document.createElement("link");
         link.rel = "manifest";
         link.href = "/api/manifest/member";

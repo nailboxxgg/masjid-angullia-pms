@@ -122,12 +122,12 @@ function LoginForm() {
                 return;
             }
 
-            router.push("/");
+            router.push("/members");
         } catch (err: unknown) {
             console.error(err);
             // Fallback for network/navigation errors
             if (err instanceof Error && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
-                window.location.href = "/";
+                window.location.href = "/members";
                 return;
             }
             setError("Invalid credentials. Please check your email and password.");
