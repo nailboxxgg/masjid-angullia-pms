@@ -102,23 +102,34 @@ export const updateMemberProfile = async (uid: string, updates: Partial<MemberPr
     await updateDoc(doc(db, USERS_COLLECTION, uid), allowedUpdates);
 };
 
-export const getMemberEventRegistrations = async (uid: string): Promise<Registrant[]> => {
-    const q = query(
-        collection(db, "event_registrants"),
-        where("memberId", "==", uid)
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs
-        .map((docSnapshot) => {
-            const data = docSnapshot.data();
-            return {
-                id: docSnapshot.id,
-                ...data,
-                createdAt: toMillis(data.createdAt),
-            } as Registrant;
-        })
-        .sort((a, b) => b.createdAt - a.createdAt)
-        .slice(0, 50);
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export const getMemberEventRegistrations = async (uid: string, retries = 2): Promise<Registrant[]> => {
+    try {
+        const q = query(
+            collection(db, "event_registrants"),
+            where("memberId", "==", uid)
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs
+            .map((docSnapshot) => {
+                const data = docSnapshot.data();
+                return {
+                    id: docSnapshot.id,
+                    ...data,
+                    createdAt: toMillis(data.createdAt),
+                } as Registrant;
+            })
+            .sort((a, b) => b.createdAt - a.createdAt)
+            .slice(0, 50);
+    } catch (error) {
+        if (retries > 0 && error instanceof Error && error.message.toLowerCase().includes("permission")) {
+            await delay(200);
+            return getMemberEventRegistrations(uid, retries - 1);
+        }
+        console.error("Failed to load event registrations:", error);
+        return [];
+    }
 };
 
 export const cancelMemberEventRegistration = async (uid: string, registrationId: string) => {
@@ -188,23 +199,32 @@ export const updateMemberEventRegistration = async (
     });
 };
 
-export const getMemberDonations = async (uid: string): Promise<Donation[]> => {
-    const q = query(
-        collection(db, "donations"),
-        where("memberId", "==", uid)
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs
-        .map((docSnapshot) => {
-            const data = docSnapshot.data();
-            return {
-                id: docSnapshot.id,
-                ...data,
-                date: toMillis(data.date),
-            } as Donation;
-        })
-        .sort((a, b) => b.date - a.date)
-        .slice(0, 50);
+export const getMemberDonations = async (uid: string, retries = 2): Promise<Donation[]> => {
+    try {
+        const q = query(
+            collection(db, "donations"),
+            where("memberId", "==", uid)
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs
+            .map((docSnapshot) => {
+                const data = docSnapshot.data();
+                return {
+                    id: docSnapshot.id,
+                    ...data,
+                    date: toMillis(data.date),
+                } as Donation;
+            })
+            .sort((a, b) => b.date - a.date)
+            .slice(0, 50);
+    } catch (error) {
+        if (retries > 0 && error instanceof Error && error.message.toLowerCase().includes("permission")) {
+            await delay(200);
+            return getMemberDonations(uid, retries - 1);
+        }
+        console.error("Failed to load donations:", error);
+        return [];
+    }
 };
 
 export const createMemberServiceRequest = async (
@@ -229,30 +249,39 @@ export const createMemberServiceRequest = async (
     return docRef.id;
 };
 
-export const getMemberServiceRequests = async (uid: string): Promise<MemberServiceRequest[]> => {
-    const q = query(
-        collection(db, REQUESTS_COLLECTION),
-        where("memberId", "==", uid)
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs
-        .map((docSnapshot) => {
-            const data = docSnapshot.data();
-            return {
-                id: docSnapshot.id,
-                memberId: data.memberId,
-                memberName: data.memberName,
-                memberEmail: data.memberEmail,
-                type: data.type,
-                subject: data.subject,
-            message: data.message,
-            status: data.status || "pending",
-            adminReply: data.adminReply || "",
-            repliedAt: data.repliedAt ? toMillis(data.repliedAt) : undefined,
-            createdAt: toMillis(data.createdAt),
-            updatedAt: data.updatedAt ? toMillis(data.updatedAt) : undefined,
-        } as MemberServiceRequest;
-        })
-        .sort((a, b) => b.createdAt - a.createdAt)
-        .slice(0, 50);
+export const getMemberServiceRequests = async (uid: string, retries = 2): Promise<MemberServiceRequest[]> => {
+    try {
+        const q = query(
+            collection(db, REQUESTS_COLLECTION),
+            where("memberId", "==", uid)
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs
+            .map((docSnapshot) => {
+                const data = docSnapshot.data();
+                return {
+                    id: docSnapshot.id,
+                    memberId: data.memberId,
+                    memberName: data.memberName,
+                    memberEmail: data.memberEmail,
+                    type: data.type,
+                    subject: data.subject,
+                    message: data.message,
+                    status: data.status || "pending",
+                    adminReply: data.adminReply || "",
+                    repliedAt: data.repliedAt ? toMillis(data.repliedAt) : undefined,
+                    createdAt: toMillis(data.createdAt),
+                    updatedAt: data.updatedAt ? toMillis(data.updatedAt) : undefined,
+                } as MemberServiceRequest;
+            })
+            .sort((a, b) => b.createdAt - a.createdAt)
+            .slice(0, 50);
+    } catch (error) {
+        if (retries > 0 && error instanceof Error && error.message.toLowerCase().includes("permission")) {
+            await delay(200);
+            return getMemberServiceRequests(uid, retries - 1);
+        }
+        console.error("Failed to load service requests:", error);
+        return [];
+    }
 };

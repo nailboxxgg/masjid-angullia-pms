@@ -1,17 +1,160 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Save } from "lucide-react";
+import { 
+    CheckCircle2, 
+    Save, 
+    Home, 
+    Newspaper, 
+    Bell, 
+    UserRound, 
+    Users, 
+    HeartHandshake, 
+    CalendarCheck, 
+    HandHeart, 
+    MessageSquareText, 
+    LogOut,
+    ChevronRight,
+    ArrowLeft
+} from "lucide-react";
 import { useMember } from "@/contexts/MemberContext";
 import { updateMemberProfile } from "@/lib/members";
 import { normalizePhoneNumber } from "@/lib/utils";
+import { auth } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function MemberProfilePage() {
     const { user, profile, refreshProfile } = useMember();
+    const [showEditForm, setShowEditForm] = useState(false); // Mobile toggling
 
     if (!profile) return null;
 
-    return <MemberProfileForm key={profile.updatedAt || profile.createdAt} userId={user?.uid} profile={profile} refreshProfile={refreshProfile} />;
+    return (
+        <div>
+            {/* MOBILE PWA ACCOUNT MENU VIEW */}
+            <div className="block md:hidden min-h-screen bg-secondary-50 dark:bg-secondary-950 pb-20">
+                {!showEditForm ? (
+                    <div className="space-y-4 p-4">
+                        {/* Member Header Card */}
+                        <div className="rounded-2xl border border-secondary-200 bg-white p-5 shadow-sm dark:border-secondary-800 dark:bg-secondary-900 text-center space-y-2">
+                            <div className="w-16 h-16 bg-teal-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto">
+                                {profile.displayName[0]?.toUpperCase()}
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-black text-secondary-900 dark:text-white">{profile.displayName}</h2>
+                                <p className="text-xs text-secondary-400 font-medium">{profile.email}</p>
+                            </div>
+                            <span className="inline-block px-3 py-1 bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-400 rounded-full text-[10px] font-black uppercase tracking-wider">
+                                {profile.membershipStatus} Member
+                            </span>
+                        </div>
+
+                        {/* PWA Settings List Items */}
+                        <div className="bg-white dark:bg-secondary-900 rounded-2xl border border-secondary-200 dark:border-secondary-800 p-3 shadow-sm divide-y divide-secondary-100 dark:divide-secondary-800">
+                            <Link href="/members" className="flex items-center justify-between py-3.5 px-2 hover:bg-secondary-50/50">
+                                <div className="flex items-center gap-3">
+                                    <Home className="w-4 h-4 text-secondary-500" />
+                                    <span className="text-xs font-bold text-secondary-800 dark:text-secondary-200">Overview</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-secondary-300" />
+                            </Link>
+
+                            <Link href="/members/updates" className="flex items-center justify-between py-3.5 px-2 hover:bg-secondary-50/50">
+                                <div className="flex items-center gap-3">
+                                    <Newspaper className="w-4 h-4 text-secondary-500" />
+                                    <span className="text-xs font-bold text-secondary-800 dark:text-secondary-200">Updates</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-secondary-300" />
+                            </Link>
+
+                            <Link href="/members/notifications" className="flex items-center justify-between py-3.5 px-2 hover:bg-secondary-50/50">
+                                <div className="flex items-center gap-3">
+                                    <Bell className="w-4 h-4 text-secondary-500" />
+                                    <span className="text-xs font-bold text-secondary-800 dark:text-secondary-200">Notifications</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-secondary-300" />
+                            </Link>
+
+                            <button onClick={() => setShowEditForm(true)} className="w-full flex items-center justify-between py-3.5 px-2 hover:bg-secondary-50/50 text-left">
+                                <div className="flex items-center gap-3">
+                                    <UserRound className="w-4 h-4 text-secondary-500" />
+                                    <span className="text-xs font-bold text-secondary-800 dark:text-secondary-200">Profile Settings</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-secondary-300" />
+                            </button>
+
+                            <Link href="/members/family" className="flex items-center justify-between py-3.5 px-2 hover:bg-secondary-50/50">
+                                <div className="flex items-center gap-3">
+                                    <Users className="w-4 h-4 text-secondary-500" />
+                                    <span className="text-xs font-bold text-secondary-800 dark:text-secondary-200">Family Link</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-secondary-300" />
+                            </Link>
+
+                            <Link href="/members/volunteer" className="flex items-center justify-between py-3.5 px-2 hover:bg-secondary-50/50">
+                                <div className="flex items-center gap-3">
+                                    <HeartHandshake className="w-4 h-4 text-secondary-500" />
+                                    <span className="text-xs font-bold text-secondary-800 dark:text-secondary-200">Volunteer</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-secondary-300" />
+                            </Link>
+
+                            <Link href="/members/events" className="flex items-center justify-between py-3.5 px-2 hover:bg-secondary-50/50">
+                                <div className="flex items-center gap-3">
+                                    <CalendarCheck className="w-4 h-4 text-secondary-500" />
+                                    <span className="text-xs font-bold text-secondary-800 dark:text-secondary-200">Events</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-secondary-300" />
+                            </Link>
+
+                            <Link href="/members/donations" className="flex items-center justify-between py-3.5 px-2 hover:bg-secondary-50/50">
+                                <div className="flex items-center gap-3">
+                                    <HandHeart className="w-4 h-4 text-secondary-500" />
+                                    <span className="text-xs font-bold text-secondary-800 dark:text-secondary-200">Donations</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-secondary-300" />
+                            </Link>
+
+                            <Link href="/members/requests" className="flex items-center justify-between py-3.5 px-2 hover:bg-secondary-50/50">
+                                <div className="flex items-center gap-3">
+                                    <MessageSquareText className="w-4 h-4 text-secondary-500" />
+                                    <span className="text-xs font-bold text-secondary-800 dark:text-secondary-200">Requests</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-secondary-300" />
+                            </Link>
+
+                            <button 
+                                onClick={async () => {
+                                    await auth.signOut();
+                                    window.location.href = "/login";
+                                }} 
+                                className="w-full flex items-center justify-between py-3.5 px-2 hover:bg-secondary-50/50 text-left"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <LogOut className="w-4 h-4 text-red-500" />
+                                    <span className="text-xs font-bold text-red-500">Sign Out</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-red-200" />
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="p-4 space-y-4">
+                        <button onClick={() => setShowEditForm(false)} className="inline-flex items-center gap-2 text-xs font-black text-secondary-500 hover:text-secondary-800">
+                            <ArrowLeft className="w-4 h-4" /> Back to Account Menu
+                        </button>
+                        <MemberProfileForm key={profile.updatedAt || profile.createdAt} userId={user?.uid} profile={profile} refreshProfile={refreshProfile} />
+                    </div>
+                )}
+            </div>
+
+            {/* STANDARD DESKTOP VIEWPORT LAYOUT */}
+            <div className="hidden md:block">
+                <MemberProfileForm key={profile.updatedAt || profile.createdAt} userId={user?.uid} profile={profile} refreshProfile={refreshProfile} />
+            </div>
+        </div>
+    );
 }
 
 function MemberProfileForm({
@@ -20,7 +163,7 @@ function MemberProfileForm({
     refreshProfile,
 }: {
     userId?: string;
-    profile: NonNullable<ReturnType<typeof useMember>["profile"]>;
+    profile: any;
     refreshProfile: () => Promise<void>;
 }) {
     const [displayName, setDisplayName] = useState(profile.displayName);
@@ -63,7 +206,7 @@ function MemberProfileForm({
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <section className="rounded-xl border border-secondary-200 bg-white p-6 shadow-sm dark:border-secondary-800 dark:bg-secondary-900">
-                <h1 className="text-2xl font-black text-secondary-900 dark:text-white">Profile</h1>
+                <h1 className="text-2xl font-black text-secondary-900 dark:text-white">Profile Settings</h1>
                 <p className="mt-2 text-sm text-secondary-500 dark:text-secondary-400">Keep your contact details current for registrations, receipts, and masjid updates.</p>
 
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -149,7 +292,7 @@ function MemberProfileForm({
                             <span className="capitalize text-sm font-bold text-secondary-700 dark:text-secondary-200">{key.replace(/([A-Z])/g, " $1")}</span>
                             <input
                                 type="checkbox"
-                                checked={enabled}
+                                checked={Boolean(enabled)}
                                 onChange={(e) => setPreferences({ ...preferences, [key]: e.target.checked })}
                                 className="h-5 w-5 accent-primary-600"
                             />
