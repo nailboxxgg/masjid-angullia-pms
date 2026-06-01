@@ -2,7 +2,7 @@
 
 import { Donation } from "@/lib/types";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, XCircle, AlertCircle, Trash2, Search } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle, Trash2, Search, Smartphone, ShieldAlert } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface DonationTableProps {
@@ -28,12 +28,10 @@ const formatDate = (timestamp: number) => {
     });
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function DonationTable({ donations, isLoading, role: _role, onStatusUpdate, onDelete }: DonationTableProps) {
     if (isLoading) {
         return (
             <div className="space-y-4">
-                {/* Loading skeletons... */}
                 {Array(4).fill(0).map((_, i) => (
                     <div key={i} className="bg-white dark:bg-secondary-900 rounded-2xl p-5 border border-secondary-100 dark:border-secondary-800 animate-pulse space-y-4">
                         <div className="h-4 w-32 bg-secondary-100 dark:bg-secondary-800 rounded"></div>
@@ -73,8 +71,14 @@ export default function DonationTable({ donations, isLoading, role: _role, onSta
                                 </p>
                                 <p className="text-[10px] font-bold text-secondary-400 italic flex items-center gap-1.5">
                                     {donation.isAnonymous ? "Identity Hidden" : "Public Record"}
+                                    {donation.paymentMethod === 'gcash' && (
+                                        <span className="inline-flex items-center gap-0.5 text-blue-500 font-bold bg-blue-50 dark:bg-blue-950/30 px-1.5 py-0.5 rounded text-[8px] uppercase">
+                                            GCash
+                                        </span>
+                                    )}
                                 </p>
                             </div>
+                            
                             {donation.status === 'completed' ? (
                                 <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50 flex items-center gap-1">
                                     <CheckCircle2 className="w-3 h-3" /> Verified
@@ -84,20 +88,35 @@ export default function DonationTable({ donations, isLoading, role: _role, onSta
                                     <XCircle className="w-3 h-3" /> Failed
                                 </span>
                             ) : (
-                                <div className="flex items-center gap-2">
-                                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50 flex items-center gap-1">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50 flex items-center gap-1">
                                         <AlertCircle className="w-3 h-3" /> Pending
                                     </span>
                                     <button
                                         onClick={() => onStatusUpdate(donation.id, 'completed')}
-                                        className="p-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition-colors shadow-sm"
+                                        className="p-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors shadow-sm"
                                         title="Approve Donation"
                                     >
-                                        <CheckCircle2 className="w-4 h-4" />
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                        onClick={() => onStatusUpdate(donation.id, 'failed')}
+                                        className="p-1 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-sm"
+                                        title="Reject Donation"
+                                    >
+                                        <XCircle className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             )}
                         </div>
+
+                        {donation.referenceNumber && (
+                            <div className="mb-3 px-3 py-1.5 bg-secondary-50 dark:bg-secondary-950 rounded-lg text-[10px] font-mono text-secondary-500 flex items-center gap-1 border border-secondary-100 dark:border-secondary-800/50">
+                                <Smartphone className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                <span className="font-bold text-secondary-400 uppercase tracking-widest">Ref:</span>
+                                <span className="text-secondary-800 dark:text-secondary-200 tracking-wider font-semibold">{donation.referenceNumber}</span>
+                            </div>
+                        )}
 
                         {donation.message && (
                             <div className="mb-4 p-3 bg-secondary-50/50 dark:bg-secondary-950/50 rounded-xl text-[11px] text-secondary-600 dark:text-secondary-400 italic border-l-2 border-primary-500">
@@ -155,12 +174,28 @@ export default function DonationTable({ donations, isLoading, role: _role, onSta
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="space-y-1">
-                                            <p className="text-sm font-black text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors uppercase tracking-tight">
-                                                {donation.isAnonymous ? "Anonymous Contributor" : donation.donorName}
-                                            </p>
-                                            <div className="flex items-center gap-2 text-[10px] font-bold text-secondary-500">
-                                                Verified Donor
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-black text-secondary-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors uppercase tracking-tight">
+                                                    {donation.isAnonymous ? "Anonymous Contributor" : donation.donorName}
+                                                </p>
+                                                {donation.paymentMethod === 'gcash' && (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[8px] font-black uppercase bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/20">
+                                                        GCash
+                                                    </span>
+                                                )}
                                             </div>
+                                            
+                                            {donation.referenceNumber ? (
+                                                <div className="flex items-center gap-1.5 text-[10px] text-secondary-500 font-mono font-bold bg-secondary-50 dark:bg-secondary-800 px-2 py-0.5 rounded w-fit">
+                                                    <Smartphone className="w-3 h-3 text-blue-500" />
+                                                    Ref: {donation.referenceNumber}
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2 text-[10px] font-bold text-secondary-500">
+                                                    Verified Donor
+                                                </div>
+                                            )}
+                                            
                                             {donation.message && (
                                                 <div className="text-[10px] text-primary-600 dark:text-primary-400 italic line-clamp-1 border-l-2 border-primary-100 dark:border-primary-900/30 pl-2 mt-1.5 bg-primary-50/20 dark:bg-primary-900/10 py-0.5 rounded-r">
                                                     &ldquo;{donation.message}&rdquo;
@@ -194,13 +229,23 @@ export default function DonationTable({ donations, isLoading, role: _role, onSta
                                                         <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
                                                         Pending
                                                     </span>
-                                                    <button
-                                                        onClick={() => onStatusUpdate(donation.id, 'completed')}
-                                                        className="p-1.5 bg-emerald-100 dark:bg-emerald-900/50 hover:bg-emerald-200 dark:hover:bg-emerald-800 text-emerald-700 dark:text-emerald-400 rounded-lg transition-colors"
-                                                        title="Verify Donation"
-                                                    >
-                                                        <CheckCircle2 className="w-4 h-4" />
-                                                    </button>
+                                                    
+                                                    <div className="flex items-center gap-1 bg-secondary-100 dark:bg-secondary-800 p-0.5 rounded-lg border border-secondary-200 dark:border-secondary-700 shadow-inner">
+                                                        <button
+                                                            onClick={() => onStatusUpdate(donation.id, 'completed')}
+                                                            className="p-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors"
+                                                            title="Verify / Approve Donation"
+                                                        >
+                                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => onStatusUpdate(donation.id, 'failed')}
+                                                            className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+                                                            title="Reject / Fail Donation"
+                                                        >
+                                                            <XCircle className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>

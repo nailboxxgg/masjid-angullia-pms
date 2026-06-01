@@ -9,7 +9,7 @@ import { auth, db } from "@/lib/firebase";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import Footer from "@/components/layout/Footer";
+import Footer from "../../../components/layout/Footer";
 import { useSessionRecovery } from "@/hooks/useSessionRecovery";
 import { getMemberProfile } from "@/lib/members";
 import { AdminVerificationError, verifyCurrentAdminAccount } from "@/lib/admin-auth";
@@ -52,46 +52,27 @@ function LoginForm() {
 
         let loginEmail = identifier;
 
-        // If it's a phone number (+63...), resolve to email
-        if (identifier.startsWith("+63")) {
+        // Clean identifier to check if it represents a phone number (e.g. starts with + or contains only digits)
+        const isPhone = identifier.startsWith("+") || /^\d{7,}$/.test(identifier.replace(/[\s\-()]/g, ""));
+
+        if (isPhone) {
             try {
-                // Check staff collection first
-                const staffRef = collection(db, "staff");
-                const qStaff = query(staffRef, where("phoneNumber", "==", identifier), limit(1));
-                const staffSnapshot = await getDocs(qStaff);
+                const response = await fetch("/api/auth/resolve-phone", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ phone: identifier }),
+                });
 
-                if (!staffSnapshot.empty) {
-                    loginEmail = staffSnapshot.docs[0].data().email;
-                } else {
-                    // Check member accounts first, then family records for legacy data
-                    const usersRef = collection(db, "users");
-                    const qUsers = query(usersRef, where("phone", "==", identifier), limit(1));
-                    const usersSnapshot = await getDocs(qUsers);
-
-                    if (!usersSnapshot.empty) {
-                        loginEmail = usersSnapshot.docs[0].data().email;
-                    } else {
-                        const familiesRef = collection(db, "families");
-                        const qFam = query(familiesRef, where("phone", "==", identifier), limit(1));
-                        const famSnapshot = await getDocs(qFam);
-
-                        if (famSnapshot.empty) {
-                            setError("No account found with this phone number.");
-                            setLoading(false);
-                            return;
-                        }
-                        loginEmail = famSnapshot.docs[0].data().email;
-                    }
-
-                    if (!loginEmail) {
-                        setError("No account found with this phone number.");
-                        setLoading(false);
-                        return;
-                    }
+                const data = await response.json();
+                if (!response.ok) {
+                    setError(data.error || "No account found with this phone number.");
+                    setLoading(false);
+                    return;
                 }
+                loginEmail = data.email;
             } catch (err) {
                 console.error("Phone resolution error:", err);
-                setError("Failed to resolve phone number. Please try using your email.");
+                setError("Network error while resolving phone number. Please check your internet connection.");
                 setLoading(false);
                 return;
             }
@@ -125,9 +106,8 @@ function LoginForm() {
             router.push("/members");
         } catch (err: unknown) {
             console.error(err);
-            // Fallback for network/navigation errors
             if (err instanceof Error && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
-                window.location.href = "/members";
+                setError("Network connection issue. Please check your connection and try again.");
                 return;
             }
             setError("Invalid credentials. Please check your email and password.");

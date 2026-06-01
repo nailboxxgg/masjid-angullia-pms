@@ -127,7 +127,7 @@ export default function MemberProfilePage() {
                             <button 
                                 onClick={async () => {
                                     await auth.signOut();
-                                    window.location.href = "/login";
+                                    window.location.href = "/";
                                 }} 
                                 className="w-full flex items-center justify-between py-3.5 px-2 hover:bg-secondary-50/50 text-left"
                             >

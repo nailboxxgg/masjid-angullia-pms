@@ -14,7 +14,7 @@ function MemberLayoutContent({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (isSignupPage) return;
         if (!loading && (!user || !profile)) {
-            router.push("/login");
+            router.push("/");
         }
     }, [isSignupPage, loading, user, profile, router]);
 

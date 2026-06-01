@@ -42,6 +42,7 @@ function AdminLayoutContent({
         if (!loading) {
             if (!user) {
                 router.push("/login");
+            } else {
                 // User is authorized
                 stopHeartbeat = startPresenceHeartbeat();
             }

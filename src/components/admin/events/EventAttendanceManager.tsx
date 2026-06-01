@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Event, EventAttendance, Family, Registrant } from "@/lib/types";
 
@@ -17,7 +16,7 @@ import {
     updateDoc,
     increment
 } from "firebase/firestore";
-import { Check, Search, Trash2, UserPlus, Globe, ArrowRight, QrCode, CheckCircle2 } from "lucide-react";
+import { Check, Search, Trash2, UserPlus, Globe, ArrowRight, QrCode, CheckCircle2, Maximize2, X, Printer } from "lucide-react";
 
 interface EventAttendanceManagerProps {
     event: Event;
@@ -29,11 +28,17 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
     const [registrants, setRegistrants] = useState<Registrant[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Screen display state for QR
+    const [isFullScreenQrOpen, setIsFullScreenQrOpen] = useState(false);
+
     // Scan Check-in State
     const [scanInput, setScanInput] = useState("");
     const [checkInSuccess, setCheckInSuccess] = useState<string | null>(null);
     const [checkInError, setCheckInError] = useState<string | null>(null);
     const [isCheckingIn, setIsCheckingIn] = useState(false);
+
+    const attendanceQrData = `angullia_event_attendance:${event.id}`;
+    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(attendanceQrData)}&color=0f766e`;
 
     const handleScanCheckIn = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -103,8 +108,6 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
 
         setIsSearching(true);
         try {
-            // Using a prefix search strategy
-            // Capitalize first letter to help with common casing
             const searchPrefix = term.charAt(0).toUpperCase() + term.slice(1);
             const q = query(
                 collection(db, "families"),
@@ -183,8 +186,6 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
         };
     }, [event.id]);
 
-
-
     const addToAttendance = async (name: string, uid?: string, registrantId?: string) => {
         try {
             // Check if already present
@@ -197,9 +198,6 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
                 return;
             }
 
-            // Prevent double-counting count drift:
-            // Check if the user we are adding is already in the event_registrants list
-            // If they are, we use their registrantId and they are NOT a walk-in.
             let resolvedRegistrantId = registrantId;
             if (!resolvedRegistrantId) {
                 const matchedRegistrant = registrants.find(r => r.name.toLowerCase() === name.toLowerCase());
@@ -208,7 +206,6 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
                 }
             }
 
-            // Determine if walk-in (not an online registrant checking in)
             const isWalkIn = !resolvedRegistrantId;
 
             const newRecord = {
@@ -223,19 +220,13 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
 
             await addDoc(collection(db, "event_attendance"), newRecord);
 
-            // Do not manually update state here since the onSnapshot listener will
-            // automatically fetch the new record and update the state.
-
-            // Increment event registrantsCount if they are a walk-in
             if (isWalkIn) {
                 const eventRef = doc(db, "events", event.id);
-                // Fire and forget update
                 updateDoc(eventRef, {
                     registrantsCount: increment(1)
                 }).catch(err => console.error("Error incrementing registrantsCount:", err));
             }
 
-            // Clear inputs
             setManualName("");
             setSearchInput("");
             setSearchQuery("");
@@ -252,10 +243,7 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
         try {
             const record = attendanceList.find(a => a.id === id);
             await deleteDoc(doc(db, "event_attendance", id));
-            // Don't modify attendanceList state here manually since we have a real-time onSnapshot listener
-            // that will automatically update the list when the document is deleted.
 
-            // Decrement registrantsCount if they were a walk-in
             if (record?.isWalkIn) {
                 const eventRef = doc(db, "events", event.id);
                 updateDoc(eventRef, {
@@ -268,18 +256,86 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
         }
     };
 
-    // Filter registrants who are NOT in attendance list
-    // Matching by name is risky but acceptable for v1 if uid isn't consistent.
-    // Ideally we match by a unique ID if available, otherwise name.
     const pendingRegistrants = registrants.filter(r =>
         !attendanceList.some(a => a.name.toLowerCase() === r.name.toLowerCase())
     );
+
+    const handlePrintQr = () => {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Attendance QR - ${event.title}</title>
+                        <style>
+                            body { font-family: system-ui, sans-serif; text-align: center; padding: 40px; color: #0f172a; }
+                            .card { border: 2px solid #e2e8f0; padding: 40px; border-radius: 24px; display: inline-block; max-width: 500px; }
+                            h1 { font-size: 28px; margin-bottom: 8px; font-weight: 800; }
+                            h2 { font-size: 16px; color: #0d9488; text-transform: uppercase; margin-bottom: 24px; font-weight: 700; letter-spacing: 0.05em; }
+                            img { border: 1px solid #cbd5e1; padding: 16px; border-radius: 16px; width: 300px; height: 300px; }
+                            p { font-size: 14px; color: #64748b; margin-top: 24px; font-weight: 500; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="card">
+                            <h1>${event.title}</h1>
+                            <h2>Event Attendance Check-in</h2>
+                            <img src="${qrImageUrl}" alt="Event Attendance QR" />
+                            <p>Assalamu alaikum, please scan this QR code with your Masjid Angullia member dashboard to check in.</p>
+                        </div>
+                        <script>
+                            window.onload = function() {
+                                window.print();
+                                setTimeout(function() { window.close(); }, 500);
+                            };
+                        </script>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+    };
 
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row gap-6">
                 {/* Search / Add Column */}
                 <div className="flex-1 space-y-6">
+
+                    {/* NEW: Display attendance QR code for users to scan */}
+                    <div className="bg-white dark:bg-secondary-900 p-5 rounded-2xl border border-secondary-200 dark:border-secondary-800 shadow-sm relative overflow-hidden flex flex-col sm:flex-row gap-5 items-center">
+                        <div className="bg-secondary-50 dark:bg-secondary-950 p-2.5 rounded-xl border border-secondary-100 dark:border-secondary-800/50 flex-shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={qrImageUrl}
+                                alt="Event Attendance QR"
+                                className="w-32 h-32 object-contain"
+                            />
+                        </div>
+                        <div className="space-y-2 text-center sm:text-left flex-1">
+                            <h3 className="font-black text-secondary-900 dark:text-white flex items-center justify-center sm:justify-start gap-1.5 text-base leading-tight">
+                                <QrCode className="w-5 h-5 text-primary-500" />
+                                Attendance QR Code
+                            </h3>
+                            <p className="text-xs text-secondary-500 dark:text-secondary-400 font-medium">
+                                Display or print this QR code at mosque entries. Attendees can scan this QR code using their own device to automatically check themselves into the event!
+                            </p>
+                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1.5">
+                                <button
+                                    onClick={() => setIsFullScreenQrOpen(true)}
+                                    className="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-1 shadow-sm transition-all"
+                                >
+                                    <Maximize2 className="w-3.5 h-3.5" /> Fullscreen Mode
+                                </button>
+                                <button
+                                    onClick={handlePrintQr}
+                                    className="px-3 py-1.5 border border-secondary-200 dark:border-secondary-800 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-50 dark:hover:bg-secondary-800 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-1 transition-all"
+                                >
+                                    <Printer className="w-3.5 h-3.5" /> Print QR Poster
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Online Registrants Card */}
                     {pendingRegistrants.length > 0 && (
@@ -447,7 +503,7 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
                         </span>
                     </h3>
 
-                    <div className="bg-white dark:bg-secondary-900 rounded-xl border border-secondary-200 dark:border-secondary-800 shadow-sm overflow-hidden h-[500px] overflow-y-auto">
+                    <div className="bg-white dark:bg-secondary-900 rounded-xl border border-secondary-200 dark:border-secondary-800 shadow-sm overflow-hidden h-[600px] overflow-y-auto">
                         {isLoading ? (
                             <div className="p-4 text-center text-sm text-secondary-500">Loading...</div>
                         ) : attendanceList.length === 0 ? (
@@ -485,6 +541,44 @@ export default function EventAttendanceManager({ event, adminUid }: EventAttenda
                     </div>
                 </div>
             </div>
+
+            {/* Immersive Poster Fullscreen View */}
+            {isFullScreenQrOpen && (
+                <div className="fixed inset-0 z-50 bg-secondary-950 flex flex-col items-center justify-center p-6 text-white animate-fade-in">
+                    <button
+                        onClick={() => setIsFullScreenQrOpen(false)}
+                        className="absolute top-6 right-6 p-2 bg-secondary-900 hover:bg-secondary-800 text-secondary-400 hover:text-white rounded-full transition-colors"
+                        title="Close Poster View"
+                    >
+                        <X className="w-8 h-8" />
+                    </button>
+
+                    <div className="text-center space-y-6 max-w-lg">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500/10 border border-teal-500/30 text-teal-400 rounded-full text-xs font-black uppercase tracking-widest">
+                            <QrCode className="w-4 h-4" /> Masjid Angullia Entry
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <h2 className="text-4xl font-extrabold tracking-tight font-heading leading-tight">{event.title}</h2>
+                            <p className="text-teal-500 font-bold uppercase tracking-widest text-sm">Self Check-in Portal</p>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-[2.5rem] shadow-2xl border border-secondary-800 max-w-sm mx-auto">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={qrImageUrl}
+                                alt="Event Attendance QR Fullscreen"
+                                className="w-80 h-80 object-contain mx-auto"
+                            />
+                        </div>
+
+                        <div className="space-y-2 text-secondary-300">
+                            <p className="text-base font-bold">Please scan this QR Code with your smartphone member portal.</p>
+                            <p className="text-xs text-secondary-500">Go to My Events page &gt; Tap "Scan Attendance QR" to check yourself in instantly.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -8,6 +8,8 @@ import ThemeToggle from "@/components/ui/ThemeToggle";
 import { LockKeyhole, Menu, X, Bell, Calendar, MessageSquare, Users, Home, Heart, UserRound } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 const NAV_LINKS = [
     { label: "Home", href: "/", icon: Home },
@@ -21,12 +23,32 @@ export default function Navbar() {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setCurrentUser(user);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // Detect if running in PWA standalone mode
+    const [isPwaStandalone, setIsPwaStandalone] = useState(false);
+    useEffect(() => {
+        setIsPwaStandalone(window.matchMedia("(display-mode: standalone)").matches);
+    }, []);
+
+    // Hide admin portal if logged in, in PWA mode, or on member pages
+    const hideAdminPortal = Boolean(currentUser || isPwaStandalone || pathname?.startsWith("/members"));
+
+    // Burger menu is hidden in PWA mode unless user is on the home page
+    const showBurgerMenu = !isPwaStandalone || pathname === "/";
 
     const handleLogoClick = (e: React.MouseEvent) => {
         if (pathname === "/") {
@@ -103,23 +125,27 @@ export default function Navbar() {
                                 <UserRound className="w-5 h-5" />
                             </Link>
 
-                            <button
-                                onClick={() => window.dispatchEvent(new CustomEvent('open-login-modal'))}
-                                className="p-2.5 rounded-xl text-primary-600/70 hover:text-primary-600 dark:text-primary-400/70 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all"
-                                title="Admin Portal"
-                            >
-                                <LockKeyhole className="w-5 h-5" />
-                            </button>
+                            {!hideAdminPortal && (
+                                <button
+                                    onClick={() => window.dispatchEvent(new CustomEvent('open-login-modal'))}
+                                    className="p-2.5 rounded-xl text-primary-600/70 hover:text-primary-600 dark:text-primary-400/70 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/10 transition-all"
+                                    title="Admin Portal"
+                                >
+                                    <LockKeyhole className="w-5 h-5" />
+                                </button>
+                            )}
                             <ThemeToggle />
                         </div>
 
-                        {/* Mobile Menu Toggle */}
+                        {/* Mobile Menu Toggle — visible in browser always; in PWA only on home page */}
+                        {showBurgerMenu && (
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="lg:hidden p-2.5 rounded-xl bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-all [@media(display-mode:standalone)]:hidden"
+                            className="lg:hidden p-2.5 rounded-xl bg-secondary-100 dark:bg-secondary-800 text-secondary-600 dark:text-secondary-400 hover:text-primary-600 dark:hover:text-primary-400 transition-all"
                         >
                             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -170,7 +196,7 @@ export default function Navbar() {
                                 Register Family
                             </button>
 
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className={cn("grid gap-3", hideAdminPortal ? "grid-cols-1" : "grid-cols-2")}>
                                 <Link
                                     href="/members"
                                     onClick={() => setIsMenuOpen(false)}
@@ -179,17 +205,19 @@ export default function Navbar() {
                                     <UserRound className="w-4 h-4" />
                                     Member
                                 </Link>
-                                <button
-                                    onClick={() => {
-                                        setIsMenuOpen(false);
-                                        window.dispatchEvent(new CustomEvent('open-login-modal'));
-                                    }}
-                                    className="flex items-center justify-center gap-2 px-4 py-4 rounded-2xl bg-secondary-900 dark:bg-secondary-800 text-white font-bold text-sm"
-                                >
-                                    <LockKeyhole className="w-4 h-4" />
-                                    Admin Portal
-                                </button>
-                                <div className="col-span-2 flex items-center justify-center py-4 rounded-2xl bg-secondary-100 dark:bg-secondary-800">
+                                {!hideAdminPortal && (
+                                    <button
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            window.dispatchEvent(new CustomEvent('open-login-modal'));
+                                        }}
+                                        className="flex items-center justify-center gap-2 px-4 py-4 rounded-2xl bg-secondary-900 dark:bg-secondary-800 text-white font-bold text-sm"
+                                    >
+                                        <LockKeyhole className="w-4 h-4" />
+                                        Admin Portal
+                                    </button>
+                                )}
+                                <div className={cn("flex items-center justify-center py-4 rounded-2xl bg-secondary-100 dark:bg-secondary-800", hideAdminPortal ? "col-span-1" : "col-span-2")}>
                                     <ThemeToggle />
                                     <span className="ml-2 text-sm font-bold text-secondary-600 dark:text-secondary-400">Appearance</span>
                                 </div>
